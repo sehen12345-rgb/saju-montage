@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import { NextRequest, NextResponse } from "next/server";
 import { isKeyPlaceholder } from "@/lib/demo";
+import type { SajuInfo } from "@/lib/types";
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,17 +13,15 @@ export async function POST(req: NextRequest) {
 
     const spouseGender = (gender as string) === "male" ? "woman" : "man";
 
-    // 데모 모드: Pollinations.ai URL을 브라우저에 직접 반환 (서버 경유 X)
+    // 데모 모드: 서버에서 직접 SVG 초상화 생성 (외부 의존 없음)
     if (demo || isKeyPlaceholder(process.env.OPENAI_API_KEY)) {
-      const seed = sajuInfo
-        ? JSON.stringify(sajuInfo).split("").reduce((a: number, c: string) => a + c.charCodeAt(0), 0)
-        : Math.floor(Math.random() * 9999);
-
-      const p = `portrait of Korean ${spouseGender}, ${prompt}, white background, face centered, looking at camera, photorealistic`;
+      const info = sajuInfo as SajuInfo;
       const imageUrl =
-        `https://image.pollinations.ai/prompt/${encodeURIComponent(p)}` +
-        `?width=512&height=512&nologo=true&seed=${seed}&model=flux-schnell`;
-
+        `/api/portrait?gender=${gender}` +
+        `&year=${encodeURIComponent(info?.yearPillar ?? "갑자")}` +
+        `&month=${encodeURIComponent(info?.monthPillar ?? "병인")}` +
+        `&day=${encodeURIComponent(info?.dayPillar ?? "무오")}` +
+        `&hour=${encodeURIComponent(info?.hourPillar ?? "경신")}`;
       return NextResponse.json({ imageUrl, demo: true });
     }
 
