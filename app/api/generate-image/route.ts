@@ -2,17 +2,6 @@ import OpenAI from "openai";
 import { NextRequest, NextResponse } from "next/server";
 import { isKeyPlaceholder } from "@/lib/demo";
 
-function buildPortraitPrompt(spouseGender: string, prompt: string): string {
-  return [
-    `portrait photo of Korean ${spouseGender}`,
-    "face centered",
-    "looking at camera",
-    "white background",
-    prompt,
-    "photorealistic",
-  ].join(", ");
-}
-
 export async function POST(req: NextRequest) {
   try {
     const { prompt, gender, sajuInfo, demo } = await req.json();
@@ -23,19 +12,18 @@ export async function POST(req: NextRequest) {
 
     const spouseGender = (gender as string) === "male" ? "woman" : "man";
 
-    // 데모 모드: Pollinations.ai → 프록시 경유 URL 반환
+    // 데모 모드: Pollinations.ai URL을 브라우저에 직접 반환 (서버 경유 X)
     if (demo || isKeyPlaceholder(process.env.OPENAI_API_KEY)) {
       const seed = sajuInfo
         ? JSON.stringify(sajuInfo).split("").reduce((a: number, c: string) => a + c.charCodeAt(0), 0)
         : Math.floor(Math.random() * 9999);
 
-      const pollinationsUrl =
-        `https://image.pollinations.ai/prompt/${encodeURIComponent(buildPortraitPrompt(spouseGender, prompt))}` +
-        `?width=512&height=512&nologo=true&seed=${seed}&model=flux-schnell&enhance=false`;
+      const p = `portrait of Korean ${spouseGender}, ${prompt}, white background, face centered, looking at camera, photorealistic`;
+      const imageUrl =
+        `https://image.pollinations.ai/prompt/${encodeURIComponent(p)}` +
+        `?width=512&height=512&nologo=true&seed=${seed}&model=flux-schnell`;
 
-      // 프록시를 통해 서버에서 재시도 가능하게
-      const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(pollinationsUrl)}`;
-      return NextResponse.json({ imageUrl: proxyUrl, demo: true });
+      return NextResponse.json({ imageUrl, demo: true });
     }
 
     // 실제 모드: DALL·E 3
@@ -47,9 +35,8 @@ export async function POST(req: NextRequest) {
         `professional ID photo portrait of Korean ${spouseGender}`,
         prompt,
         "pure white background",
-        "face centered in frame",
-        "looking directly at camera",
-        "sharp facial features",
+        "face centered",
+        "looking at camera",
         "photorealistic",
         "no text",
         "no watermark",

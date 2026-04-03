@@ -11,8 +11,11 @@ interface Props {
 const LOADING_MESSAGES = [
   "AI가 얼굴을 그리는 중...",
   "이목구비를 완성하는 중...",
+  "눈매를 다듬는 중...",
   "마지막 터치 중...",
 ];
+
+const TIMEOUT_MS = 90_000; // 90초 후 자동 재시도
 
 export default function ResultCard({ result, onReset }: Props) {
   const { analysis, imageUrl } = result;
@@ -20,36 +23,73 @@ export default function ResultCard({ result, onReset }: Props) {
   const [imgError, setImgError] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
   const [currentSrc, setCurrentSrc] = useState(imageUrl);
+  const [elapsed, setElapsed] = useState(0);
   const [msgIdx, setMsgIdx] = useState(0);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // 로딩 메시지 순환
+  const msgTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const elapsedTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const timeoutTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // 타이머 초기화 함수
+  function clearAllTimers() {
+    if (msgTimer.current) clearInterval(msgTimer.current);
+    if (elapsedTimer.current) clearInterval(elapsedTimer.current);
+    if (timeoutTimer.current) clearTimeout(timeoutTimer.current);
+  }
+
+  // 이미지 소스 변경 시마다 타이머 재시작
   useEffect(() => {
-    if (imgLoaded || imgError) return;
-    timerRef.current = setInterval(() => {
-      setMsgIdx((i) => (i + 1) % LOADING_MESSAGES.length);
-    }, 3000);
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [imgLoaded, imgError]);
+    if (imgLoaded) return;
 
-  function handleError() {
-    if (retryCount < 3) {
-      // 자동 재시도: 새 seed를 붙여 URL 변경
-      const newSrc = currentSrc.includes("seed=")
-        ? currentSrc.replace(/seed=\d+/, `seed=${Date.now() % 9999}`)
-        : `${currentSrc}&retry=${retryCount + 1}`;
-      setRetryCount((c) => c + 1);
-      setCurrentSrc(newSrc);
-    } else {
+    clearAllTimers();
+    setElapsed(0);
+    setMsgIdx(0);
+
+    // 메시지 순환 (4초마다)
+    msgTimer.current = setInterval(() => {
+      setMsgIdx((i) => (i + 1) % LOADING_MESSAGES.length);
+    }, 4000);
+
+    // 경과 시간 카운터 (1초마다)
+    elapsedTimer.current = setInterval(() => {
+      setElapsed((s) => s + 1);
+    }, 1000);
+
+    // 90초 후 자동 재시도
+    timeoutTimer.current = setTimeout(() => {
+      retryWithNewSeed();
+    }, TIMEOUT_MS);
+
+    return clearAllTimers;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentSrc]);
+
+  // 로드 성공 시 타이머 정리
+  useEffect(() => {
+    if (imgLoaded) clearAllTimers();
+  }, [imgLoaded]);
+
+  function retryWithNewSeed() {
+    if (retryCount >= 3) {
       setImgError(true);
+      clearAllTimers();
+      return;
     }
+    const newSeed = Date.now() % 9999;
+    const newSrc = currentSrc.includes("seed=")
+      ? currentSrc.replace(/seed=\d+/, `seed=${newSeed}`)
+      : `${currentSrc}&seed=${newSeed}`;
+    setRetryCount((c) => c + 1);
+    setImgLoaded(false);
+    setCurrentSrc(newSrc);
   }
 
   function handleManualRetry() {
     setImgError(false);
     setImgLoaded(false);
     setRetryCount(0);
-    setCurrentSrc(imageUrl.replace(/seed=\d+/, `seed=${Date.now() % 9999}`));
+    const newSrc = imageUrl.replace(/seed=\d+/, `seed=${Date.now() % 9999}`);
+    setCurrentSrc(newSrc);
   }
 
   function handleDownload() {
@@ -60,6 +100,8 @@ export default function ResultCard({ result, onReset }: Props) {
     const text = `사주로 본 내 배우자의 모습 ✨\n${analysis.characteristics.join(" · ")}\n\n#사주몽타주 #운명의상대`;
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, "_blank");
   }
+
+  const remaining = Math.max(0, Math.ceil((TIMEOUT_MS / 1000) - elapsed));
 
   return (
     <div className="space-y-6">
@@ -90,16 +132,27 @@ export default function ResultCard({ result, onReset }: Props) {
             <div className="relative w-16 h-16">
               <div className="absolute inset-0 rounded-full border-4 border-amber-100" />
               <div className="absolute inset-0 rounded-full border-4 border-t-amber-500 animate-spin" />
-              <div className="absolute inset-0 flex items-center justify-center text-2xl">🎨</div>
+              <span className="absolute inset-0 flex items-center justify-center text-2xl">🎨</span>
             </div>
-            <div className="text-center space-y-1">
+            <div className="text-center space-y-2">
               <p className="text-amber-700 text-sm font-medium animate-pulse">
                 {LOADING_MESSAGES[msgIdx]}
               </p>
               {retryCount > 0 && (
-                <p className="text-amber-400 text-xs">재시도 중... ({retryCount}/3)</p>
+                <p className="text-orange-400 text-xs font-medium">다른 이미지로 재시도 중... ({retryCount}/3)</p>
               )}
-              <p className="text-amber-400 text-xs">AI 이미지 생성에 10~30초 소요됩니다</p>
+              {/* 진행 바 */}
+              <div className="w-40 h-1.5 bg-amber-100 rounded-full mx-auto overflow-hidden">
+                <div
+                  className="h-full bg-amber-400 rounded-full transition-all duration-1000"
+                  style={{ width: `${Math.min(100, (elapsed / (TIMEOUT_MS / 1000)) * 100)}%` }}
+                />
+              </div>
+              <p className="text-amber-300 text-xs">
+                {elapsed < 10
+                  ? "AI 이미지 생성 중..."
+                  : `${remaining}초 후 자동으로 다시 시도합니다`}
+              </p>
             </div>
           </div>
         )}
@@ -128,7 +181,7 @@ export default function ResultCard({ result, onReset }: Props) {
             alt="AI가 생성한 배우자 몽타주"
             className={`w-full h-full object-cover transition-opacity duration-700 ${imgLoaded ? "opacity-100" : "opacity-0"}`}
             onLoad={() => setImgLoaded(true)}
-            onError={handleError}
+            onError={() => retryWithNewSeed()}
           />
         )}
 
