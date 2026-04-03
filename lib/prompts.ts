@@ -7,7 +7,7 @@ export function buildSajuSystemPrompt(): string {
 반드시 아래 JSON 형식으로만 응답하세요. 다른 텍스트는 포함하지 마세요:
 {
   "description": "배우자의 외모와 분위기 묘사 (한국어, 3~4문장, 구체적이고 생생하게)",
-  "imagePrompt": "realistic portrait photo, [외모 특징 영문 묘사], soft studio lighting, high quality, photorealistic, 4k",
+  "imagePrompt": "close-up portrait photo of a [성별] face, [외모 특징 영문 묘사], face centered in frame, looking at camera, studio portrait, blurred background, sharp facial features, photorealistic, high quality",
   "characteristics": ["특징1", "특징2", "특징3"]
 }`;
 }

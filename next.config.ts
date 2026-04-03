@@ -13,6 +13,11 @@ const nextConfig: NextConfig = {
         hostname: "*.openai.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "randomuser.me",
+        pathname: "/**",
+      },
     ],
   },
 };

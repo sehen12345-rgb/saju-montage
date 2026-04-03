@@ -45,6 +45,13 @@ export default function ResultPage() {
           <p className="text-amber-600 text-sm mt-1">사주가 말해주는 운명의 상대</p>
         </div>
 
+        {result.demo && (
+          <div className="mb-4 px-4 py-3 bg-blue-50 border border-blue-200 rounded-2xl text-blue-700 text-sm flex items-start gap-2">
+            <span>🎭</span>
+            <span>데모 결과입니다. 실제 AI 분석을 원하시면 API 키를 설정해주세요.</span>
+          </div>
+        )}
+
         <div className="bg-white/80 backdrop-blur rounded-3xl shadow-xl border border-amber-100 p-6">
           <ResultCard result={result} onReset={handleReset} />
         </div>

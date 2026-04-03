@@ -23,4 +23,5 @@ export interface SajuInfo {
 export interface GenerateResult {
   analysis: SajuAnalysis;
   imageUrl: string;
+  demo?: boolean;
 }

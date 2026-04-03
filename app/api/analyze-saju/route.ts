@@ -2,9 +2,8 @@ import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest, NextResponse } from "next/server";
 import { calculateSaju } from "@/lib/saju";
 import { buildSajuSystemPrompt, buildSajuUserPrompt } from "@/lib/prompts";
-import type { SajuInput, SajuAnalysis } from "@/lib/types";
-
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+import { isKeyPlaceholder, getDemoAnalysis } from "@/lib/demo";
+import type { SajuInput } from "@/lib/types";
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,6 +15,14 @@ export async function POST(req: NextRequest) {
     }
 
     const sajuInfo = calculateSaju(birthYear, birthMonth, birthDay, birthHour ?? -1);
+
+    // API 키 없으면 데모 응답 반환
+    if (isKeyPlaceholder(process.env.ANTHROPIC_API_KEY)) {
+      await new Promise((r) => setTimeout(r, 2000)); // 실제처럼 딜레이
+      return NextResponse.json({ ...getDemoAnalysis(gender, sajuInfo), demo: true });
+    }
+
+    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
     const message = await client.messages.create({
       model: "claude-sonnet-4-6",
@@ -32,22 +39,17 @@ export async function POST(req: NextRequest) {
     });
 
     const rawText = message.content[0].type === "text" ? message.content[0].text : "";
-
-    // JSON 파싱 (마크다운 코드블록 제거)
     const jsonStr = rawText.replace(/```json\n?|\n?```/g, "").trim();
     const parsed = JSON.parse(jsonStr);
 
-    const analysis: SajuAnalysis = {
+    return NextResponse.json({
       description: parsed.description,
       imagePrompt: parsed.imagePrompt,
       characteristics: parsed.characteristics,
       sajuInfo,
-    };
-
-    return NextResponse.json(analysis);
+    });
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
     console.error("analyze-saju error:", err);
-    return NextResponse.json({ error: "사주 분석 중 오류가 발생했습니다.", detail: message }, { status: 500 });
+    return NextResponse.json({ error: "사주 분석 중 오류가 발생했습니다." }, { status: 500 });
   }
 }
