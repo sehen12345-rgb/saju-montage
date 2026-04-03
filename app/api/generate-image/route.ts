@@ -2,6 +2,17 @@ import OpenAI from "openai";
 import { NextRequest, NextResponse } from "next/server";
 import { isKeyPlaceholder } from "@/lib/demo";
 
+function buildPortraitPrompt(spouseGender: string, prompt: string): string {
+  return [
+    `portrait photo of Korean ${spouseGender}`,
+    "face centered",
+    "looking at camera",
+    "white background",
+    prompt,
+    "photorealistic",
+  ].join(", ");
+}
+
 export async function POST(req: NextRequest) {
   try {
     const { prompt, gender, sajuInfo, demo } = await req.json();
@@ -12,50 +23,37 @@ export async function POST(req: NextRequest) {
 
     const spouseGender = (gender as string) === "male" ? "woman" : "man";
 
-    // 데모 모드: Pollinations.ai URL 구성해서 반환 (브라우저가 직접 로드)
+    // 데모 모드: Pollinations.ai → 프록시 경유 URL 반환
     if (demo || isKeyPlaceholder(process.env.OPENAI_API_KEY)) {
       const seed = sajuInfo
-        ? String(sajuInfo).split("").reduce((a: number, c: string) => a + c.charCodeAt(0), 0)
+        ? JSON.stringify(sajuInfo).split("").reduce((a: number, c: string) => a + c.charCodeAt(0), 0)
         : Math.floor(Math.random() * 9999);
 
-      const idPhotoPrompt = [
-        "professional ID photo portrait",
-        `Korean ${spouseGender}`,
-        prompt,
-        "pure white background",
-        "face centered in frame",
-        "looking directly at camera",
-        "neutral expression",
-        "sharp facial features",
-        "photorealistic",
-        "high quality",
-      ].join(", ");
+      const pollinationsUrl =
+        `https://image.pollinations.ai/prompt/${encodeURIComponent(buildPortraitPrompt(spouseGender, prompt))}` +
+        `?width=512&height=512&nologo=true&seed=${seed}&model=flux-schnell&enhance=false`;
 
-      const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(idPhotoPrompt)}?width=1024&height=1024&nologo=true&seed=${seed}&model=flux`;
-      return NextResponse.json({ imageUrl, demo: true });
+      // 프록시를 통해 서버에서 재시도 가능하게
+      const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(pollinationsUrl)}`;
+      return NextResponse.json({ imageUrl: proxyUrl, demo: true });
     }
 
     // 실제 모드: DALL·E 3
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-    const fullPrompt = [
-      "professional ID photo portrait",
-      `Korean ${spouseGender}`,
-      prompt,
-      "pure white background",
-      "face centered in frame",
-      "looking directly at camera",
-      "neutral expression",
-      "sharp facial features",
-      "photorealistic",
-      "high quality",
-      "no text",
-      "no watermark",
-    ].join(", ");
-
     const response = await openai.images.generate({
       model: "dall-e-3",
-      prompt: fullPrompt,
+      prompt: [
+        `professional ID photo portrait of Korean ${spouseGender}`,
+        prompt,
+        "pure white background",
+        "face centered in frame",
+        "looking directly at camera",
+        "sharp facial features",
+        "photorealistic",
+        "no text",
+        "no watermark",
+      ].join(", "),
       n: 1,
       size: "1024x1024",
       quality: "hd",
