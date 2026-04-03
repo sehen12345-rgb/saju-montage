@@ -8,9 +8,9 @@ import type { SajuInput } from "@/lib/types";
 export async function POST(req: NextRequest) {
   try {
     const body: SajuInput = await req.json();
-    const { birthYear, birthMonth, birthDay, birthHour, gender } = body;
+    const { name, birthYear, birthMonth, birthDay, birthHour, gender } = body;
 
-    if (!birthYear || !birthMonth || !birthDay || !gender) {
+    if (!name || !birthYear || !birthMonth || !birthDay || !gender) {
       return NextResponse.json({ error: "필수 항목이 누락되었습니다." }, { status: 400 });
     }
 
@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
 
     // API 키 없으면 데모 응답 반환
     if (isKeyPlaceholder(process.env.ANTHROPIC_API_KEY)) {
-      await new Promise((r) => setTimeout(r, 2000)); // 실제처럼 딜레이
+      await new Promise((r) => setTimeout(r, 2000));
       return NextResponse.json({ ...getDemoAnalysis(gender, sajuInfo), demo: true });
     }
 
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
         {
           role: "user",
           content: buildSajuUserPrompt(
-            birthYear, birthMonth, birthDay, birthHour ?? -1, gender, sajuInfo
+            name, birthYear, birthMonth, birthDay, birthHour ?? -1, gender, sajuInfo
           ),
         },
       ],

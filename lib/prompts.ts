@@ -13,6 +13,7 @@ export function buildSajuSystemPrompt(): string {
 }
 
 export function buildSajuUserPrompt(
+  name: string,
   year: number,
   month: number,
   day: number,
@@ -24,10 +25,11 @@ export function buildSajuUserPrompt(
   const spouseGender = gender === "male" ? "여성" : "남성";
 
   return `의뢰인 정보:
+- 이름: ${name}
 - 생년월일시: ${year}년 ${month}월 ${day}일 ${hourText}
 - 성별: ${gender === "male" ? "남성" : "여성"}
 - 사주: 년주(${sajuInfo.yearPillar}) 월주(${sajuInfo.monthPillar}) 일주(${sajuInfo.dayPillar}) 시주(${sajuInfo.hourPillar})
 
-위 사주를 가진 분과 인연이 될 배우자 ${spouseGender}의 외모와 분위기를 분석해주세요.
+${name}님의 사주를 분석하여 인연이 될 배우자 ${spouseGender}의 외모와 분위기를 묘사해주세요.
 일주(${sajuInfo.dayPillar})의 배우자궁과 오행 상생상극을 고려하여 구체적으로 묘사하세요.`;
 }

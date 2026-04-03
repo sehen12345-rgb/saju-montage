@@ -41,7 +41,7 @@ export default function ResultPage() {
         {/* 헤더 */}
         <div className="text-center mb-6">
           <div className="text-4xl mb-2">🔮</div>
-          <h1 className="text-2xl font-bold text-amber-900">당신의 배우자</h1>
+          <h1 className="text-2xl font-bold text-amber-900">{result.name}님의 배우자</h1>
           <p className="text-amber-600 text-sm mt-1">사주가 말해주는 운명의 상대</p>
         </div>
 

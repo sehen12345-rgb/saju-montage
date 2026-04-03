@@ -1,4 +1,5 @@
 export interface SajuInput {
+  name: string;
   birthYear: number;
   birthMonth: number;
   birthDay: number;
@@ -21,6 +22,7 @@ export interface SajuInfo {
 }
 
 export interface GenerateResult {
+  name: string;
   analysis: SajuAnalysis;
   imageUrl: string;
   demo?: boolean;

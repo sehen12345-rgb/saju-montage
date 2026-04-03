@@ -43,6 +43,7 @@ const DAYS = Array.from({ length: 31 }, (_, i) => i + 1);
 
 export default function SajuInputForm({ onSubmit, loading }: Props) {
   const [form, setForm] = useState<SajuInput>({
+    name: "",
     birthYear: 1995,
     birthMonth: 1,
     birthDay: 1,
@@ -61,6 +62,20 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* 이름 */}
+      <div>
+        <label className="block text-sm font-medium text-amber-800 mb-2">이름</label>
+        <input
+          type="text"
+          value={form.name}
+          onChange={(e) => handleChange("name", e.target.value)}
+          placeholder="홍길동"
+          required
+          maxLength={20}
+          className="w-full px-4 py-3 rounded-xl border-2 border-amber-200 bg-white text-amber-900 placeholder-amber-300 focus:border-amber-500 focus:outline-none"
+        />
+      </div>
+
       {/* 성별 */}
       <div>
         <label className="block text-sm font-medium text-amber-800 mb-2">성별</label>
