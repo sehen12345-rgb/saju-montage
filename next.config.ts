@@ -13,11 +13,7 @@ const nextConfig: NextConfig = {
         hostname: "*.openai.com",
         pathname: "/**",
       },
-      {
-        protocol: "https",
-        hostname: "randomuser.me",
-        pathname: "/**",
-      },
+      // image.pollinations.ai는 <img> 태그로 직접 로드하므로 remotePatterns 불필요
     ],
   },
 };

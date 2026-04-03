@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { useState } from "react";
 import type { GenerateResult } from "@/lib/types";
 
 interface Props {
@@ -10,19 +10,16 @@ interface Props {
 
 export default function ResultCard({ result, onReset }: Props) {
   const { analysis, imageUrl } = result;
+  const [imgLoaded, setImgLoaded] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   function handleDownload() {
-    const link = document.createElement("a");
-    link.href = imageUrl;
-    link.download = "배우자_몽타주.png";
-    link.target = "_blank";
-    link.click();
+    window.open(imageUrl, "_blank");
   }
 
   function handleShareTwitter() {
     const text = `사주로 본 내 배우자의 모습 ✨\n${analysis.characteristics.join(" · ")}\n\n#사주몽타주 #운명의상대`;
-    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
-    window.open(url, "_blank");
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, "_blank");
   }
 
   return (
@@ -47,20 +44,54 @@ export default function ResultCard({ result, onReset }: Props) {
 
       {/* 몽타주 이미지 */}
       <div className="relative">
-        <div className="relative w-full aspect-square rounded-2xl overflow-hidden shadow-xl border-4 border-amber-200">
-          <Image
-            src={imageUrl}
-            alt="배우자 몽타주"
-            fill
-            className="object-cover"
-            unoptimized
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-          <div className="absolute bottom-4 left-0 right-0 text-center">
-            <span className="text-white text-sm font-semibold bg-black/40 px-3 py-1 rounded-full">
-              AI가 그린 당신의 배우자
-            </span>
-          </div>
+        <div className="relative w-full aspect-square rounded-2xl overflow-hidden shadow-xl border-4 border-amber-200 bg-amber-50">
+
+          {/* 로딩 중 스켈레톤 */}
+          {!imgLoaded && !imgError && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-amber-50">
+              <div className="w-12 h-12 rounded-full border-4 border-amber-200 border-t-amber-500 animate-spin" />
+              <p className="text-amber-600 text-sm animate-pulse">AI 이미지 생성 중...</p>
+              <p className="text-amber-400 text-xs">처음 로딩은 10~20초 소요될 수 있어요</p>
+            </div>
+          )}
+
+          {/* 에러 */}
+          {imgError && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-amber-50">
+              <span className="text-4xl">🖼️</span>
+              <p className="text-amber-600 text-sm">이미지를 불러오지 못했습니다</p>
+              <button
+                onClick={() => { setImgError(false); setImgLoaded(false); }}
+                className="text-xs text-amber-500 underline"
+              >
+                다시 시도
+              </button>
+            </div>
+          )}
+
+          {/* 실제 이미지 - img 태그 직접 사용 (외부 AI 서비스 URL 최적화 불필요) */}
+          {!imgError && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={imageUrl}
+              alt="AI가 생성한 배우자 몽타주"
+              className={`w-full h-full object-cover transition-opacity duration-500 ${imgLoaded ? "opacity-100" : "opacity-0"}`}
+              onLoad={() => setImgLoaded(true)}
+              onError={() => setImgError(true)}
+            />
+          )}
+
+          {/* 하단 레이블 */}
+          {imgLoaded && (
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
+          )}
+          {imgLoaded && (
+            <div className="absolute bottom-4 left-0 right-0 text-center">
+              <span className="text-white text-sm font-semibold bg-black/40 px-3 py-1 rounded-full">
+                AI가 그린 당신의 배우자
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -82,7 +113,6 @@ export default function ResultCard({ result, onReset }: Props) {
         <p className="text-gray-700 leading-relaxed text-sm">{analysis.description}</p>
       </div>
 
-      {/* 면책 고지 */}
       <p className="text-xs text-center text-gray-400">
         * 이 결과는 오락 목적으로만 제공되며, 실제 미래를 예언하지 않습니다.
       </p>
@@ -91,7 +121,8 @@ export default function ResultCard({ result, onReset }: Props) {
       <div className="grid grid-cols-2 gap-3">
         <button
           onClick={handleDownload}
-          className="py-3 rounded-xl border-2 border-amber-400 text-amber-700 font-semibold hover:bg-amber-50 transition-all text-sm"
+          disabled={!imgLoaded}
+          className="py-3 rounded-xl border-2 border-amber-400 text-amber-700 font-semibold hover:bg-amber-50 transition-all text-sm disabled:opacity-40"
         >
           💾 이미지 저장
         </button>

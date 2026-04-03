@@ -1,7 +1,6 @@
 import OpenAI from "openai";
 import { NextRequest, NextResponse } from "next/server";
-import { isKeyPlaceholder, getDemoImageUrl } from "@/lib/demo";
-import type { SajuInfo } from "@/lib/types";
+import { isKeyPlaceholder } from "@/lib/demo";
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,20 +10,48 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "프롬프트가 없습니다." }, { status: 400 });
     }
 
-    // API 키 없거나 데모 모드면 샘플 이미지 반환
+    const spouseGender = (gender as string) === "male" ? "woman" : "man";
+
+    // 데모 모드: Pollinations.ai URL 구성해서 반환 (브라우저가 직접 로드)
     if (demo || isKeyPlaceholder(process.env.OPENAI_API_KEY)) {
-      await new Promise((r) => setTimeout(r, 1500));
-      const imageUrl = getDemoImageUrl(
-        (gender as "male" | "female") ?? "female",
-        sajuInfo as SajuInfo ?? { yearPillar: "갑자", monthPillar: "병인", dayPillar: "무오", hourPillar: "경신" }
-      );
+      const seed = sajuInfo
+        ? String(sajuInfo).split("").reduce((a: number, c: string) => a + c.charCodeAt(0), 0)
+        : Math.floor(Math.random() * 9999);
+
+      const idPhotoPrompt = [
+        "professional ID photo portrait",
+        `Korean ${spouseGender}`,
+        prompt,
+        "pure white background",
+        "face centered in frame",
+        "looking directly at camera",
+        "neutral expression",
+        "sharp facial features",
+        "photorealistic",
+        "high quality",
+      ].join(", ");
+
+      const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(idPhotoPrompt)}?width=1024&height=1024&nologo=true&seed=${seed}&model=flux`;
       return NextResponse.json({ imageUrl, demo: true });
     }
 
+    // 실제 모드: DALL·E 3
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-    const spouseGender = (gender as string) === "male" ? "woman" : "man";
-    const fullPrompt = `close-up portrait photo, face centered in frame, ${spouseGender}, Korean, ${prompt}, looking directly at camera, sharp facial features, blurred background, professional studio lighting, photorealistic, high quality, no text, no watermark`;
+    const fullPrompt = [
+      "professional ID photo portrait",
+      `Korean ${spouseGender}`,
+      prompt,
+      "pure white background",
+      "face centered in frame",
+      "looking directly at camera",
+      "neutral expression",
+      "sharp facial features",
+      "photorealistic",
+      "high quality",
+      "no text",
+      "no watermark",
+    ].join(", ");
 
     const response = await openai.images.generate({
       model: "dall-e-3",
