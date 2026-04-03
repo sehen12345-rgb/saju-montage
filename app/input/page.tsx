@@ -76,14 +76,26 @@ export default function InputPage() {
           <h1 className="text-2xl font-bold text-amber-900">사주 입력</h1>
         </div>
 
-        {/* 데모 모드 배너 */}
+        {/* API 키 안내 배너 */}
         {!loading && (
-          <div className="mb-4 px-4 py-3 bg-blue-50 border border-blue-200 rounded-2xl text-blue-700 text-sm flex items-start gap-2">
-            <span className="mt-0.5">ℹ️</span>
-            <span>
-              <strong>데모 모드:</strong> API 키 없이 체험 가능합니다. 실제 AI 분석을 원하시면{" "}
-              <code className="bg-blue-100 px-1 rounded text-xs">.env.local</code>에 키를 입력하세요.
-            </span>
+          <div className="mb-4 px-4 py-3 bg-amber-50 border border-amber-200 rounded-2xl text-amber-800 text-sm space-y-2">
+            <p className="font-semibold">📸 실제 AI 포토리얼리스틱 이미지를 원하신다면</p>
+            <div className="space-y-1 text-xs text-amber-700">
+              <p>
+                <span className="font-medium">① 무료:</span>{" "}
+                <a href="https://huggingface.co/settings/tokens" target="_blank" rel="noreferrer"
+                   className="underline">huggingface.co</a>
+                {" "}회원가입 → 토큰 발급 →{" "}
+                <code className="bg-amber-100 px-1 rounded">HF_TOKEN</code> 입력
+              </p>
+              <p>
+                <span className="font-medium">② 유료:</span>{" "}
+                OpenAI API 키 →{" "}
+                <code className="bg-amber-100 px-1 rounded">OPENAI_API_KEY</code> 입력
+                <span className="text-amber-500 ml-1">(이미지당 약 ₩55)</span>
+              </p>
+            </div>
+            <p className="text-xs text-amber-500">키 없이도 사주 분석 + SVG 초상화로 체험 가능합니다.</p>
           </div>
         )}
 
