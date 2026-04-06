@@ -38,7 +38,7 @@ export default function LoadingScreen({ step }: { step: number }) {
       </div>
 
       <p className="text-amber-600 text-sm animate-pulse">
-        약 20~30초 정도 소요됩니다
+        {step === 2 ? "AI 이미지 생성 중... 1~2분 소요될 수 있습니다" : "잠시만 기다려 주세요"}
       </p>
     </div>
   );

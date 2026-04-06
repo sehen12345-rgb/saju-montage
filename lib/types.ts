@@ -3,22 +3,74 @@ export interface SajuInput {
   birthYear: number;
   birthMonth: number;
   birthDay: number;
-  birthHour: number; // 0~23, 모름이면 -1
+  birthHour: number;
   gender: "male" | "female";
 }
 
+export interface BodySpec {
+  height: string;     // 예: "165~170cm"
+  figure: string;     // 예: "슬림하고 균형 잡힌 체형"
+  fashion: string;    // 예: "미니멀 캐주얼 + 단정한 오피스룩"
+  vibe: string;       // 예: "지적이고 차분한 분위기"
+}
+
+export interface CompatibilityScores {
+  personality: number;    // 성격 궁합 (0~100)
+  values: number;         // 가치관 궁합
+  lifestyle: number;      // 생활 패턴 궁합
+  communication: number;  // 소통 방식 궁합
+  finance: number;        // 재정 관념 궁합
+}
+
+export interface MeetTiming {
+  ageRange: string;    // 예: "28~31세"
+  season: string;      // 예: "봄 또는 가을"
+  situation: string;   // 예: "직장 또는 지인 소개"
+}
+
+export interface Timeline {
+  meetAge: string;      // 예: "29세 전후"
+  datingPeriod: string; // 예: "1~2년"
+  marriageAge: string;  // 예: "31~33세"
+  children: string;     // 예: "1~2명"
+}
+
 export interface SajuAnalysis {
-  description: string;       // 배우자 외모 특징 (한국어)
-  imagePrompt: string;       // DALL·E용 영문 프롬프트
-  characteristics: string[]; // 핵심 키워드
-  sajuInfo: SajuInfo;        // 사주 정보
+  // 기본 (무료)
+  description: string;
+  imagePrompt: string;
+  characteristics: string[];
+  sajuInfo: SajuInfo;
+  mbti: string;
+  job: string;
+  hobbies: string[];
+  compatibility: string;
+
+  // 섹션 소제목
+  descTitle?: string;
+  personalityTitle?: string;
+  loveStyleTitle?: string;
+  lifeStyleTitle?: string;
+  firstMeetTitle?: string;
+
+  // 유료 콘텐츠
+  bodySpec: BodySpec;
+  personality: string;
+  loveStyle: string;
+  firstMeet: string;
+  lifeStyle: string;
+  compatibilityScores: CompatibilityScores;
+  meetTiming: MeetTiming;
+  caution: string[];       // 주의사항 3가지
+  advice: string[];        // 인연 조언 3가지
+  timeline: Timeline;
 }
 
 export interface SajuInfo {
-  yearPillar: string;  // 년주 (천간지지)
-  monthPillar: string; // 월주
-  dayPillar: string;   // 일주
-  hourPillar: string;  // 시주
+  yearPillar: string;
+  monthPillar: string;
+  dayPillar: string;
+  hourPillar: string;
 }
 
 export interface GenerateResult {
@@ -26,4 +78,5 @@ export interface GenerateResult {
   analysis: SajuAnalysis;
   imageUrl: string;
   demo?: boolean;
+  paid?: boolean;
 }

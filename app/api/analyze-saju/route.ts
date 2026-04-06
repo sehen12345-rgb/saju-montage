@@ -16,7 +16,6 @@ export async function POST(req: NextRequest) {
 
     const sajuInfo = calculateSaju(birthYear, birthMonth, birthDay, birthHour ?? -1);
 
-    // API 키 없으면 데모 응답 반환
     if (isKeyPlaceholder(process.env.ANTHROPIC_API_KEY)) {
       await new Promise((r) => setTimeout(r, 2000));
       return NextResponse.json({ ...getDemoAnalysis(gender, sajuInfo), demo: true });
@@ -26,16 +25,12 @@ export async function POST(req: NextRequest) {
 
     const message = await client.messages.create({
       model: "claude-sonnet-4-6",
-      max_tokens: 1024,
+      max_tokens: 2048,
       system: buildSajuSystemPrompt(),
-      messages: [
-        {
-          role: "user",
-          content: buildSajuUserPrompt(
-            name, birthYear, birthMonth, birthDay, birthHour ?? -1, gender, sajuInfo
-          ),
-        },
-      ],
+      messages: [{
+        role: "user",
+        content: buildSajuUserPrompt(name, birthYear, birthMonth, birthDay, birthHour ?? -1, gender, sajuInfo),
+      }],
     });
 
     const rawText = message.content[0].type === "text" ? message.content[0].text : "";
@@ -46,6 +41,25 @@ export async function POST(req: NextRequest) {
       description: parsed.description,
       imagePrompt: parsed.imagePrompt,
       characteristics: parsed.characteristics,
+      mbti: parsed.mbti,
+      job: parsed.job,
+      hobbies: parsed.hobbies,
+      compatibility: parsed.compatibility,
+      descTitle: parsed.descTitle,
+      personalityTitle: parsed.personalityTitle,
+      loveStyleTitle: parsed.loveStyleTitle,
+      lifeStyleTitle: parsed.lifeStyleTitle,
+      firstMeetTitle: parsed.firstMeetTitle,
+      bodySpec: parsed.bodySpec,
+      personality: parsed.personality,
+      loveStyle: parsed.loveStyle,
+      firstMeet: parsed.firstMeet,
+      lifeStyle: parsed.lifeStyle,
+      compatibilityScores: parsed.compatibilityScores,
+      meetTiming: parsed.meetTiming,
+      caution: parsed.caution,
+      advice: parsed.advice,
+      timeline: parsed.timeline,
       sajuInfo,
     });
   } catch (err) {
