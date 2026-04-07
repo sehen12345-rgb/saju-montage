@@ -99,7 +99,7 @@ export default function InputPage() {
         </div>
 
         <p className="text-center text-xs text-gray-400 mt-4">
-          🔒 입력하신 정보는 서버에 저장되지 않습니다 · AI 이미지 생성 약 20~40초 소요
+          🔒 입력 정보는 저장되지 않습니다 · 사주 분석 무료 · AI 몽타주·전체 결과 990원
         </p>
       </div>
     </div>

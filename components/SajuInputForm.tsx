@@ -261,7 +261,7 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
             disabled={loading}
             className="w-full py-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-lg shadow-lg hover:from-amber-600 hover:to-orange-600 transition-all disabled:opacity-60 disabled:cursor-not-allowed active:scale-95"
           >
-            {loading ? "사주 분석 중..." : "✨ 배우자 몽타주 보기"}
+            {loading ? "사주 분석 중..." : "✨ 사주 분석 시작하기"}
           </button>
         </div>
       )}

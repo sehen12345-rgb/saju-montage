@@ -96,11 +96,11 @@ export default function Home() {
           href="/input"
           className="block w-full py-5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-black text-xl shadow-xl hover:from-amber-600 hover:to-orange-600 transition-all transform hover:scale-[1.02] active:scale-[0.98] text-center"
         >
-          ✨ 무료로 시작하기
+          ✨ 사주 분석 시작하기
         </Link>
 
         <p className="text-center text-xs text-amber-600">
-          🕐 약 20~30초 · 무료 사주 분석 먼저 · 마음에 들면 결제
+          🕐 약 20~30초 · 사주 분석 무료 · AI 몽타주·상세 결과는 <span className="font-bold">990원</span>
         </p>
 
         {/* 결과 미리보기 티저 */}
