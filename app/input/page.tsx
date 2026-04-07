@@ -56,7 +56,7 @@ export default function InputPage() {
       }
       const { imageUrl } = await imageRes.json();
 
-      const result: GenerateResult = { name: data.name, analysis, imageUrl, demo: demoMode };
+      const result: GenerateResult = { name: data.name, analysis, imageUrl, gender: data.gender, demo: demoMode };
       sessionStorage.setItem("sajuResult", JSON.stringify(result));
       router.push("/result");
     } catch (err) {

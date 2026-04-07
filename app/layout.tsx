@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import "./globals.css";
 import AuthProvider from "@/components/AuthProvider";
 
@@ -27,6 +28,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko">
+      <head>
+        <Script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js" strategy="afterInteractive" />
+      </head>
       <body className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
         <div
           className="fixed inset-0 opacity-[0.03] pointer-events-none"

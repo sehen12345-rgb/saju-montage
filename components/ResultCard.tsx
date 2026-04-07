@@ -571,6 +571,27 @@ export default function ResultCard({ result, onReset }: Props) {
     }
   }
 
+  async function handleShareKakao() {
+    const jsKey = process.env.NEXT_PUBLIC_KAKAO_JS_KEY;
+    const shareText = `${result.name}님의 사주로 본 배우자\n"${analysis.characteristics.join(" · ")}"\n운명의 상대 몽타주 확인하기 →`;
+
+    // Kakao SDK 사용 가능할 때
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const Kakao = (window as any).Kakao;
+    if (jsKey && Kakao) {
+      if (!Kakao.isInitialized()) Kakao.init(jsKey);
+      Kakao.Share.sendDefault({
+        objectType: "text",
+        text: shareText,
+        link: { mobileWebUrl: "https://saju-montage.vercel.app", webUrl: "https://saju-montage.vercel.app" },
+        buttonTitle: "나도 해보기",
+      });
+      return;
+    }
+    // fallback: 링크 복사
+    await copyToClipboard(`${shareText}\nhttps://saju-montage.vercel.app`);
+  }
+
   async function copyToClipboard(text: string) {
     try {
       await navigator.clipboard.writeText(text);
@@ -1047,9 +1068,19 @@ export default function ResultCard({ result, onReset }: Props) {
               </div>
             )}
 
+            {/* 카카오 공유 */}
+            <button
+              onClick={handleShareKakao}
+              className="w-full py-3 rounded-xl flex items-center justify-center gap-2 font-bold text-gray-800 text-sm active:scale-95 transition-all shadow-sm"
+              style={{ backgroundColor: "#FEE500" }}
+            >
+              <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current"><path d="M12 3C6.48 3 2 6.48 2 10.8c0 2.72 1.6 5.12 4.04 6.56l-1.02 3.76 4.38-2.88c.84.12 1.72.18 2.6.18 5.52 0 10-3.48 10-7.8S17.52 3 12 3z"/></svg>
+              카카오톡으로 공유하기
+            </button>
+
             <div className="grid grid-cols-3 gap-2">
-              <button onClick={handleShare} className="py-3 rounded-xl border-2 border-yellow-400 bg-yellow-400 text-yellow-900 font-semibold hover:bg-yellow-500 transition-all text-sm active:scale-95">
-                💬 공유
+              <button onClick={handleShare} className="py-3 rounded-xl border-2 border-gray-200 text-gray-600 font-semibold hover:bg-gray-50 transition-all text-sm active:scale-95">
+                🔗 공유
               </button>
               <button
                 onClick={handleShareInstagram}
@@ -1075,7 +1106,6 @@ export default function ResultCard({ result, onReset }: Props) {
           <>
             {/* 블러 처리된 이미지 잠금 카드 */}
             <div className="relative w-full aspect-square rounded-2xl overflow-hidden shadow-xl border-4 border-amber-200 bg-amber-50">
-              {/* 숨겨진 이미지 (블러) */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={imageUrl}
@@ -1085,7 +1115,6 @@ export default function ResultCard({ result, onReset }: Props) {
                 onLoad={() => setImgLoaded(true)}
                 onError={() => setImgError(true)}
               />
-              {/* 잠금 오버레이 */}
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-black/30 backdrop-blur-sm">
                 <div className="w-20 h-20 rounded-full bg-white/20 border-4 border-white/60 flex items-center justify-center text-4xl shadow-xl">
                   🔒
@@ -1103,27 +1132,47 @@ export default function ResultCard({ result, onReset }: Props) {
               </div>
             </div>
 
-            {/* 결제 유도 카드 */}
+            {/* 잠긴 콘텐츠 티저 */}
+            <div className="space-y-2">
+              <p className="text-xs font-semibold text-amber-500 text-center uppercase tracking-wider">결제 후 공개되는 내용 미리보기</p>
+              {[
+                { icon: "💬", label: "배우자가 처음 보낼 카카오톡", blur: "안녕하세요 혹시 저 기억하세요? 오늘 ..." },
+                { icon: "✨", label: "이름 첫 글자 힌트", blur: "배우자 이름은 'ㅅ·ㅈ' 계열일 가능성이..." },
+                { icon: "🌙", label: "전생 인연 이야기", blur: "전생에 같은 마을 물가에서 서로를 알아보..." },
+                { icon: "💑", label: "케미 타입", blur: "운명적 소울메이트 💫 처음 만났을 때부터..." },
+                { icon: "📅", label: "월별 인연운 차트", blur: "◼◼◼◼◼◼◼◼◼◼◼◼" },
+              ].map((item) => (
+                <div
+                  key={item.label}
+                  className="relative bg-white rounded-xl px-4 py-3 border border-amber-100 overflow-hidden cursor-pointer"
+                  onClick={() => setShowModal(true)}
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <span>{item.icon}</span>
+                    <span className="text-xs font-semibold text-amber-700">{item.label}</span>
+                    <span className="ml-auto text-xs text-amber-400 font-bold">🔒</span>
+                  </div>
+                  <p className="text-sm text-gray-400 blur-sm select-none">{item.blur}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* 결제 CTA */}
             <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-3xl p-6 border-2 border-amber-300 text-center shadow-lg">
-              <div className="text-4xl mb-3">🔮</div>
-              <h3 className="text-lg font-bold text-amber-900 mb-1">
-                몽타주 + 완전 분석 보고서
-              </h3>
-              <p className="text-sm text-amber-700 mb-4 leading-relaxed">
-                AI가 그린 배우자 얼굴과 함께<br />상세 분석까지 한 번에 확인하세요
-              </p>
-              <div className="flex flex-wrap gap-2 justify-center mb-5">
-                {["🎨 배우자 몽타주", "💎 배우자스펙", "📊 궁합점수", "📅 만남시기", "⚠️ 주의사항", "💡 인연조언", "💒 타임라인", "🌸 첫만남"].map((t) => (
-                  <span key={t} className="px-2 py-1 bg-white rounded-full text-xs text-amber-700 border border-amber-200">{t}</span>
-                ))}
+              <div className="text-4xl mb-2">🔮</div>
+              <h3 className="text-lg font-bold text-amber-900 mb-1">몽타주 + 완전 분석 보고서</h3>
+              <div className="flex items-center justify-center gap-2 mb-4">
+                <span className="text-sm text-gray-400 line-through">3,900원</span>
+                <span className="text-2xl font-black text-amber-600">990원</span>
+                <span className="text-xs bg-red-100 text-red-600 font-bold px-2 py-0.5 rounded-full">74% 할인</span>
               </div>
               <button
                 onClick={() => setShowModal(true)}
                 className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-lg shadow-xl hover:from-amber-600 hover:to-orange-600 transition-all active:scale-95"
               >
-                ✨ 990원으로 몽타주 보기
+                ✨ 990원으로 몽타주 + 전체 보기
               </button>
-              <p className="text-xs text-gray-400 mt-3">커피 한 잔 값으로 운명의 상대 얼굴을 확인하세요</p>
+              <p className="text-xs text-gray-400 mt-3">커피 한 잔 값 · 단 한 번만 결제</p>
             </div>
 
             <p className="text-xs text-center text-gray-400">
