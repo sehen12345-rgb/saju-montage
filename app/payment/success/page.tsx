@@ -29,25 +29,25 @@ function PaymentSuccessContent() {
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
+          // sessionStorage & localStorage에 결제 상태 저장
           try {
             const stored = sessionStorage.getItem("sajuResult");
             if (stored) {
               const parsed = JSON.parse(stored);
               parsed.paid = true;
               sessionStorage.setItem("sajuResult", JSON.stringify(parsed));
-              // localStorage에도 저장 → 브라우저 닫아도 유지
               if (parsed.analysis?.sajuInfo) {
                 const { yearPillar, monthPillar, dayPillar, hourPillar } = parsed.analysis.sajuInfo;
                 const gender = parsed.gender ?? "male";
                 const sajuHash = makeSajuHash(yearPillar, monthPillar, dayPillar, hourPillar, gender);
-                savePaidRecord(sajuHash, orderId!);
+                if (orderId) savePaidRecord(sajuHash, orderId);
               }
             }
-          } catch {
-            /* ignore */
+          } catch (e) {
+            console.error("결제 상태 저장 오류:", e);
           }
           setStatus("done");
-          setTimeout(() => router.push("/result"), 1500);
+          setTimeout(() => router.push("/result"), 2000);
         } else {
           setErrorMsg(data.error || "결제 확인에 실패했습니다.");
           setStatus("error");

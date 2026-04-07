@@ -16,8 +16,11 @@ export default function ResultPage() {
       return;
     }
     try {
-      setResult(JSON.parse(stored));
+      const parsed = JSON.parse(stored);
+      if (!parsed?.analysis) throw new Error("invalid");
+      setResult(parsed);
     } catch {
+      sessionStorage.removeItem("sajuResult");
       router.replace("/input");
     }
   }, [router]);

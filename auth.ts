@@ -56,7 +56,7 @@ providers.push(
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers,
-  secret: process.env.NEXTAUTH_SECRET ?? "dev-fallback-secret-set-in-production",
+  secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
     session({ session, token }) {
       if (session.user && token.sub) {
