@@ -4,12 +4,32 @@ import { isKeyPlaceholder } from "@/lib/demo";
 import { getSajuSeed } from "@/lib/prompts";
 import type { SajuInfo } from "@/lib/types";
 
-function buildFinalPrompt(spouseGender: string, analysisPrompt: string): string {
-  const genderPrefix = spouseGender === "woman"
-    ? "photorealistic close-up portrait of a Korean woman"
-    : "photorealistic close-up portrait of a Korean man";
+// 씨드 기반으로 촬영 환경/분위기 변주 (같은 사주면 항상 같은 환경)
+const LIGHTING_STYLES = [
+  "soft natural window light, clean white background",
+  "warm golden hour sunlight, outdoor bokeh background",
+  "soft studio lighting, neutral gray background",
+  "cool morning light, minimalist indoor setting",
+  "gentle diffused light, warm beige background",
+  "bright airy daylight, soft cream background",
+];
 
-  return `${genderPrefix}, ${analysisPrompt}, face centered, sharp focus on face, professional studio photography, 85mm lens, natural skin texture, 8k`;
+const SHOT_STYLES = [
+  "close-up portrait, face fills frame, sharp focus on eyes",
+  "head and shoulders portrait, slight angle, sharp focus on face",
+  "close-up face, straight on, intense eye contact with camera",
+  "three-quarter face angle, sharp facial details",
+];
+
+function buildFinalPrompt(spouseGender: string, analysisPrompt: string, seed: number): string {
+  const genderPrefix = spouseGender === "woman"
+    ? "photorealistic portrait of a young East Asian woman"
+    : "photorealistic portrait of a young East Asian man";
+
+  const lighting = LIGHTING_STYLES[seed % LIGHTING_STYLES.length];
+  const shot = SHOT_STYLES[seed % SHOT_STYLES.length];
+
+  return `${genderPrefix}, ${analysisPrompt}, ${shot}, ${lighting}, natural skin pores and texture, real human face, 85mm lens, 8k resolution`;
 }
 
 const NEGATIVE_PROMPT = [
@@ -175,9 +195,9 @@ export async function POST(req: NextRequest) {
     }
 
     const spouseGender = (gender as string) === "male" ? "woman" : "man";
-    const finalPrompt = buildFinalPrompt(spouseGender, prompt);
     const info = sajuInfo as SajuInfo;
     const seed = getSajuSeed(info, spouseGender);
+    const finalPrompt = buildFinalPrompt(spouseGender, prompt, seed);
 
     console.log("Image prompt:", finalPrompt);
     console.log("Seed:", seed);
