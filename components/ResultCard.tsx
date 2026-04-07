@@ -279,14 +279,53 @@ function BlurredSection({ label }: { label: string }) {
 
 function PayModal({ onClose, onPay }: { onClose: () => void; onPay: () => void }) {
   const [paying, setPaying] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handlePay() {
     setPaying(true);
-    // TODO: 실제 결제 연동 (Toss Payments / PortOne)
-    // 지금은 2초 후 결제 완료 처리
-    await new Promise((r) => setTimeout(r, 2000));
-    setPaying(false);
-    onPay();
+    setError(null);
+
+    const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY;
+
+    // 테스트 키가 없으면 데모 결제 (개발/데모용)
+    if (!clientKey || clientKey === "your_toss_client_key_here") {
+      await new Promise((r) => setTimeout(r, 1500));
+      setPaying(false);
+      onPay();
+      return;
+    }
+
+    try {
+      // Toss Payments 스크립트 동적 로드
+      if (!document.querySelector('script[src*="js.tosspayments.com"]')) {
+        await new Promise<void>((resolve, reject) => {
+          const script = document.createElement("script");
+          script.src = "https://js.tosspayments.com/v1/payment";
+          script.onload = () => resolve();
+          script.onerror = () => reject(new Error("결제 모듈 로드 실패"));
+          document.head.appendChild(script);
+        });
+      }
+
+      const orderId = `saju${Date.now()}${Math.random().toString(36).slice(2, 7)}`;
+      sessionStorage.setItem("paymentOrderId", orderId);
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const tossPayments = (window as any).TossPayments(clientKey);
+      await tossPayments.requestPayment("카드", {
+        amount: 990,
+        orderId,
+        orderName: "사주 배우자 몽타주 프리미엄",
+        successUrl: `${window.location.origin}/payment/success`,
+        failUrl: `${window.location.origin}/payment/fail`,
+      });
+    } catch (err) {
+      // 사용자가 결제창을 닫은 경우 (AbortError) 는 조용히 처리
+      if (err instanceof Error && err.name !== "AbortError") {
+        setError("결제 중 오류가 발생했습니다. 다시 시도해주세요.");
+      }
+      setPaying(false);
+    }
   }
 
   return (
@@ -328,6 +367,13 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: () => void }
             <p className="text-3xl font-black text-amber-900">990<span className="text-lg">원</span></p>
             <p className="text-xs text-gray-400 mt-1">커피 한 잔으로 운명의 상대를 확인하세요</p>
           </div>
+
+          {/* 오류 메시지 */}
+          {error && (
+            <div className="text-red-600 text-sm text-center bg-red-50 rounded-xl px-3 py-2">
+              ⚠️ {error}
+            </div>
+          )}
 
           {/* 버튼 */}
           <button
