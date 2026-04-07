@@ -382,7 +382,8 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: () => void }
           )}
 
           {/* 카카오 로그인 */}
-          {!session ? (
+          {/* 카카오 로그인 (키 설정된 경우에만 표시) */}
+          {!session && process.env.NEXT_PUBLIC_KAKAO_ENABLED === "true" && (
             <div className="space-y-2">
               <button
                 onClick={() => signIn("kakao", { callbackUrl: "/result" })}
@@ -397,23 +398,15 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: () => void }
                 <span className="text-xs text-gray-400">또는</span>
                 <div className="flex-1 h-px bg-gray-200" />
               </div>
-              <button
-                onClick={handlePay}
-                disabled={paying}
-                className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-lg shadow-lg hover:from-amber-600 hover:to-orange-600 transition-all active:scale-95 disabled:opacity-60"
-              >
-                {paying ? "결제 처리 중..." : "✨ 비회원으로 990원 결제"}
-              </button>
             </div>
-          ) : (
-            <button
-              onClick={handlePay}
-              disabled={paying}
-              className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-lg shadow-lg hover:from-amber-600 hover:to-orange-600 transition-all active:scale-95 disabled:opacity-60"
-            >
-              {paying ? "결제 처리 중..." : "✨ 990원으로 전체 보기"}
-            </button>
           )}
+          <button
+            onClick={handlePay}
+            disabled={paying}
+            className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-lg shadow-lg hover:from-amber-600 hover:to-orange-600 transition-all active:scale-95 disabled:opacity-60"
+          >
+            {paying ? "결제 처리 중..." : "✨ 990원으로 전체 보기"}
+          </button>
           <button
             onClick={onClose}
             className="w-full py-3 text-gray-400 text-sm hover:text-gray-600"
