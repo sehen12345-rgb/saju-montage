@@ -243,6 +243,69 @@ const YEANGAN_VALUES: Record<string, string> = {
   계: "감성과 창의, 진정성 있는 관계. 겉보다 내면의 깊이를 중시",
 };
 
+// ── 일지별 이름 음오행 힌트 (배우자 이름 첫 글자 계열) ───────────────────────
+// 음오행(音五行): 木=ㄱ·ㅋ, 火=ㄴ·ㄷ·ㄹ·ㅌ, 土=ㅇ·ㅎ, 金=ㅅ·ㅈ·ㅊ, 水=ㅁ·ㅂ·ㅍ
+const DAYJI_NAME_HINT: Record<string, { ohaeng: string; consonants: string; womanNames: string[]; manNames: string[]; reason: string }> = {
+  자: { ohaeng: "수(水)", consonants: "ㅁ·ㅂ·ㅍ", womanNames: ["민서", "보라", "미래", "별이", "봄"], manNames: ["민준", "범석", "박현", "병찬", "민혁"], reason: "자수(子水)의 흐르는 기운은 ㅁ·ㅂ 계열 이름과 어울립니다" },
+  축: { ohaeng: "토(土)", consonants: "ㅇ·ㅎ", womanNames: ["아린", "하은", "예원", "혜진", "유나"], manNames: ["영호", "현우", "원석", "혁진", "윤서"], reason: "축토(丑土)의 안정적인 기운은 ㅇ·ㅎ 계열 이름과 어울립니다" },
+  인: { ohaeng: "목(木)", consonants: "ㄱ·ㅋ", womanNames: ["가은", "경서", "기쁨", "규리", "가영"], manNames: ["건우", "기준", "규현", "경민", "강호"], reason: "인목(寅木)의 뻗어나가는 기운은 ㄱ·ㅋ 계열 이름과 어울립니다" },
+  묘: { ohaeng: "목(木)", consonants: "ㄱ·ㅋ (부드러운)", womanNames: ["가람", "고은", "기연", "경아", "꽃님"], manNames: ["광현", "건형", "기오", "경태", "규완"], reason: "묘목(卯木)의 섬세한 나무 기운은 부드러운 ㄱ 계열 이름과 어울립니다" },
+  진: { ohaeng: "토(土)", consonants: "ㅇ·ㅎ (위엄)", womanNames: ["예진", "혜원", "유정", "은서", "희수"], manNames: ["용준", "현진", "원태", "혁", "의찬"], reason: "진토(辰土)의 용처럼 위엄 있는 기운은 ㅇ·ㅎ 계열 이름과 어울립니다" },
+  사: { ohaeng: "화(火)", consonants: "ㄴ·ㄷ·ㄹ·ㅌ", womanNames: ["나연", "다희", "라온", "리아", "나은"], manNames: ["태양", "도현", "래원", "노준", "다은"], reason: "사화(巳火)의 밝고 세련된 불꽃 기운은 ㄴ·ㄷ·ㄹ 계열 이름과 어울립니다" },
+  오: { ohaeng: "화(火)", consonants: "ㄴ·ㄷ·ㄹ·ㅌ (활기)", womanNames: ["다인", "루나", "태희", "리연", "난희"], manNames: ["태오", "도윤", "륜", "남준", "달"], reason: "오화(午火)의 강렬하고 활기찬 불 기운은 ㄴ·ㄷ·ㄹ·ㅌ 계열 이름과 어울립니다" },
+  미: { ohaeng: "토(土)", consonants: "ㅇ·ㅎ (다정)", womanNames: ["유이", "하린", "아이", "혜나", "유선"], manNames: ["영찬", "하율", "오준", "유성", "희범"], reason: "미토(未土)의 따뜻하고 다정한 기운은 ㅇ·ㅎ 계열 이름과 어울립니다" },
+  신: { ohaeng: "금(金)", consonants: "ㅅ·ㅈ·ㅊ", womanNames: ["서연", "지수", "채원", "수아", "진아"], manNames: ["준혁", "성민", "재원", "지훈", "찬호"], reason: "신금(申金)의 날카롭고 세련된 금속 기운은 ㅅ·ㅈ·ㅊ 계열 이름과 어울립니다" },
+  유: { ohaeng: "금(金)", consonants: "ㅅ·ㅈ·ㅊ (단정)", womanNames: ["서하", "채린", "지은", "수빈", "세아"], manNames: ["재현", "성호", "찬영", "주원", "세준"], reason: "유금(酉金)의 정제되고 단정한 금 기운은 ㅅ·ㅈ·ㅊ 계열 이름과 어울립니다" },
+  술: { ohaeng: "토(土)", consonants: "ㅇ·ㅎ (의리)", womanNames: ["예나", "혜린", "우리", "아현", "해인"], manNames: ["현도", "원준", "의진", "해찬", "호준"], reason: "술토(戌土)의 의리 있고 진실한 기운은 ㅇ·ㅎ 계열 이름과 어울립니다" },
+  해: { ohaeng: "수(水)", consonants: "ㅁ·ㅂ·ㅍ (몽환)", womanNames: ["보미", "별하", "미소", "바다", "빛나"], manNames: ["바울", "미르", "범준", "벼리", "봄날"], reason: "해수(亥水)의 몽환적이고 자유로운 물 기운은 ㅁ·ㅂ 계열 이름과 어울립니다" },
+};
+
+// ── 년지별 전생 시대 배경 ──────────────────────────────────────────────────────
+const YEARJI_ERA: Record<string, string> = {
+  자: "고려 말 ~ 조선 초 물가 마을",
+  축: "조선 초기 한양 근교 농촌",
+  인: "임진왜란 전후 산간 마을",
+  묘: "조선 중기 봄날의 꽃 마을",
+  진: "삼국시대 신라 왕경 근처",
+  사: "조선 후기 한양 저잣거리",
+  오: "고려 시대 불교 사찰 근처",
+  미: "고조선 ~ 삼한시대 초원 지대",
+  신: "조선 후기 실학 시대 서원 마을",
+  유: "통일신라 시대 해변 마을",
+  술: "개화기 구한말 서울 외곽",
+  해: "고려 시대 바닷가 어촌",
+};
+
+// ── 일지별 전생 역할 쌍 ────────────────────────────────────────────────────────
+const DAYJI_PASTLIFE_ROLES: Record<string, { roles: string; bond: string; tragedy: string }> = {
+  자: { roles: "강가 마을의 점술사와 그 집을 찾아온 나그네", bond: "운명을 알면서도 함께하려 했던", tragedy: "때를 맞추지 못해 스쳐 지나간" },
+  축: { roles: "같은 밭을 일구던 소작농 남녀", bond: "묵묵히 서로를 의지하며 살아온", tragedy: "흉년과 이별이 갈라놓은" },
+  인: { roles: "산속 서당의 훈장과 그 집 딸", bond: "학문과 마음을 함께 나누던", tragedy: "신분의 차이로 이루지 못한" },
+  묘: { roles: "꽃밭 옆 약방의 의원과 약초를 캐던 처녀", bond: "계절마다 꽃처럼 만나고 헤어진", tragedy: "병으로 일찍 이별한" },
+  진: { roles: "관아의 아전과 그 이웃집 여인", bond: "가까이 있었지만 표현하지 못했던", tragedy: "임무와 의무에 가로막힌" },
+  사: { roles: "저잣거리 도자기 장인과 그 작품을 늘 구경하던 여인", bond: "눈빛으로 서로를 알아보던", tragedy: "화재로 모든 것을 잃고 헤어진" },
+  오: { roles: "전장에서 부상당한 무장과 그를 치료한 의원 딸", bond: "짧지만 강렬하게 서로의 목숨을 살린", tragedy: "전쟁이 다시 그들을 갈라놓은" },
+  미: { roles: "드넓은 들판에서 가축을 키우던 목동 남녀", bond: "매일 석양 아래 함께 노닐던", tragedy: "집안의 결혼 약조에 가로막힌" },
+  신: { roles: "산사의 스님과 그 절을 자주 찾던 여인", bond: "말 없이도 마음이 통하던", tragedy: "계율과 세속의 벽에 막힌" },
+  유: { roles: "바닷가 마을의 악사와 그 음악에 매료된 처녀", bond: "음악과 노래로 영혼이 연결된", tragedy: "먼 항해 끝에 다시 돌아오지 못한" },
+  술: { roles: "마을 어귀를 지키던 포졸과 그 길을 매일 지나치던 여인", bond: "매일 같은 시간 눈빛을 나누던", tragedy: "임무 중 희생으로 갑자기 사라진" },
+  해: { roles: "바다 위 배에서 만난 선원과 여행자", bond: "망망대해 위에서 서로에게 의지한", tragedy: "폭풍우가 둘을 다른 항구로 데려간" },
+};
+
+// ── 일간별 카카오톡 말투 스타일 ───────────────────────────────────────────────
+const DAEGAN_TALK_STYLE: Record<string, string> = {
+  갑: "격식 있지만 따뜻하게, 짧고 명확한 문장, 이모지 1개 이하, '~요' 정중체",
+  을: "살짝 조심스럽고 부드럽게, 중간 길이 문장, 이모지 1~2개, 말끝이 '~요?' 올리기",
+  병: "밝고 활기차게, 느낌표 많이, 이모지 2~3개, '~ 아닌가요?' 같은 적극 표현",
+  정: "섬세하고 감성적으로, 여운 있는 문장, 이모지 1개, '... ' 말줄임 활용",
+  무: "무뚝뚝하지만 진심 있게, 아주 짧고 직접적, 이모지 없거나 1개, '~야/~요' 혼용",
+  기: "친근하고 다정하게, 일상적인 말투, 이모지 2개, '~ 어때요?' 같이 배려형",
+  경: "간결하고 직접적, 2~3 단어로 핵심만, 이모지 없음, '~합니다/~요' 격식체",
+  신: "세련되고 쿨하게, 중간 길이, 이모지 1개 (세련된 것), 말끝 여운 있게",
+  임: "신비롭고 여운 있게, 긴 문장 또는 짧은 시 한 줄, 이모지 없거나 ✨ 계열",
+  계: "감성적이고 순수하게, 일상 속 작은 것을 언급, 이모지 1~2개, '~ 생각났어요' 형식",
+};
+
 // ── 시주별 특별 포인트 ────────────────────────────────────────────────────────
 const HOUR_SPECIAL: Record<string, string> = {
   자: "subtle charming dimples",
@@ -441,6 +504,13 @@ export function buildSajuUserPrompt(
   const monthJiLoveStyle = MONTHJI_LOVESTYLE[monthJi] ?? "진지하고 성실한 연애 스타일";
   const yearGanValues = YEANGAN_VALUES[yearGan] ?? "균형 잡힌 가치관";
 
+  // 이름·전생·카톡 레퍼런스
+  const nameHintRef = DAYJI_NAME_HINT[dayJi] ?? DAYJI_NAME_HINT["자"];
+  const spouseNameExamples = gender === "male" ? nameHintRef.womanNames : nameHintRef.manNames;
+  const eraRef = YEARJI_ERA[yearJi] ?? "조선 시대 어느 마을";
+  const pastLifeRef = DAYJI_PASTLIFE_ROLES[dayJi] ?? DAYJI_PASTLIFE_ROLES["자"];
+  const talkStyle = DAEGAN_TALK_STYLE[dayGan] ?? DAEGAN_TALK_STYLE["무"];
+
   // 나이대
   const spouseAgeRange = getSpouseAgeRange(year, gender);
   const spouseAgeEN = getSpouseAgeEN(year, gender);
@@ -490,6 +560,22 @@ ${monthJiLoveStyle}
 [년간 ${yearGan} - 가치관·인생관]
 ${yearGanValues}
 
+════════════ 이름·전생·카톡 레퍼런스 ════════════
+
+[일지 ${dayJi} - 배우자 이름 음오행 기준]
+오행: ${nameHintRef.ohaeng} / 초성 계열: ${nameHintRef.consonants}
+이름 예시: ${spouseNameExamples.join(", ")}
+이유: ${nameHintRef.reason}
+
+[년지 ${yearJi} × 일지 ${dayJi} - 전생 배경]
+시대/장소: ${eraRef}
+전생 역할: ${pastLifeRef.roles}
+인연의 성격: ${pastLifeRef.bond} 관계
+이별 원인: ${pastLifeRef.tragedy} 인연
+
+[일간 ${dayGan} - 카카오톡 말투 스타일]
+${talkStyle}
+
 ════════════════════════════════════════════════════════
 
 분석 지시:
@@ -499,6 +585,9 @@ ${yearGanValues}
 4. personality: 일지 ${dayJi} 성격 특성을 기반으로 구체적인 에피소드와 함께 묘사하세요.
 5. loveStyle: 월지 ${monthJi} 연애 스타일을 기반으로 작성하세요.
 6. 외모 description과 imagePrompt는 외모 레퍼런스를 조합해 매우 구체적으로 묘사하세요.
+7. nameHint: 반드시 일지 ${dayJi}의 음오행(${nameHintRef.ohaeng})을 기반으로, 예시 이름(${spouseNameExamples.slice(0,3).join("·")})을 활용해 구체적으로 작성하세요.
+8. pastLife: 반드시 "${eraRef}"를 배경으로, "${pastLifeRef.roles}"의 구도를 사용하세요. 매번 다른 구체적인 서사를 만드세요.
+9. kakaoFirstMessage: 반드시 일간 ${dayGan}의 말투(${talkStyle.split(",")[0]})로 작성하세요. 성격과 말투가 바로 느껴지게, 절대 "안녕하세요 혹시 기억하세요" 같은 뻔한 시작 금지.
 
 배우자 나이대: ${spouseAgeRange} (imagePrompt에 "${genderEN} ${spouseAgeEN}" 포함)
 imagePrompt 헤어: "${monthGanVisual.hair}" 기반으로 구체적인 헤어 묘사 포함
