@@ -42,10 +42,10 @@ export default function ResultPage() {
     <div className="min-h-screen flex flex-col items-center justify-center px-4 py-8">
       <div className="max-w-md w-full">
         {/* 헤더 */}
-        <div className="text-center mb-6">
-          <div className="text-4xl mb-2">🔮</div>
-          <h1 className="text-2xl font-bold text-amber-900">{result.name}님의 배우자</h1>
-          <p className="text-amber-600 text-sm mt-1">사주가 말해주는 운명의 상대</p>
+        <div className="text-center mb-5">
+          <p className="text-amber-500 text-xs font-semibold uppercase tracking-wider mb-1">사주 분석 완료</p>
+          <h1 className="text-2xl font-black text-amber-900">{result.name}님의 운명의 상대</h1>
+          <p className="text-amber-600 text-sm mt-1">사주팔자가 말해주는 배우자의 모든 것</p>
         </div>
 
         {result.demo && (

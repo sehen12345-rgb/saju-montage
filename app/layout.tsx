@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import "./globals.css";
 import AuthProvider from "@/components/AuthProvider";
+import Header from "@/components/Header";
 
 export const metadata: Metadata = {
   title: "내 배우자 얼굴봤다 | 사주로 보는 운명의 상대",
@@ -40,6 +41,7 @@ export default function RootLayout({
           }}
         />
         <AuthProvider>
+          <Header />
           <main className="relative z-10 min-h-screen">{children}</main>
         </AuthProvider>
       </body>
