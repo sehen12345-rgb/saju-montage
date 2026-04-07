@@ -333,9 +333,9 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: () => void }
       <div className="bg-white rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden">
         {/* 헤더 */}
         <div className="bg-gradient-to-r from-amber-500 to-orange-500 p-6 text-white text-center">
-          <div className="text-4xl mb-2">🔮</div>
-          <h2 className="text-xl font-bold">배우자 완전 분석 보고서</h2>
-          <p className="text-amber-100 text-sm mt-1">단 한 번의 결제로 평생 인연을 확인하세요</p>
+          <div className="text-4xl mb-2">🎨</div>
+          <h2 className="text-xl font-bold">배우자 몽타주 공개</h2>
+          <p className="text-amber-100 text-sm mt-1">AI가 그린 운명의 상대 얼굴을 확인하세요</p>
         </div>
 
         {/* 포함 내용 */}
@@ -343,18 +343,19 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: () => void }
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">결제 후 공개되는 내용</p>
           <div className="space-y-2">
             {[
-              ["💎", "배우자 스펙 (키·체형·패션·분위기)"],
-              ["📊", "5개 카테고리 궁합 점수 분석"],
-              ["💭", "성격 심층 분석 (장단점·대인관계)"],
-              ["💕", "연애 스타일 & 싸울 때 반응"],
-              ["🌿", "라이프스타일 & 소비 패턴"],
-              ["📅", "만남 시기 예측 (나이대·계절)"],
-              ["🌸", "영화 같은 첫 만남 시나리오"],
-              ["⚠️", "갈등 포인트 & 주의사항 3가지"],
-              ["💡", "인연을 당기는 조언 3가지"],
-              ["💒", "연애→결혼→자녀 타임라인"],
-            ].map(([icon, text]) => (
-              <div key={text} className="flex items-center gap-2 text-sm text-gray-700">
+              ["🎨", "배우자 AI 몽타주 이미지 공개", true],
+              ["💎", "배우자 스펙 (키·체형·패션·분위기)", false],
+              ["📊", "5개 카테고리 궁합 점수 분석", false],
+              ["💭", "성격 심층 분석 (장단점·대인관계)", false],
+              ["💕", "연애 스타일 & 싸울 때 반응", false],
+              ["🌿", "라이프스타일 & 소비 패턴", false],
+              ["📅", "만남 시기 예측 (나이대·계절)", false],
+              ["🌸", "영화 같은 첫 만남 시나리오", false],
+              ["⚠️", "갈등 포인트 & 주의사항 3가지", false],
+              ["💡", "인연을 당기는 조언 3가지", false],
+              ["💒", "연애→결혼→자녀 타임라인", false],
+            ].map(([icon, text, highlight]) => (
+              <div key={text as string} className={`flex items-center gap-2 text-sm ${highlight ? "font-semibold text-amber-800" : "text-gray-700"}`}>
                 <span>{icon}</span>
                 <span>{text}</span>
               </div>
@@ -365,7 +366,7 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: () => void }
           <div className="bg-amber-50 rounded-2xl p-4 text-center border border-amber-200 mt-4">
             <p className="text-xs text-amber-600 mb-1">단 한 번만 결제</p>
             <p className="text-3xl font-black text-amber-900">990<span className="text-lg">원</span></p>
-            <p className="text-xs text-gray-400 mt-1">커피 한 잔으로 운명의 상대를 확인하세요</p>
+            <p className="text-xs text-gray-400 mt-1">커피 한 잔으로 운명의 상대 얼굴을 확인하세요</p>
           </div>
 
           {/* 오류 메시지 */}
@@ -554,46 +555,7 @@ export default function ResultCard({ result, onReset }: Props) {
           </div>
         )}
 
-        {/* ── 몽타주 이미지 ── */}
-        <div className="relative w-full aspect-square rounded-2xl overflow-hidden shadow-xl border-4 border-amber-200 bg-amber-50">
-          {!imgLoaded && !imgError && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-10 h-10 rounded-full border-4 border-amber-200 border-t-amber-500 animate-spin" />
-            </div>
-          )}
-          {imgError && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-amber-50">
-              <span className="text-4xl">😓</span>
-              <p className="text-amber-700 text-sm">이미지를 불러오지 못했습니다</p>
-              <button
-                onClick={() => { setImgError(false); setImgLoaded(false); }}
-                className="px-5 py-2 bg-amber-500 text-white rounded-xl text-sm font-semibold hover:bg-amber-600"
-              >🔄 다시 시도</button>
-            </div>
-          )}
-          {!imgError && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={imageUrl}
-              alt="AI가 생성한 배우자 초상화"
-              className={`w-full h-full object-cover transition-opacity duration-500 ${imgLoaded ? "opacity-100" : "opacity-0"}`}
-              onLoad={() => setImgLoaded(true)}
-              onError={() => setImgError(true)}
-            />
-          )}
-          {imgLoaded && (
-            <>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
-              <div className="absolute bottom-4 left-0 right-0 text-center">
-                <span className="text-white text-sm font-semibold bg-black/40 px-3 py-1 rounded-full">
-                  사주로 그린 배우자 초상화
-                </span>
-              </div>
-            </>
-          )}
-        </div>
-
-        {/* ── 핵심 키워드 ── */}
+        {/* ── 핵심 키워드 (무료 힌트) ── */}
         <div className="flex flex-wrap gap-2 justify-center">
           {analysis.characteristics.map((c, i) => (
             <span key={i} className="px-4 py-2 bg-gradient-to-r from-amber-400 to-orange-400 text-white rounded-full text-sm font-semibold shadow">
@@ -602,47 +564,87 @@ export default function ResultCard({ result, onReset }: Props) {
           ))}
         </div>
 
-        {/* ── MBTI + 직업 ── */}
-        <div className="grid grid-cols-2 gap-3">
-          {analysis.mbti && (
-            <div className="bg-violet-50 rounded-2xl p-4 border border-violet-100 text-center">
-              <div className="text-xs text-violet-500 font-medium mb-1">🧠 MBTI</div>
-              <div className="text-2xl font-bold text-violet-700">{analysis.mbti}</div>
-            </div>
-          )}
-          {analysis.job && (
-            <div className="bg-blue-50 rounded-2xl p-4 border border-blue-100 text-center">
-              <div className="text-xs text-blue-500 font-medium mb-1">💼 직업</div>
-              <div className="text-sm font-bold text-blue-700 leading-tight">{analysis.job}</div>
-            </div>
-          )}
-        </div>
-
-        {/* ── 취미 ── */}
-        {analysis.hobbies?.length > 0 && (
-          <InfoSection icon="🎯" label="취미">
-            <div className="flex flex-wrap gap-2">
-              {analysis.hobbies.map((h, i) => (
-                <span key={i} className="px-3 py-1 bg-green-50 border border-green-200 text-green-700 rounded-full text-sm">
-                  {h}
-                </span>
-              ))}
-            </div>
-          </InfoSection>
-        )}
-
-        {/* ── 외모 특징 ── */}
-        <InfoSection icon="✨" label="외모 특징" title={analysis.descTitle}>
+        {/* ── 외모 특징 텍스트 (무료 힌트) ── */}
+        <InfoSection icon="✨" label="외모 힌트" title={analysis.descTitle}>
           <p className="text-gray-700 leading-relaxed text-sm">{analysis.description}</p>
         </InfoSection>
 
         {/* ════════════════════════════════
-            유료 콘텐츠 영역
+            몽타주 이미지 (유료)
         ════════════════════════════════ */}
 
         {paid ? (
+          /* ── 결제 완료: 이미지 + 전체 분석 공개 ── */
           <>
-            {/* ── 배우자 스펙 ── */}
+            {/* 몽타주 이미지 */}
+            <div className="relative w-full aspect-square rounded-2xl overflow-hidden shadow-xl border-4 border-amber-300 bg-amber-50">
+              {!imgLoaded && !imgError && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-full border-4 border-amber-200 border-t-amber-500 animate-spin" />
+                </div>
+              )}
+              {imgError && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-amber-50">
+                  <span className="text-4xl">😓</span>
+                  <p className="text-amber-700 text-sm">이미지를 불러오지 못했습니다</p>
+                  <button
+                    onClick={() => { setImgError(false); setImgLoaded(false); }}
+                    className="px-5 py-2 bg-amber-500 text-white rounded-xl text-sm font-semibold hover:bg-amber-600"
+                  >🔄 다시 시도</button>
+                </div>
+              )}
+              {!imgError && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={imageUrl}
+                  alt="AI가 생성한 배우자 초상화"
+                  className={`w-full h-full object-cover transition-opacity duration-500 ${imgLoaded ? "opacity-100" : "opacity-0"}`}
+                  onLoad={() => setImgLoaded(true)}
+                  onError={() => setImgError(true)}
+                />
+              )}
+              {imgLoaded && (
+                <>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
+                  <div className="absolute bottom-4 left-0 right-0 text-center">
+                    <span className="text-white text-sm font-semibold bg-black/40 px-3 py-1 rounded-full">
+                      사주로 그린 배우자 초상화
+                    </span>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* MBTI + 직업 */}
+            <div className="grid grid-cols-2 gap-3">
+              {analysis.mbti && (
+                <div className="bg-violet-50 rounded-2xl p-4 border border-violet-100 text-center">
+                  <div className="text-xs text-violet-500 font-medium mb-1">🧠 MBTI</div>
+                  <div className="text-2xl font-bold text-violet-700">{analysis.mbti}</div>
+                </div>
+              )}
+              {analysis.job && (
+                <div className="bg-blue-50 rounded-2xl p-4 border border-blue-100 text-center">
+                  <div className="text-xs text-blue-500 font-medium mb-1">💼 직업</div>
+                  <div className="text-sm font-bold text-blue-700 leading-tight">{analysis.job}</div>
+                </div>
+              )}
+            </div>
+
+            {/* 취미 */}
+            {analysis.hobbies?.length > 0 && (
+              <InfoSection icon="🎯" label="취미">
+                <div className="flex flex-wrap gap-2">
+                  {analysis.hobbies.map((h, i) => (
+                    <span key={i} className="px-3 py-1 bg-green-50 border border-green-200 text-green-700 rounded-full text-sm">
+                      {h}
+                    </span>
+                  ))}
+                </div>
+              </InfoSection>
+            )}
+
+            {/* 배우자 스펙 */}
             {analysis.bodySpec && (
               <div className="bg-white rounded-2xl p-5 border border-amber-100 shadow-sm">
                 <p className="text-xs text-amber-400 font-medium mb-3">💎 배우자 스펙</p>
@@ -662,7 +664,7 @@ export default function ResultCard({ result, onReset }: Props) {
               </div>
             )}
 
-            {/* ── 궁합 점수 ── */}
+            {/* 궁합 점수 */}
             {analysis.compatibilityScores && (
               <div className="bg-white rounded-2xl p-5 border border-amber-100 shadow-sm">
                 <p className="text-xs text-amber-400 font-medium mb-1">📊 궁합 점수</p>
@@ -681,28 +683,28 @@ export default function ResultCard({ result, onReset }: Props) {
               </div>
             )}
 
-            {/* ── 성격 ── */}
+            {/* 성격 */}
             {analysis.personality && (
               <InfoSection icon="💭" label="성격" title={analysis.personalityTitle}>
                 <p className="text-gray-700 leading-relaxed text-sm">{analysis.personality}</p>
               </InfoSection>
             )}
 
-            {/* ── 연애 스타일 ── */}
+            {/* 연애 스타일 */}
             {analysis.loveStyle && (
               <InfoSection icon="💕" label="연애 스타일" title={analysis.loveStyleTitle}>
                 <p className="text-gray-700 leading-relaxed text-sm">{analysis.loveStyle}</p>
               </InfoSection>
             )}
 
-            {/* ── 라이프스타일 ── */}
+            {/* 라이프스타일 */}
             {analysis.lifeStyle && (
               <InfoSection icon="🌿" label="라이프스타일" title={analysis.lifeStyleTitle}>
                 <p className="text-gray-700 leading-relaxed text-sm">{analysis.lifeStyle}</p>
               </InfoSection>
             )}
 
-            {/* ── 만남 시기 ── */}
+            {/* 만남 시기 */}
             {analysis.meetTiming && (
               <div className="bg-white rounded-2xl p-5 border border-amber-100 shadow-sm">
                 <p className="text-xs text-amber-400 font-medium mb-3">📅 만남 시기 예측</p>
@@ -722,7 +724,7 @@ export default function ResultCard({ result, onReset }: Props) {
               </div>
             )}
 
-            {/* ── 첫 만남 시나리오 ── */}
+            {/* 첫 만남 시나리오 */}
             {analysis.firstMeet && (
               <div className="bg-pink-50 rounded-2xl p-5 border border-pink-100">
                 <p className="text-xs text-pink-400 font-medium mb-1">🌸 첫 만남</p>
@@ -733,7 +735,7 @@ export default function ResultCard({ result, onReset }: Props) {
               </div>
             )}
 
-            {/* ── 연애·결혼 타임라인 ── */}
+            {/* 연애·결혼 타임라인 */}
             {analysis.timeline && (
               <div className="bg-white rounded-2xl p-5 border border-amber-100 shadow-sm">
                 <p className="text-xs text-amber-400 font-medium mb-4">💒 연애·결혼 타임라인</p>
@@ -759,7 +761,7 @@ export default function ResultCard({ result, onReset }: Props) {
               </div>
             )}
 
-            {/* ── 주의사항 ── */}
+            {/* 주의사항 */}
             {analysis.caution?.length > 0 && (
               <div className="bg-red-50 rounded-2xl p-5 border border-red-100">
                 <p className="text-xs text-red-400 font-medium mb-1">⚠️ 주의사항</p>
@@ -775,7 +777,7 @@ export default function ResultCard({ result, onReset }: Props) {
               </div>
             )}
 
-            {/* ── 인연 조언 ── */}
+            {/* 인연 조언 */}
             {analysis.advice?.length > 0 && (
               <div className="bg-emerald-50 rounded-2xl p-5 border border-emerald-100">
                 <p className="text-xs text-emerald-500 font-medium mb-1">💡 인연을 당기는 조언</p>
@@ -792,25 +794,94 @@ export default function ResultCard({ result, onReset }: Props) {
                 </div>
               </div>
             )}
+
+            <p className="text-xs text-center text-gray-400">
+              * 이 결과는 오락 목적으로만 제공되며, 실제 미래를 예언하지 않습니다.
+            </p>
+
+            {/* 저장 & 공유 */}
+            <button
+              onClick={handleDownload}
+              disabled={!imgLoaded || downloading}
+              className={`w-full py-3 rounded-xl border-2 border-amber-400 text-amber-700 font-semibold text-sm transition-all ${!imgLoaded || downloading ? "opacity-40 cursor-not-allowed" : "hover:bg-amber-50 active:scale-95"}`}
+            >
+              {downloading ? "⏳ 저장 중..." : "💾 이미지 저장"}
+            </button>
+
+            {/* 스토리 공유 토스트 */}
+            {storyToast && (
+              <div className="fixed bottom-6 left-4 right-4 z-50 max-w-sm mx-auto bg-gray-900 text-white text-sm rounded-2xl px-4 py-3 shadow-xl text-center">
+                {storyToast}
+              </div>
+            )}
+
+            <div className="grid grid-cols-3 gap-2">
+              <button onClick={handleShare} className="py-3 rounded-xl border-2 border-yellow-400 bg-yellow-400 text-yellow-900 font-semibold hover:bg-yellow-500 transition-all text-sm active:scale-95">
+                💬 공유
+              </button>
+              <button
+                onClick={handleShareInstagram}
+                disabled={storySharing}
+                className={`py-3 rounded-xl border-2 font-semibold transition-all text-sm active:scale-95 ${
+                  storySharing
+                    ? "border-pink-200 text-pink-300 cursor-not-allowed"
+                    : "border-pink-400 text-white bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 hover:opacity-90"
+                }`}
+              >
+                {storySharing ? "⏳" : "📸 스토리"}
+              </button>
+              <button
+                onClick={() => copyToClipboard(`사주로 알아본 내 운명의 배우자!\n${analysis.characteristics.join(" · ")}\n\n#사주몽타주 #운명의상대`)}
+                className={`py-3 rounded-xl border-2 font-semibold transition-all text-sm active:scale-95 ${copied ? "border-green-400 text-green-700 bg-green-50" : "border-gray-300 text-gray-600 hover:bg-gray-50"}`}
+              >
+                {copied ? "✅ 복사됨" : "🔗 복사"}
+              </button>
+            </div>
           </>
         ) : (
-          /* ── 잠금 영역 (비결제 상태) ── */
+          /* ── 비결제: 이미지 잠금 + 결제 유도 ── */
           <>
-            <BlurredSection label="배우자 스펙" />
-            <BlurredSection label="궁합 점수 분석" />
-            <BlurredSection label="성격 심층 분석" />
+            {/* 블러 처리된 이미지 잠금 카드 */}
+            <div className="relative w-full aspect-square rounded-2xl overflow-hidden shadow-xl border-4 border-amber-200 bg-amber-50">
+              {/* 숨겨진 이미지 (블러) */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={imageUrl}
+                alt=""
+                aria-hidden="true"
+                className="w-full h-full object-cover blur-xl scale-110 opacity-60"
+                onLoad={() => setImgLoaded(true)}
+                onError={() => setImgError(true)}
+              />
+              {/* 잠금 오버레이 */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-black/30 backdrop-blur-sm">
+                <div className="w-20 h-20 rounded-full bg-white/20 border-4 border-white/60 flex items-center justify-center text-4xl shadow-xl">
+                  🔒
+                </div>
+                <div className="text-center px-6">
+                  <p className="text-white font-bold text-lg drop-shadow">AI가 그린 배우자 몽타주</p>
+                  <p className="text-white/80 text-sm mt-1 drop-shadow">결제 후 실제 얼굴을 확인하세요</p>
+                </div>
+                <button
+                  onClick={() => setShowModal(true)}
+                  className="px-8 py-3 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 text-white font-bold text-base shadow-2xl hover:from-amber-500 hover:to-orange-600 transition-all active:scale-95"
+                >
+                  ✨ 990원으로 공개
+                </button>
+              </div>
+            </div>
 
             {/* 결제 유도 카드 */}
             <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-3xl p-6 border-2 border-amber-300 text-center shadow-lg">
               <div className="text-4xl mb-3">🔮</div>
               <h3 className="text-lg font-bold text-amber-900 mb-1">
-                7가지 더 있어요
+                몽타주 + 완전 분석 보고서
               </h3>
               <p className="text-sm text-amber-700 mb-4 leading-relaxed">
-                궁합 점수·만남 시기·주의사항·조언·<br />타임라인까지 전부 확인하세요
+                AI가 그린 배우자 얼굴과 함께<br />상세 분석까지 한 번에 확인하세요
               </p>
               <div className="flex flex-wrap gap-2 justify-center mb-5">
-                {["📊 궁합점수", "📅 만남시기", "⚠️ 주의사항", "💡 인연조언", "💒 타임라인", "🌸 첫만남", "💎 배우자스펙"].map((t) => (
+                {["🎨 배우자 몽타주", "💎 배우자스펙", "📊 궁합점수", "📅 만남시기", "⚠️ 주의사항", "💡 인연조언", "💒 타임라인", "🌸 첫만남"].map((t) => (
                   <span key={t} className="px-2 py-1 bg-white rounded-full text-xs text-amber-700 border border-amber-200">{t}</span>
                 ))}
               </div>
@@ -818,55 +889,16 @@ export default function ResultCard({ result, onReset }: Props) {
                 onClick={() => setShowModal(true)}
                 className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-lg shadow-xl hover:from-amber-600 hover:to-orange-600 transition-all active:scale-95"
               >
-                ✨ 990원으로 전부 보기
+                ✨ 990원으로 몽타주 보기
               </button>
-              <p className="text-xs text-gray-400 mt-3">커피 한 잔 값으로 운명의 상대를 완전히 알아보세요</p>
+              <p className="text-xs text-gray-400 mt-3">커피 한 잔 값으로 운명의 상대 얼굴을 확인하세요</p>
             </div>
+
+            <p className="text-xs text-center text-gray-400">
+              * 이 결과는 오락 목적으로만 제공되며, 실제 미래를 예언하지 않습니다.
+            </p>
           </>
         )}
-
-        <p className="text-xs text-center text-gray-400">
-          * 이 결과는 오락 목적으로만 제공되며, 실제 미래를 예언하지 않습니다.
-        </p>
-
-        {/* ── 저장 & 공유 ── */}
-        <button
-          onClick={handleDownload}
-          disabled={!imgLoaded || downloading}
-          className={`w-full py-3 rounded-xl border-2 border-amber-400 text-amber-700 font-semibold text-sm transition-all ${!imgLoaded || downloading ? "opacity-40 cursor-not-allowed" : "hover:bg-amber-50 active:scale-95"}`}
-        >
-          {downloading ? "⏳ 저장 중..." : "💾 이미지 저장"}
-        </button>
-
-        {/* 스토리 공유 토스트 */}
-        {storyToast && (
-          <div className="fixed bottom-6 left-4 right-4 z-50 max-w-sm mx-auto bg-gray-900 text-white text-sm rounded-2xl px-4 py-3 shadow-xl text-center animate-bounce-once">
-            {storyToast}
-          </div>
-        )}
-
-        <div className="grid grid-cols-3 gap-2">
-          <button onClick={handleShare} className="py-3 rounded-xl border-2 border-yellow-400 bg-yellow-400 text-yellow-900 font-semibold hover:bg-yellow-500 transition-all text-sm active:scale-95">
-            💬 공유
-          </button>
-          <button
-            onClick={handleShareInstagram}
-            disabled={storySharing}
-            className={`py-3 rounded-xl border-2 font-semibold transition-all text-sm active:scale-95 ${
-              storySharing
-                ? "border-pink-200 text-pink-300 cursor-not-allowed"
-                : "border-pink-400 text-white bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 hover:opacity-90"
-            }`}
-          >
-            {storySharing ? "⏳" : "📸 스토리"}
-          </button>
-          <button
-            onClick={() => copyToClipboard(`사주로 알아본 내 운명의 배우자!\n${analysis.characteristics.join(" · ")}\n\n#사주몽타주 #운명의상대`)}
-            className={`py-3 rounded-xl border-2 font-semibold transition-all text-sm active:scale-95 ${copied ? "border-green-400 text-green-700 bg-green-50" : "border-gray-300 text-gray-600 hover:bg-gray-50"}`}
-          >
-            {copied ? "✅ 복사됨" : "🔗 복사"}
-          </button>
-        </div>
 
         <button
           onClick={onReset}
