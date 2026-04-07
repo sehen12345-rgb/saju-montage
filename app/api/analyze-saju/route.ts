@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest, NextResponse } from "next/server";
 import { calculateSaju } from "@/lib/saju";
-import { buildSajuSystemPrompt, buildSajuUserPrompt } from "@/lib/prompts";
+import { buildSajuSystemPrompt, buildSajuUserPrompt, buildDeterministicFields, getSajuSeed } from "@/lib/prompts";
 import { isKeyPlaceholder, getDemoAnalysis } from "@/lib/demo";
 import type { SajuInput } from "@/lib/types";
 
@@ -18,7 +18,14 @@ export async function POST(req: NextRequest) {
 
     if (isKeyPlaceholder(process.env.ANTHROPIC_API_KEY)) {
       await new Promise((r) => setTimeout(r, 2000));
-      return NextResponse.json({ ...getDemoAnalysis(gender, sajuInfo), demo: true });
+      const demoSpouseGender = gender === "male" ? "woman" : "man";
+      const demoSeed = getSajuSeed(sajuInfo, demoSpouseGender);
+      const demoDet = buildDeterministicFields(sajuInfo, gender, demoSeed);
+      return NextResponse.json({
+        ...getDemoAnalysis(gender, sajuInfo),
+        ...demoDet,
+        demo: true,
+      });
     }
 
     const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -37,13 +44,18 @@ export async function POST(req: NextRequest) {
     const jsonStr = rawText.replace(/```json\n?|\n?```/g, "").trim();
     const parsed = JSON.parse(jsonStr);
 
+    // 사주 시드로 직접 계산 — Claude에게 맡기면 비슷해지는 필드들
+    const spouseGender = gender === "male" ? "woman" : "man";
+    const seed = getSajuSeed(sajuInfo, spouseGender);
+    const det = buildDeterministicFields(sajuInfo, gender, seed);
+
     return NextResponse.json({
       description: parsed.description,
       imagePrompt: parsed.imagePrompt,
       characteristics: parsed.characteristics,
       mbti: parsed.mbti,
       job: parsed.job,
-      hobbies: parsed.hobbies,
+      hobbies: det.hobbies,               // 시드 기반 직접 계산
       compatibility: parsed.compatibility,
       descTitle: parsed.descTitle,
       personalityTitle: parsed.personalityTitle,
@@ -60,9 +72,9 @@ export async function POST(req: NextRequest) {
       caution: parsed.caution,
       advice: parsed.advice,
       timeline: parsed.timeline,
-      nameHint: parsed.nameHint,
-      pastLife: parsed.pastLife,
-      kakaoFirstMessage: parsed.kakaoFirstMessage,
+      nameHint: det.nameHint,             // 시드 기반 직접 계산
+      pastLife: det.pastLife,             // 시드 기반 직접 계산
+      kakaoFirstMessage: det.kakaoFirstMessage, // 시드 기반 직접 계산
       firstDate: parsed.firstDate,
       conflictAndMakeup: parsed.conflictAndMakeup,
       favoriteThings: parsed.favoriteThings,

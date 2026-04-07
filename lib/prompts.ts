@@ -604,3 +604,125 @@ export function getSajuSeed(sajuInfo: SajuInfo, gender: string): number {
   }
   return Math.abs(hash) % 2147483647;
 }
+
+// ── 카카오톡 첫 메시지 템플릿 (일간별 × 상황별) ──────────────────────────────
+const KAKAO_TEMPLATES: Record<string, string[]> = {
+  갑: [
+    "연락처를 받고 나서 한참을 망설였는데, 그냥 한번 드려봅니다.",
+    "솔직히 먼저 연락하는 게 낯선데, 그럼에도 드리고 싶었어요.",
+    "잠깐 얘기 나눴는데 기억하실지 모르겠네요. 연락드려도 될까요?",
+    "오늘 갑자기 생각이 나서요. 시간 되시면 커피 한 잔 어떠세요?",
+  ],
+  을: [
+    "이런 연락 갑작스러우실 것 같은데... 그냥 한번 용기 내봤어요 🌸",
+    "혹시 요즘 잘 지내고 계세요? 그냥 문득 궁금해서요 😊",
+    "바람이 좋은 날이라 그런지 자꾸 생각이 나서요 🍃",
+    "연락드려도 될지 한참 고민했는데, 결국 이렇게 됐어요 😊",
+  ],
+  병: [
+    "갑자기 연락해서 놀라셨죠?? 그냥 오늘 너무 좋은 날 같아서요 ☀️",
+    "먼저 연락해도 되나 엄청 고민했는데 그냥 해버렸어요!! 괜찮죠? 😄",
+    "오늘 뭐 하세요?? 갑자기 생각나서 여쭤봤어요 😆✨",
+    "안녕하세요!! 저 기억하세요? 그날 너무 재밌어서 또 연락하고 싶었어요 😄",
+  ],
+  정: [
+    "이런 연락이 이상하게 느껴지실 수도 있는데, 그냥 솔직히 말씀드리고 싶었어요.",
+    "말을 꺼내기 참 어렵네요. 그래도 연락하길 잘한 것 같아요.",
+    "오늘 혼자 걷다가 갑자기 생각이 나서요... 이상하죠?",
+    "이런 감정이 자주 있는 게 아닌데, 오늘은 그냥 솔직하게 연락해봤어요.",
+  ],
+  무: [
+    "밥은 먹었어요?",
+    "시간 되면 커피 한 잔 해요.",
+    "요즘 어떻게 지내요.",
+    "연락해도 되나 싶었는데, 그냥 해봤어요.",
+  ],
+  기: [
+    "안녕하세요~ 오늘 날씨 너무 좋지 않아요? 😊 혹시 산책 즐기세요?",
+    "저 기억하세요~? 오늘 맛있는 거 먹다가 갑자기 생각나서요 🍽️",
+    "연락드려도 괜찮으실까요? 그냥 한번 여쭤보고 싶어서요 😊",
+    "오늘 지나가다가 딱 맞는 카페 발견했는데 혹시 커피 좋아하세요? ☕",
+  ],
+  경: [
+    "연락드립니다. 시간 되시면 커피 한 잔 어떠세요.",
+    "한 가지 여쭤봐도 될까요.",
+    "잠깐 얘기 나눌 수 있을까요.",
+    "오늘 시간 되세요?",
+  ],
+  신: [
+    "오랜만이에요. 잘 지내셨죠? ✨",
+    "갑자기 연락해서 놀라셨나요? 그냥 한번 드려보고 싶었어요.",
+    "연락드릴까 말까 한참 고민했는데, 결국 이렇게 됐네요.",
+    "이런 연락 처음이라 좀 어색한데요. 그냥 드려봅니다. ✨",
+  ],
+  임: [
+    "이상하게 자꾸 생각이 나서요.",
+    "오늘 길을 걷다가 문득 연락하고 싶어졌어요. ✨",
+    "이런 감각이 자주 있는 건 아닌데, 오늘은 그냥 따라가 보기로 했어요.",
+    "연락을 드리는 게 맞는 건지 한참 생각했어요. 그래도 드리고 싶었어요.",
+  ],
+  계: [
+    "갑자기 연락드려서 놀라셨죠? 왠지 오늘은 용기가 생겼어요 😊",
+    "이런 연락 처음이라 좀 어색한데... 그냥 솔직하게 말씀드리고 싶었어요.",
+    "오늘 하늘이 너무 예뻐서 그런지 자꾸 생각이 났어요 🌙",
+    "왠지 연락하지 않으면 후회할 것 같아서요. 잘 지내고 계세요? 🌸",
+  ],
+};
+
+// ── 전생 서사 변주 요소 ────────────────────────────────────────────────────────
+const PASTLIFE_SEASONS = ["봄 어느 날", "여름 새벽", "가을 저녁", "겨울 밤"];
+const PASTLIFE_ENDINGS = [
+  "그 그리움이 이번 생의 깊은 인연으로 이어졌습니다.",
+  "두 영혼은 결국 다시 만나기로 약속하고 헤어졌습니다.",
+  "이번 생에서는 반드시 이루리라는 다짐이 두 사람을 다시 불러냈습니다.",
+  "그 미완의 인연이 이번 생에서 완성되려 하고 있습니다.",
+];
+
+/**
+ * Claude에게 맡기지 않고 사주 시드로 직접 계산하는 결정론적 필드.
+ * 같은 사주 → 항상 같은 결과 / 다른 사주 → 반드시 다른 결과.
+ */
+export function buildDeterministicFields(
+  sajuInfo: SajuInfo,
+  gender: "male" | "female",
+  seed: number
+): { nameHint: string; pastLife: string; kakaoFirstMessage: string; hobbies: string[] } {
+  const dayGan = getPillarChar(sajuInfo.dayPillar, 0);
+  const dayJi  = getPillarChar(sajuInfo.dayPillar, 1);
+  const yearJi = getPillarChar(sajuInfo.yearPillar, 1);
+
+  // ── 이름 힌트 ──
+  const nameRef = DAYJI_NAME_HINT[dayJi] ?? DAYJI_NAME_HINT["자"];
+  const namePool = gender === "male" ? nameRef.womanNames : nameRef.manNames;
+  const n1 = namePool[seed % namePool.length];
+  const n2 = namePool[(seed + 2) % namePool.length];
+  const n3 = namePool[(seed + 4) % namePool.length];
+  const nameHint =
+    `일지 ${dayJi}의 ${nameRef.ohaeng} 기운이 담긴 '${n1}', '${n2}', '${n3}' 같은 ` +
+    `${nameRef.consonants} 초성의 이름일 가능성이 높습니다. ${nameRef.reason}.`;
+
+  // ── 전생 인연 ──
+  const era      = YEARJI_ERA[yearJi] ?? "조선 시대 어느 마을";
+  const roles    = DAYJI_PASTLIFE_ROLES[dayJi] ?? DAYJI_PASTLIFE_ROLES["자"];
+  const season   = PASTLIFE_SEASONS[seed % PASTLIFE_SEASONS.length];
+  const ending   = PASTLIFE_ENDINGS[(seed >> 2) % PASTLIFE_ENDINGS.length];
+  const pastLife =
+    `${era}의 ${season}, 두 사람은 ${roles.roles}였습니다. ` +
+    `${roles.bond} 관계였지만 ${roles.tragedy} 결국 헤어졌고, ${ending}`;
+
+  // ── 카카오톡 첫 메시지 ──
+  const templates = KAKAO_TEMPLATES[dayGan] ?? KAKAO_TEMPLATES["무"];
+  const kakaoFirstMessage = templates[(seed >> 1) % templates.length];
+
+  // ── 취미 (일지 풀에서 시드로 3개 픽, 매번 다른 조합) ──
+  const hobbyPool = DAYJI_HOBBIES[dayJi] ?? ["요리", "독서", "여행"];
+  const picked: string[] = [];
+  for (let i = 0; picked.length < 3; i++) {
+    const candidate = hobbyPool[(seed + i * 3) % hobbyPool.length];
+    if (!picked.includes(candidate)) picked.push(candidate);
+    if (i > hobbyPool.length * 2) break; // 무한루프 방지
+  }
+  const hobbies = picked;
+
+  return { nameHint, pastLife, kakaoFirstMessage, hobbies };
+}
