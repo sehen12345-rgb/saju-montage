@@ -6,12 +6,12 @@ export default function Home() {
       <div className="max-w-md w-full text-center space-y-8">
         {/* 헤더 */}
         <div className="space-y-3">
-          <div className="text-6xl mb-4">☯️</div>
+          <div className="text-6xl mb-4">🔮</div>
           <h1 className="text-4xl font-bold text-amber-900 leading-tight">
-            사주 배우자 몽타주
+            내 배우자 얼굴봤다
           </h1>
           <p className="text-amber-700 text-lg">
-            사주팔자로 알아보는 운명의 상대
+            사주팔자로 그려진 운명의 상대
           </p>
         </div>
 

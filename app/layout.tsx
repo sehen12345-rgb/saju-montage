@@ -2,13 +2,21 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "사주 배우자 몽타주 | 운명의 상대를 만나보세요",
-  description: "사주팔자로 알아보는 나의 인연! AI가 그려주는 배우자 몽타주를 확인해보세요.",
+  title: "내 배우자 얼굴봤다 | 사주로 보는 운명의 상대",
+  description: "사주팔자로 그려진 내 운명의 배우자 얼굴 🔮 AI가 직접 그린 몽타주를 확인해보세요. 무료 사주 분석 + 배우자 외모 · 성격 · 궁합까지!",
   openGraph: {
-    title: "사주 배우자 몽타주",
-    description: "사주로 알아보는 운명의 배우자 외모",
+    title: "내 배우자 얼굴봤다 👀",
+    description: "사주팔자로 그려진 내 운명의 상대 얼굴 🔮 당신의 배우자는 어떻게 생겼을까요?",
     type: "website",
+    locale: "ko_KR",
+    siteName: "내 배우자 얼굴봤다",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "내 배우자 얼굴봤다 👀",
+    description: "사주팔자로 그려진 내 운명의 상대 얼굴 🔮",
+  },
+  keywords: ["사주", "배우자", "몽타주", "운명", "궁합", "사주팔자", "AI", "이미지생성"],
 };
 
 export default function RootLayout({

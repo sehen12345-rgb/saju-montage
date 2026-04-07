@@ -67,7 +67,7 @@ async function createStoryBlob(imageUrl: string, analysis: SajuAnalysis): Promis
   ctx.fillStyle = "#92400e";
   ctx.font = "bold 52px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif";
   ctx.textAlign = "center";
-  ctx.fillText("사주 배우자 몽타주", W / 2, 110);
+  ctx.fillText("내 배우자 얼굴봤다", W / 2, 110);
 
   ctx.fillStyle = "#b45309";
   ctx.font = "36px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif";
@@ -210,7 +210,7 @@ async function createStoryBlob(imageUrl: string, analysis: SajuAnalysis): Promis
   ctx.font = "32px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif";
   ctx.textAlign = "center";
   ctx.globalAlpha = 0.6;
-  ctx.fillText("사주 배우자 몽타주 · saju-montage.vercel.app", W / 2, H - 60);
+  ctx.fillText("내 배우자 얼굴봤다 · saju-montage.vercel.app", W / 2, H - 60);
   ctx.globalAlpha = 1;
 
   return new Promise((resolve, reject) => {
@@ -315,7 +315,7 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: () => void }
       await tossPayments.requestPayment("카드", {
         amount: 990,
         orderId,
-        orderName: "사주 배우자 몽타주 프리미엄",
+        orderName: "내 배우자 얼굴봤다 프리미엄",
         successUrl: `${window.location.origin}/payment/success`,
         failUrl: `${window.location.origin}/payment/fail`,
       });
@@ -451,7 +451,7 @@ export default function ResultCard({ result, onReset }: Props) {
   }
 
   function handleShareTwitter() {
-    const text = `사주로 본 내 배우자의 모습 ✨\n${analysis.characteristics.join(" · ")}\n\n#사주몽타주 #운명의상대`;
+    const text = `내 배우자 얼굴봤다 👀\n${analysis.characteristics.join(" · ")}\n\nsaju-montage.vercel.app\n#사주몽타주 #내배우자얼굴봤다 #운명의상대`;
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, "_blank");
   }
 
@@ -471,8 +471,8 @@ export default function ResultCard({ result, onReset }: Props) {
       ) {
         await navigator.share({
           files: [file],
-          title: "사주 배우자 몽타주",
-          text: "사주로 알아본 내 운명의 배우자 ✨ #사주몽타주",
+          title: "내 배우자 얼굴봤다",
+          text: "내 배우자 얼굴봤다 👀 사주로 그린 운명의 상대 ✨ #사주몽타주 #내배우자얼굴봤다",
         });
         return;
       }
@@ -506,9 +506,9 @@ export default function ResultCard({ result, onReset }: Props) {
   }
 
   async function handleShare() {
-    const text = `사주로 알아본 내 운명의 배우자!\n${analysis.characteristics.join(" · ")}\n\n사주 배우자 몽타주에서 확인해보세요 ✨`;
+    const text = `내 배우자 얼굴봤다 👀\n${analysis.characteristics.join(" · ")}\n\n나도 해보기 → saju-montage.vercel.app ✨`;
     if (navigator.share) {
-      try { await navigator.share({ title: "사주 배우자 몽타주", text }); }
+      try { await navigator.share({ title: "내 배우자 얼굴봤다", text }); }
       catch { await copyToClipboard(text); }
     } else {
       await copyToClipboard(text);
@@ -831,7 +831,7 @@ export default function ResultCard({ result, onReset }: Props) {
                 {storySharing ? "⏳" : "📸 스토리"}
               </button>
               <button
-                onClick={() => copyToClipboard(`사주로 알아본 내 운명의 배우자!\n${analysis.characteristics.join(" · ")}\n\n#사주몽타주 #운명의상대`)}
+                onClick={() => copyToClipboard(`내 배우자 얼굴봤다 👀\n${analysis.characteristics.join(" · ")}\n\n나도 해보기 → saju-montage.vercel.app\n#사주몽타주 #내배우자얼굴봤다 #운명의상대`)}
                 className={`py-3 rounded-xl border-2 font-semibold transition-all text-sm active:scale-95 ${copied ? "border-green-400 text-green-700 bg-green-50" : "border-gray-300 text-gray-600 hover:bg-gray-50"}`}
               >
                 {copied ? "✅ 복사됨" : "🔗 복사"}
