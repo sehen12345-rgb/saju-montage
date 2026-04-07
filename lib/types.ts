@@ -105,6 +105,7 @@ export interface GenerateResult {
   name: string;
   analysis: SajuAnalysis;
   imageUrl: string;
+  gender?: "male" | "female";
   demo?: boolean;
   paid?: boolean;
 }

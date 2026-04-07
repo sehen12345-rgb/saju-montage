@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import AuthProvider from "@/components/AuthProvider";
 
 export const metadata: Metadata = {
   title: "내 배우자 얼굴봤다 | 사주로 보는 운명의 상대",
@@ -34,7 +35,9 @@ export default function RootLayout({
             backgroundSize: "60px 60px",
           }}
         />
-        <main className="relative z-10 min-h-screen">{children}</main>
+        <AuthProvider>
+          <main className="relative z-10 min-h-screen">{children}</main>
+        </AuthProvider>
       </body>
     </html>
   );

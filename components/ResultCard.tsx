@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSession, signIn } from "next-auth/react";
 import type { GenerateResult, SajuAnalysis } from "@/lib/types";
+import { isPaidForSaju, savePaidRecord, makeSajuHash } from "@/lib/paymentStorage";
 
 // ── 인스타그램 스토리 이미지 생성 (9:16 Canvas) ────────────
 
@@ -280,6 +282,7 @@ function BlurredSection({ label }: { label: string }) {
 function PayModal({ onClose, onPay }: { onClose: () => void; onPay: () => void }) {
   const [paying, setPaying] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { data: session } = useSession();
 
   async function handlePay() {
     setPaying(true);
@@ -378,14 +381,39 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: () => void }
             </div>
           )}
 
-          {/* 버튼 */}
-          <button
-            onClick={handlePay}
-            disabled={paying}
-            className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-lg shadow-lg hover:from-amber-600 hover:to-orange-600 transition-all active:scale-95 disabled:opacity-60"
-          >
-            {paying ? "결제 처리 중..." : "✨ 990원으로 전체 보기"}
-          </button>
+          {/* 카카오 로그인 */}
+          {!session ? (
+            <div className="space-y-2">
+              <button
+                onClick={() => signIn("kakao", { callbackUrl: "/result" })}
+                className="w-full py-3 rounded-2xl flex items-center justify-center gap-2 font-bold text-sm text-gray-800 shadow active:scale-95 transition-all"
+                style={{ backgroundColor: "#FEE500" }}
+              >
+                <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current text-gray-900"><path d="M12 3C6.48 3 2 6.48 2 10.8c0 2.72 1.6 5.12 4.04 6.56l-1.02 3.76 4.38-2.88c.84.12 1.72.18 2.6.18 5.52 0 10-3.48 10-7.8S17.52 3 12 3z"/></svg>
+                카카오로 로그인 후 결제
+              </button>
+              <div className="flex items-center gap-2">
+                <div className="flex-1 h-px bg-gray-200" />
+                <span className="text-xs text-gray-400">또는</span>
+                <div className="flex-1 h-px bg-gray-200" />
+              </div>
+              <button
+                onClick={handlePay}
+                disabled={paying}
+                className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-lg shadow-lg hover:from-amber-600 hover:to-orange-600 transition-all active:scale-95 disabled:opacity-60"
+              >
+                {paying ? "결제 처리 중..." : "✨ 비회원으로 990원 결제"}
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={handlePay}
+              disabled={paying}
+              className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-lg shadow-lg hover:from-amber-600 hover:to-orange-600 transition-all active:scale-95 disabled:opacity-60"
+            >
+              {paying ? "결제 처리 중..." : "✨ 990원으로 전체 보기"}
+            </button>
+          )}
           <button
             onClick={onClose}
             className="w-full py-3 text-gray-400 text-sm hover:text-gray-600"
@@ -402,6 +430,7 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: () => void }
 
 export default function ResultCard({ result, onReset }: Props) {
   const { analysis, imageUrl } = result;
+  const { data: session } = useSession();
   const [imgLoaded, setImgLoaded] = useState(false);
   const [imgError, setImgError] = useState(false);
   const [downloading, setDownloading] = useState(false);
@@ -411,10 +440,33 @@ export default function ResultCard({ result, onReset }: Props) {
   const [paid, setPaid] = useState(result.paid ?? false);
   const [showModal, setShowModal] = useState(false);
 
+  const sajuHash = analysis?.sajuInfo
+    ? makeSajuHash(
+        analysis.sajuInfo.yearPillar, analysis.sajuInfo.monthPillar,
+        analysis.sajuInfo.dayPillar,  analysis.sajuInfo.hourPillar,
+        result.gender ?? "male"
+      )
+    : "";
+
+  // localStorage에 저장된 결제 상태 복원 (브라우저 재시작 후에도 유지)
+  useEffect(() => {
+    if (!paid && sajuHash && isPaidForSaju(sajuHash)) {
+      setPaid(true);
+      try {
+        const stored = sessionStorage.getItem("sajuResult");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          parsed.paid = true;
+          sessionStorage.setItem("sajuResult", JSON.stringify(parsed));
+        }
+      } catch { /* ignore */ }
+    }
+  }, [sajuHash, paid]);
+
   function handlePaySuccess() {
     setShowModal(false);
     setPaid(true);
-    // 결제 상태 세션에 저장
+    // sessionStorage 업데이트
     try {
       const stored = sessionStorage.getItem("sajuResult");
       if (stored) {
@@ -423,6 +475,8 @@ export default function ResultCard({ result, onReset }: Props) {
         sessionStorage.setItem("sajuResult", JSON.stringify(parsed));
       }
     } catch { /* ignore */ }
+    // localStorage에도 저장 (데모 결제 시)
+    if (sajuHash) savePaidRecord(sajuHash, `demo_${Date.now()}`);
   }
 
   async function handleDownload() {

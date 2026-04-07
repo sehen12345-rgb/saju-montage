@@ -2,6 +2,7 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { savePaidRecord, makeSajuHash } from "@/lib/paymentStorage";
 
 function PaymentSuccessContent() {
   const router = useRouter();
@@ -28,13 +29,19 @@ function PaymentSuccessContent() {
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
-          // sessionStorage의 결과를 paid: true로 업데이트
           try {
             const stored = sessionStorage.getItem("sajuResult");
             if (stored) {
               const parsed = JSON.parse(stored);
               parsed.paid = true;
               sessionStorage.setItem("sajuResult", JSON.stringify(parsed));
+              // localStorage에도 저장 → 브라우저 닫아도 유지
+              if (parsed.analysis?.sajuInfo) {
+                const { yearPillar, monthPillar, dayPillar, hourPillar } = parsed.analysis.sajuInfo;
+                const gender = parsed.gender ?? "male";
+                const sajuHash = makeSajuHash(yearPillar, monthPillar, dayPillar, hourPillar, gender);
+                savePaidRecord(sajuHash, orderId!);
+              }
             }
           } catch {
             /* ignore */
