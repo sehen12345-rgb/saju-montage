@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
 
     const message = await client.messages.create({
       model: "claude-sonnet-4-6",
-      max_tokens: 2048,
+      max_tokens: 8192,
       system: buildSajuSystemPrompt(),
       messages: [{
         role: "user",
@@ -60,6 +60,18 @@ export async function POST(req: NextRequest) {
       caution: parsed.caution,
       advice: parsed.advice,
       timeline: parsed.timeline,
+      nameHint: parsed.nameHint,
+      pastLife: parsed.pastLife,
+      kakaoFirstMessage: parsed.kakaoFirstMessage,
+      firstDate: parsed.firstDate,
+      conflictAndMakeup: parsed.conflictAndMakeup,
+      favoriteThings: parsed.favoriteThings,
+      warnType: parsed.warnType,
+      celebrityVibe: parsed.celebrityVibe,
+      myCharm: parsed.myCharm,
+      chemistryType: parsed.chemistryType,
+      monthlyChance: parsed.monthlyChance,
+      readiness: parsed.readiness,
       sajuInfo,
     });
   } catch (err) {

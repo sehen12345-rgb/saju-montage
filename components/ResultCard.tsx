@@ -344,16 +344,18 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: () => void }
           <div className="space-y-2">
             {[
               ["🎨", "배우자 AI 몽타주 이미지 공개", true],
-              ["💎", "배우자 스펙 (키·체형·패션·분위기)", false],
-              ["📊", "5개 카테고리 궁합 점수 분석", false],
-              ["💭", "성격 심층 분석 (장단점·대인관계)", false],
-              ["💕", "연애 스타일 & 싸울 때 반응", false],
-              ["🌿", "라이프스타일 & 소비 패턴", false],
-              ["📅", "만남 시기 예측 (나이대·계절)", false],
-              ["🌸", "영화 같은 첫 만남 시나리오", false],
-              ["⚠️", "갈등 포인트 & 주의사항 3가지", false],
+              ["💬", "배우자가 처음 보낼 카카오톡 메시지", true],
+              ["💑", "우리의 케미 타입 분석", true],
+              ["🌟", "닮은꼴 연예인 분위기", false],
+              ["💜", "배우자 눈에 비친 나의 매력포인트", false],
+              ["📅", "월별 인연운 차트 (12개월)", false],
+              ["🌱", "인연 준비도 점수", false],
+              ["✨", "배우자 이름 첫 글자 힌트", false],
+              ["🌙", "전생 인연 이야기", false],
+              ["💎", "배우자 스펙 & 취향 분석", false],
+              ["📊", "5개 궁합 점수 + 갈등 패턴", false],
+              ["🌸", "첫 만남 시나리오 & 타임라인", false],
               ["💡", "인연을 당기는 조언 3가지", false],
-              ["💒", "연애→결혼→자녀 타임라인", false],
             ].map(([icon, text, highlight]) => (
               <div key={text as string} className={`flex items-center gap-2 text-sm ${highlight ? "font-semibold text-amber-800" : "text-gray-700"}`}>
                 <span>{icon}</span>
@@ -615,21 +617,48 @@ export default function ResultCard({ result, onReset }: Props) {
               )}
             </div>
 
-            {/* MBTI + 직업 */}
-            <div className="grid grid-cols-2 gap-3">
-              {analysis.mbti && (
-                <div className="bg-violet-50 rounded-2xl p-4 border border-violet-100 text-center">
-                  <div className="text-xs text-violet-500 font-medium mb-1">🧠 MBTI</div>
-                  <div className="text-2xl font-bold text-violet-700">{analysis.mbti}</div>
-                </div>
-              )}
-              {analysis.job && (
-                <div className="bg-blue-50 rounded-2xl p-4 border border-blue-100 text-center">
-                  <div className="text-xs text-blue-500 font-medium mb-1">💼 직업</div>
-                  <div className="text-sm font-bold text-blue-700 leading-tight">{analysis.job}</div>
+            {/* 배우자 프로필 카드 */}
+            <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-5 border border-amber-200 shadow-sm">
+              <p className="text-xs text-amber-500 font-medium mb-3">💌 배우자 프로필</p>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                {[
+                  { icon: "🧠", label: "MBTI", value: analysis.mbti },
+                  { icon: "💼", label: "직업", value: analysis.job },
+                  { icon: "📏", label: "키", value: analysis.bodySpec?.height },
+                  { icon: "👗", label: "스타일", value: analysis.bodySpec?.fashion },
+                ].filter(i => i.value).map((item) => (
+                  <div key={item.label} className="bg-white/80 rounded-xl p-3 border border-amber-100">
+                    <div className="text-base mb-0.5">{item.icon}</div>
+                    <div className="text-[10px] text-amber-400">{item.label}</div>
+                    <div className="text-xs font-bold text-amber-900 leading-snug mt-0.5">{item.value}</div>
+                  </div>
+                ))}
+              </div>
+              {analysis.bodySpec?.vibe && (
+                <div className="mt-2 bg-white/80 rounded-xl px-3 py-2 border border-amber-100">
+                  <span className="text-[10px] text-amber-400">분위기 </span>
+                  <span className="text-xs font-semibold text-amber-900">{analysis.bodySpec.vibe}</span>
                 </div>
               )}
             </div>
+
+            {/* 케미 타입 배지 */}
+            {analysis.chemistryType && (
+              <div className="bg-gradient-to-r from-rose-500 to-pink-500 rounded-2xl p-5 text-white text-center shadow-lg">
+                <p className="text-xs text-rose-200 font-medium mb-1">💑 우리의 케미 타입</p>
+                <div className="text-5xl my-3">{analysis.chemistryType.emoji}</div>
+                <h3 className="text-xl font-black mb-2">{analysis.chemistryType.name}</h3>
+                <p className="text-sm text-rose-100 leading-relaxed">{analysis.chemistryType.desc}</p>
+              </div>
+            )}
+
+            {/* 닮은꼴 연예인 분위기 */}
+            {analysis.celebrityVibe && (
+              <div className="bg-white rounded-2xl p-5 border border-amber-100 shadow-sm">
+                <p className="text-xs text-amber-400 font-medium mb-2">🌟 닮은꼴 연예인 분위기</p>
+                <p className="text-sm text-gray-700 leading-relaxed">{analysis.celebrityVibe}</p>
+              </div>
+            )}
 
             {/* 취미 */}
             {analysis.hobbies?.length > 0 && (
@@ -758,6 +787,155 @@ export default function ResultCard({ result, onReset }: Props) {
                     </div>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {/* 카카오톡 첫 메시지 */}
+            {analysis.kakaoFirstMessage && (
+              <div className="bg-[#FEE500] rounded-2xl p-5 border border-yellow-300">
+                <p className="text-xs text-yellow-700 font-medium mb-3">💬 배우자가 처음 보낼 카카오톡</p>
+                <div className="flex items-end gap-3">
+                  <div className="w-10 h-10 rounded-full bg-yellow-400 flex items-center justify-center text-xl shrink-0">
+                    🔮
+                  </div>
+                  <div className="bg-white rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm max-w-xs">
+                    <p className="text-sm text-gray-800 leading-relaxed">{analysis.kakaoFirstMessage}</p>
+                    <p className="text-[10px] text-gray-400 mt-1 text-right">오후 11:11</p>
+                  </div>
+                </div>
+                <p className="text-[10px] text-yellow-700 mt-3 text-center opacity-70">* 사주 기반 추정 메시지입니다</p>
+              </div>
+            )}
+
+            {/* 이름 첫 글자 힌트 */}
+            {analysis.nameHint && (
+              <div className="bg-gradient-to-br from-indigo-900 to-purple-900 rounded-2xl p-5 text-center relative overflow-hidden">
+                <div className="absolute inset-0 opacity-10">
+                  {["✦","✧","✦","✧","✦","✧","✦","✧"].map((s, i) => (
+                    <span key={i} className="absolute text-white text-xl" style={{ top: `${10 + (i * 11) % 80}%`, left: `${5 + (i * 13) % 90}%` }}>{s}</span>
+                  ))}
+                </div>
+                <p className="text-xs text-indigo-300 font-medium mb-2 relative">✨ 이름 힌트</p>
+                <p className="text-lg font-bold text-white leading-relaxed relative">{analysis.nameHint}</p>
+              </div>
+            )}
+
+            {/* 전생 인연 */}
+            {analysis.pastLife && (
+              <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-5 relative overflow-hidden">
+                <div className="absolute top-3 right-4 text-4xl opacity-20">🌙</div>
+                <p className="text-xs text-slate-400 font-medium mb-2">🔮 전생 인연</p>
+                <h4 className="text-sm font-bold text-amber-300 mb-2">이 사람과 나의 전생 이야기</h4>
+                <p className="text-sm text-slate-200 leading-relaxed">{analysis.pastLife}</p>
+              </div>
+            )}
+
+            {/* 취향 카드 */}
+            {analysis.favoriteThings && (
+              <div className="bg-white rounded-2xl p-5 border border-amber-100 shadow-sm">
+                <p className="text-xs text-amber-400 font-medium mb-3">🎭 배우자의 취향</p>
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { icon: "🍽️", label: "좋아하는 음식", value: analysis.favoriteThings.food },
+                    { icon: "🎵", label: "즐겨 듣는 음악", value: analysis.favoriteThings.music },
+                    { icon: "🎬", label: "즐겨 보는 장르", value: analysis.favoriteThings.movie },
+                    { icon: "📍", label: "자주 가는 곳", value: analysis.favoriteThings.place },
+                  ].map((t) => (
+                    <div key={t.label} className="bg-amber-50 rounded-xl p-3 border border-amber-100">
+                      <div className="text-xl mb-1">{t.icon}</div>
+                      <div className="text-[10px] text-amber-500 mb-0.5">{t.label}</div>
+                      <div className="text-xs font-semibold text-amber-900 leading-snug">{t.value}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 첫 데이트 코스 */}
+            {analysis.firstDate && (
+              <div className="bg-pink-50 rounded-2xl p-5 border border-pink-100">
+                <p className="text-xs text-pink-400 font-medium mb-2">🗺️ 첫 데이트 코스</p>
+                <h4 className="text-sm font-bold text-pink-800 mb-3">이 사람과 잘 맞는 첫 데이트</h4>
+                <p className="text-sm text-gray-700 leading-relaxed">{analysis.firstDate}</p>
+              </div>
+            )}
+
+            {/* 갈등 & 화해 패턴 */}
+            {analysis.conflictAndMakeup && (
+              <div className="bg-white rounded-2xl p-5 border border-amber-100 shadow-sm">
+                <p className="text-xs text-amber-400 font-medium mb-2">⚡ 갈등 & 화해 패턴</p>
+                <h4 className="text-sm font-bold text-amber-900 mb-3">어떨 때 싸우고 어떻게 화해할까</h4>
+                <p className="text-sm text-gray-700 leading-relaxed">{analysis.conflictAndMakeup}</p>
+              </div>
+            )}
+
+            {/* 나의 매력포인트 (배우자 시점) */}
+            {analysis.myCharm && (
+              <div className="bg-gradient-to-br from-violet-50 to-purple-50 rounded-2xl p-5 border border-violet-100">
+                <p className="text-xs text-violet-500 font-medium mb-2">💜 배우자 눈에 비친 나의 매력</p>
+                <h4 className="text-sm font-bold text-violet-800 mb-3">배우자가 당신에게 끌리는 이유</h4>
+                <div className="bg-white/80 rounded-xl px-4 py-3 border border-violet-100">
+                  <p className="text-sm text-gray-700 leading-relaxed italic">"{analysis.myCharm}"</p>
+                </div>
+              </div>
+            )}
+
+            {/* 월별 인연운 차트 */}
+            {analysis.monthlyChance && analysis.monthlyChance.length === 12 && (
+              <div className="bg-white rounded-2xl p-5 border border-amber-100 shadow-sm">
+                <p className="text-xs text-amber-400 font-medium mb-1">📅 월별 인연운</p>
+                <h4 className="text-sm font-bold text-amber-900 mb-4">
+                  {(() => {
+                    const max = Math.max(...analysis.monthlyChance);
+                    const idx = analysis.monthlyChance.indexOf(max);
+                    return `${idx + 1}월이 인연운 최고조`;
+                  })()}
+                </h4>
+                <div className="flex items-end gap-1.5 h-24">
+                  {analysis.monthlyChance.map((v, i) => {
+                    const max = Math.max(...analysis.monthlyChance!);
+                    const isPeak = v === max;
+                    const heightPct = Math.round((v / 100) * 100);
+                    return (
+                      <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                        <div
+                          className={`w-full rounded-t-sm transition-all ${isPeak ? "bg-amber-400" : "bg-amber-100"}`}
+                          style={{ height: `${heightPct}%` }}
+                        />
+                        <span className={`text-[9px] ${isPeak ? "font-bold text-amber-600" : "text-gray-400"}`}>
+                          {i + 1}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* 인연 준비도 */}
+            {analysis.readiness && (
+              <div className="bg-white rounded-2xl p-5 border border-amber-100 shadow-sm">
+                <p className="text-xs text-amber-400 font-medium mb-1">🌱 인연 준비도</p>
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm font-bold text-amber-900">지금 당신의 인연 준비 상태</h4>
+                  <span className="text-2xl font-black text-amber-500">{analysis.readiness.score}%</span>
+                </div>
+                <div className="w-full bg-gray-100 rounded-full h-3 mb-3 overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-400 transition-all duration-1000"
+                    style={{ width: `${analysis.readiness.score}%` }}
+                  />
+                </div>
+                <p className="text-xs text-gray-600 leading-relaxed">{analysis.readiness.comment}</p>
+              </div>
+            )}
+
+            {/* 악연 주의 유형 */}
+            {analysis.warnType && (
+              <div className="bg-orange-50 rounded-2xl p-5 border border-orange-200">
+                <p className="text-xs text-orange-500 font-medium mb-1">🚨 악연 주의 유형</p>
+                <h4 className="text-sm font-bold text-orange-800 mb-3">이런 사람은 조심하세요</h4>
+                <p className="text-sm text-gray-700 leading-relaxed">{analysis.warnType}</p>
               </div>
             )}
 
