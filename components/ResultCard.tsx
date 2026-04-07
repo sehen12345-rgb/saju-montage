@@ -282,7 +282,47 @@ function BlurredSection({ label }: { label: string }) {
 function PayModal({ onClose, onPay }: { onClose: () => void; onPay: () => void }) {
   const [paying, setPaying] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [sharing, setSharing] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(599); // 9:59 countdown
   const { data: session } = useSession();
+
+  useEffect(() => {
+    const t = setInterval(() => {
+      setTimeLeft((s) => {
+        if (s <= 1) { clearInterval(t); return 0; }
+        return s - 1;
+      });
+    }, 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  const minutes = String(Math.floor(timeLeft / 60)).padStart(2, "0");
+  const seconds = String(timeLeft % 60).padStart(2, "0");
+
+  async function handleShareUnlock() {
+    if (sharing) return;
+    setSharing(true);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const Kakao = (window as any).Kakao;
+    const jsKey = process.env.NEXT_PUBLIC_KAKAO_JS_KEY;
+    if (jsKey && Kakao) {
+      if (!Kakao.isInitialized()) Kakao.init(jsKey);
+      Kakao.Share.sendDefault({
+        objectType: "text",
+        text: "나 사주로 배우자 얼굴 봤는데 소름... 너도 해봐 👀 내 배우자 얼굴봤다",
+        link: { mobileWebUrl: "https://saju-montage.vercel.app", webUrl: "https://saju-montage.vercel.app" },
+        buttonTitle: "나도 해보기",
+      });
+    } else {
+      try {
+        await navigator.clipboard.writeText("나 사주로 배우자 얼굴 봤는데 소름... 너도 해봐 👀\nhttps://saju-montage.vercel.app");
+      } catch { /* ignore */ }
+    }
+    // 공유 완료 후 무료 잠금 해제
+    await new Promise((r) => setTimeout(r, 800));
+    setSharing(false);
+    onPay();
+  }
 
   async function handlePay() {
     if (paying) return;
@@ -335,10 +375,20 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: () => void }
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
       <div className="bg-white rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
         {/* 헤더 */}
-        <div className="bg-gradient-to-r from-amber-500 to-orange-500 p-6 text-white text-center sticky top-0">
-          <div className="text-4xl mb-2">🎨</div>
-          <h2 className="text-xl font-bold">배우자 몽타주 공개</h2>
-          <p className="text-amber-100 text-sm mt-1">AI가 그린 운명의 상대 얼굴을 확인하세요</p>
+        <div className="bg-gradient-to-r from-amber-500 to-orange-500 p-5 text-white text-center sticky top-0">
+          <div className="text-3xl mb-1.5">🎨</div>
+          <h2 className="text-lg font-bold">배우자 몽타주 공개</h2>
+          <p className="text-amber-100 text-xs mt-0.5 mb-2">AI가 그린 운명의 상대 얼굴을 확인하세요</p>
+          {timeLeft > 0 ? (
+            <div className="inline-flex items-center gap-1.5 bg-red-500/80 rounded-full px-3 py-1 text-xs font-bold">
+              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+              할인 종료까지 {minutes}:{seconds}
+            </div>
+          ) : (
+            <div className="inline-flex items-center gap-1.5 bg-gray-500/60 rounded-full px-3 py-1 text-xs">
+              할인 종료됨
+            </div>
+          )}
         </div>
 
         {/* 포함 내용 */}
@@ -421,6 +471,39 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: () => void }
               </div>
             </div>
           )}
+
+          {/* 카카오 공유 무료 잠금해제 */}
+          <div className="bg-yellow-50 rounded-2xl p-4 border border-yellow-200 space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="text-lg">🎁</span>
+              <p className="text-sm font-bold text-yellow-800">카카오톡 공유하면 <span className="text-red-600">무료</span>로 보기</p>
+            </div>
+            <p className="text-xs text-yellow-700">친구 1명에게 공유하면 전체 결과를 무료로 볼 수 있어요</p>
+            <button
+              onClick={handleShareUnlock}
+              disabled={sharing}
+              className="w-full py-3 rounded-xl flex items-center justify-center gap-2 font-bold text-gray-900 text-sm active:scale-95 transition-all disabled:opacity-60"
+              style={{ backgroundColor: "#FEE500" }}
+            >
+              {sharing ? (
+                <span className="flex items-center gap-2">
+                  <span className="w-3.5 h-3.5 border-2 border-gray-400/40 border-t-gray-700 rounded-full animate-spin" />
+                  공유 확인 중...
+                </span>
+              ) : (
+                <>
+                  <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current"><path d="M12 3C6.48 3 2 6.48 2 10.8c0 2.72 1.6 5.12 4.04 6.56l-1.02 3.76 4.38-2.88c.84.12 1.72.18 2.6.18 5.52 0 10-3.48 10-7.8S17.52 3 12 3z"/></svg>
+                  카카오톡으로 공유하고 무료로 보기
+                </>
+              )}
+            </button>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="flex-1 h-px bg-gray-200" />
+            <span className="text-xs text-gray-400">또는 직접 결제</span>
+            <div className="flex-1 h-px bg-gray-200" />
+          </div>
 
           <button
             onClick={handlePay}

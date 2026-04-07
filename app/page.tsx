@@ -103,6 +103,46 @@ export default function Home() {
           🕐 약 20~30초 · 무료 사주 분석 먼저 · 마음에 들면 결제
         </p>
 
+        {/* 결과 미리보기 티저 */}
+        <div className="relative rounded-3xl overflow-hidden border border-amber-200 shadow-lg">
+          <div className="bg-white/90 p-5 space-y-3 select-none">
+            <p className="text-xs font-semibold text-amber-500 uppercase tracking-wider text-center mb-3">실제 결과 미리보기</p>
+            {/* 흐릿한 몽타주 자리 */}
+            <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-gradient-to-br from-amber-100 to-orange-100 border-2 border-amber-200">
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+                <div className="w-16 h-16 rounded-full bg-amber-200/80 flex items-center justify-center text-3xl">🔮</div>
+                <p className="text-amber-700 font-bold text-sm">AI 배우자 몽타주</p>
+                <p className="text-amber-500 text-xs">분석 후 공개됩니다</p>
+              </div>
+              {/* 별 장식 */}
+              {["top-4 left-6", "top-8 right-8", "bottom-6 left-10", "bottom-4 right-6"].map((pos, i) => (
+                <span key={i} className={`absolute ${pos} text-amber-300 text-lg opacity-60`}>✦</span>
+              ))}
+            </div>
+            {/* 흐릿한 텍스트 카드들 */}
+            <div className="space-y-2 blur-[3px]">
+              <div className="bg-amber-50 rounded-xl p-3 border border-amber-100">
+                <p className="text-[10px] text-amber-400 mb-1">💑 케미 타입</p>
+                <p className="text-sm font-bold text-amber-900">운명적 소울메이트형</p>
+                <p className="text-xs text-gray-500">처음 만나는 순간부터 묘하게 이끌리는...</p>
+              </div>
+              <div className="bg-[#FEE500] rounded-xl p-3">
+                <p className="text-[10px] text-yellow-700 mb-1">💬 배우자 첫 카카오톡</p>
+                <p className="text-sm font-semibold text-gray-800">안녕하세요, 혹시 저 기억하세요? ☺️</p>
+              </div>
+            </div>
+          </div>
+          {/* 잠금 오버레이 */}
+          <div className="absolute inset-0 bg-gradient-to-t from-white via-white/10 to-transparent flex flex-col items-center justify-end pb-6 px-6">
+            <Link
+              href="/input"
+              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-base shadow-xl text-center active:scale-95 transition-all"
+            >
+              🔓 내 결과 확인하기
+            </Link>
+          </div>
+        </div>
+
         {/* 리뷰 슬라이드 */}
         <div className="bg-white/70 backdrop-blur rounded-2xl p-4 border border-amber-100 shadow-sm min-h-[100px] relative overflow-hidden">
           <div className="absolute top-3 right-3 text-xs text-amber-400 font-semibold">실제 이용 후기</div>
