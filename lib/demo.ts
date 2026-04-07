@@ -310,6 +310,18 @@ type PremiumData = {
   caution: string[];
   advice: string[];
   timeline: Timeline;
+  nameHint: string;
+  pastLife: string;
+  kakaoFirstMessage: string;
+  firstDate: string;
+  conflictAndMakeup: string;
+  favoriteThings: { food: string; music: string; movie: string; place: string };
+  warnType: string;
+  celebrityVibe: string;
+  myCharm: string;
+  chemistryType: { name: string; emoji: string; desc: string };
+  monthlyChance: number[];
+  readiness: { score: number; comment: string };
 };
 
 // 천간별 유료 콘텐츠 데모 데이터
@@ -322,6 +334,18 @@ const PREMIUM_DEMO: Record<string, { woman: PremiumData; man: PremiumData }> = {
       caution: ["원칙을 고집하는 성향이 강해 의견 충돌 시 쉽게 물러서지 않습니다. 서로의 입장을 충분히 듣는 대화 습관이 중요합니다.", "감정 표현이 서툴러 가끔 무관심해 보일 수 있습니다. 말로 직접 확인하는 것이 오해를 줄입니다.", "완벽주의적 성향으로 작은 실수에도 예민하게 반응할 수 있습니다. 서로의 단점을 넉넉히 수용하는 연습이 필요합니다."],
       advice: ["지적인 관심사를 키워보세요. 책이나 강연, 전시회를 즐기는 습관이 이 인연을 가까이 불러옵니다.", "신뢰를 쌓는 꾸준한 행동이 중요합니다. 작은 약속도 반드시 지키는 습관을 들이세요.", "주변 지인들과의 네트워크를 넓혀보세요. 이 인연은 직간접적인 소개를 통해 올 가능성이 높습니다."],
       timeline: { meetAge: "29~31세", datingPeriod: "약 1~2년", marriageAge: "32~34세", children: "1~2명, 계획적으로 준비" },
+      nameHint: "'지', '서', '윤' 계열의 이름일 가능성이 높습니다. 갑목의 곧고 우아한 기운이 맑은 이름과 어울립니다.",
+      pastLife: "전생에 같은 서당에서 공부하던 선비와 선생의 딸이었습니다. 신분의 차이로 인해 이루지 못한 인연이 이번 생에 다시 이어지고 있습니다.",
+      kakaoFirstMessage: "혹시 지난번 모임에서 잠깐 얘기 나눴던 분 맞으시죠? 그때 나눈 이야기가 계속 생각나서요 😊",
+      firstDate: "오후 2시, 광화문 근처 독립서점 카페에서 시작해 북촌 골목길 산책 후 한남동 조용한 레스토랑에서 마무리하는 코스입니다. 지적이고 감성적인 분위기를 좋아하는 배우자에게 딱 맞는 하루입니다.",
+      conflictAndMakeup: "주로 '계획 vs 즉흥'으로 의견이 부딪힙니다. 배우자는 꼼꼼하게 준비하는 것을 선호하는데, 상대가 갑자기 일정을 바꾸면 크게 스트레스를 받습니다. 화해는 조용히 시간을 갖고, 다음 날 아무 일 없었다는 듯 먼저 커피를 건네는 방식으로 합니다.",
+      favoriteThings: { food: "깔끔한 일식·오마카세, 분위기 있는 와인 바", music: "잔잔한 재즈·클래식 피아노, 새벽 감성 팝", movie: "감성 드라마·독립영화, 다큐멘터리", place: "국립중앙도서관·소규모 전시회·경복궁 근처 카페" },
+      warnType: "외모와 첫인상은 비슷하지만 감정 기복이 심하고 즉흥적인 사람은 악연입니다. 겉으로는 지적으로 보여도 깊은 대화를 싫어하는 타입은 결이 맞지 않습니다.",
+      celebrityVibe: "박은빈의 지적이고 단아한 분위기에 김고은의 섬세한 눈빛이 더해진 인상입니다. 처음엔 도도해 보이지만 웃을 때 확 달라지는 반전 매력이 있습니다.",
+      myCharm: "처음 봤을 때 당신의 차분하고 진지한 눈빛이 마음에 들었어요. 가볍지 않고 깊이 있어 보이는 첫인상이 계속 생각났어요. 말 한 마디도 허투루 하지 않는 것 같아서 믿음이 갔어요.",
+      chemistryType: { name: "지적 소울메이트", emoji: "📚", desc: "두 사람이 함께하면 마치 오랜 친구처럼 자연스러운 대화가 끊이지 않습니다. 서로의 생각을 존중하면서도 자극을 주고받는 관계로, 시간이 갈수록 더 깊어지는 인연입니다." },
+      monthlyChance: [45, 52, 78, 65, 55, 48, 42, 60, 88, 75, 62, 50],
+      readiness: { score: 72, comment: "현재 자기 자신에게 집중하는 시기로 인연을 맞을 내적 준비가 70% 이상 되어 있습니다. 봄과 가을에 외부 활동을 늘리면 인연의 확률이 크게 높아집니다." },
     },
     man: {
       bodySpec: { height: "178~183cm", figure: "넓은 어깨와 균형 잡힌 체형, 단정한 체격", fashion: "비즈니스 캐주얼 + 클래식 수트", vibe: "묵직하고 신뢰감 넘치는 카리스마" },
@@ -330,6 +354,18 @@ const PREMIUM_DEMO: Record<string, { woman: PremiumData; man: PremiumData }> = {
       caution: ["일을 최우선시하는 성향으로 연인과의 시간이 부족해질 수 있습니다. 데이트 일정을 미리 계획하는 습관이 필요합니다.", "감정보다 논리를 앞세우는 경향이 있어 위로가 필요한 순간에 상처를 줄 수 있습니다.", "높은 기준으로 인해 연인에게 부담을 줄 수 있습니다. 완벽함보다 함께 성장하는 관계를 추구하세요."],
       advice: ["커리어와 자기계발에 꾸준히 투자하세요. 이 인연은 비슷한 목표를 가진 환경에서 만날 가능성이 높습니다.", "사교적인 모임에 적극 참여해보세요. 인연의 시작점은 지인의 소개일 가능성이 큽니다.", "당신의 진심을 표현하는 연습을 하세요. 이 배우자는 행동뿐 아니라 언어적 표현도 중요하게 생각합니다."],
       timeline: { meetAge: "30~32세", datingPeriod: "약 1~2년", marriageAge: "33~35세", children: "2명, 안정적인 계획하에" },
+      nameHint: "'준', '현', '민' 계열의 이름일 가능성이 높습니다. 갑목의 강직하고 곧은 기운이 힘 있는 이름과 어울립니다.",
+      pastLife: "전생에 같은 전장에서 목숨을 함께 한 무장과 의사였습니다. 짧지만 강렬한 인연이 이번 생에 더 완전한 형태로 다시 만나게 됩니다.",
+      kakaoFirstMessage: "그날 말씀 나눴던 거 계속 생각이 나더라고요. 혹시 시간 되시면 커피 한 잔 어떠세요?",
+      firstDate: "저녁 6시, 서울 도심의 조용한 이자카야에서 시작해 야경이 보이는 루프탑 바로 마무리하는 코스입니다. 처음엔 진중하게 대화하고 분위기가 무르익으면 자연스럽게 가까워지는 흐름이 이 배우자에게 잘 맞습니다.",
+      conflictAndMakeup: "주로 '표현 방식'에서 갈등이 생깁니다. 배우자는 행동으로 사랑을 표현하는데, 상대방은 말로 확인하고 싶어하는 차이가 있습니다. 화해는 배우자가 먼저 행동으로 나서는 방식, 예를 들어 좋아하는 음식을 사 오거나 조용히 옆에 앉아 있는 것으로 마무리됩니다.",
+      favoriteThings: { food: "정통 일식·스시, 고기구이 전문점", music: "감성 R&B·재즈, 조용한 인디팝", movie: "범죄 스릴러·역사 드라마, 다큐멘터리", place: "한강공원·고즈넉한 산책로·분위기 있는 바" },
+      warnType: "겉으로는 믿음직해 보이지만 자기 이익을 먼저 생각하는 사람은 악연입니다. 처음엔 강인해 보여도 책임감이 없는 타입과는 오래가지 못합니다.",
+      celebrityVibe: "박서준의 따뜻하고 듬직한 분위기에 공유의 지적인 눈빛이 더해진 인상입니다. 카리스마 있지만 편안한 반전 매력의 소유자입니다.",
+      myCharm: "처음 봤을 때 당신의 단단하고 진실된 눈빛이 인상 깊었어요. 가볍게 웃으면서도 무게감이 느껴지는 사람이라는 게 한눈에 보였어요. 쉽게 흔들리지 않을 것 같아서 믿음이 갔어요.",
+      chemistryType: { name: "든든한 한 팀", emoji: "🏆", desc: "두 사람이 함께하면 각자의 강점이 시너지를 만들어내는 환상의 팀입니다. 말없이도 서로를 이해하는 신뢰 관계로, 위기에 더 강해지는 인연입니다." },
+      monthlyChance: [40, 48, 65, 58, 50, 44, 38, 55, 82, 90, 68, 52],
+      readiness: { score: 68, comment: "현재 일과 목표에 집중하는 시기로 인연을 맞을 준비가 서서히 무르익고 있습니다. 가을부터 사교 활동을 늘리면 자연스러운 만남의 기회가 찾아옵니다." },
     },
   },
   무: {
@@ -340,6 +376,18 @@ const PREMIUM_DEMO: Record<string, { woman: PremiumData; man: PremiumData }> = {
       caution: ["자신보다 타인을 먼저 챙기는 성향으로 가끔 자신의 감정을 억누릅니다. 연인이 먼저 감정을 물어봐 주는 것이 중요합니다.", "변화보다 안정을 선호해 새로운 시도에 소극적일 수 있습니다. 함께 작은 도전을 즐기는 경험을 쌓아보세요.", "갈등을 피하려는 성향으로 문제를 해결하지 않고 넘어갈 수 있습니다. 솔직한 대화를 유도하는 환경을 만드세요."],
       advice: ["따뜻한 커뮤니티 활동에 참여해보세요. 봉사, 모임, 클래스 등에서 인연이 시작될 가능성이 큽니다.", "진심 어린 관심을 표현하는 연습을 하세요. 이 배우자는 화려한 이벤트보다 진정성에 감동합니다.", "안정적이고 편안한 분위기를 만드는 것을 잊지 마세요. 첫 인상에서 편안함을 주는 것이 핵심입니다."],
       timeline: { meetAge: "27~29세", datingPeriod: "약 1~3년", marriageAge: "29~32세", children: "2명, 자연스럽게" },
+      nameHint: "'하', '나', '아' 계열의 부드럽고 따뜻한 이름일 가능성이 높습니다. 무토의 포근하고 넉넉한 기운이 친근한 이름과 잘 어울립니다.",
+      pastLife: "전생에 같은 마을의 의원과 약초를 캐던 소녀였습니다. 서로 의지하며 살았지만 일찍 헤어진 인연으로, 이번 생에 더 오래 함께하기 위해 다시 만납니다.",
+      kakaoFirstMessage: "오늘 날씨 좋더라고요~ 혹시 요즘 잘 지내고 계세요? 😊 갑자기 연락해서 놀라셨죠?",
+      firstDate: "오전 11시, 서울숲 또는 망원 한강공원에서 피크닉으로 시작해 근처 감성 카페에서 디저트로 마무리하는 코스입니다. 자연스럽고 편안한 분위기에서 천천히 마음을 여는 배우자에게 꼭 맞는 하루입니다.",
+      conflictAndMakeup: "주로 '내 마음을 왜 몰라줘'라는 감정적 갈등이 생깁니다. 배우자는 말하지 않아도 알아주길 바라는데, 상대가 눈치채지 못하면 서운함이 쌓입니다. 화해는 맛있는 음식을 함께 먹으며 자연스럽게 분위기가 풀리는 방식으로 이루어집니다.",
+      favoriteThings: { food: "집밥 느낌의 한식·분식, 따뜻한 국밥", music: "인디팝·어쿠스틱 기타, 잔잔한 발라드", movie: "가족·힐링 드라마, 따뜻한 로맨스 영화", place: "동네 카페·시장 구경·한강 산책" },
+      warnType: "겉으로는 친절해 보이지만 자기 중심적이고 배려심이 없는 사람은 악연입니다. 말만 앞서고 행동이 따르지 않는 타입과는 결국 상처만 남게 됩니다.",
+      celebrityVibe: "아이유의 친근하고 따뜻한 미소에 신민아의 포근한 눈빛이 더해진 분위기입니다. 어디서든 편안함을 주는 자연스러운 매력이 있습니다.",
+      myCharm: "처음 봤을 때 당신의 따뜻하고 진심 어린 미소가 마음에 들었어요. 억지로 꾸미지 않아도 자연스럽게 빛나는 것 같았어요. 곁에 있으면 왠지 마음이 편해질 것 같다고 느꼈어요.",
+      chemistryType: { name: "따뜻한 봄날 같은 사이", emoji: "🌸", desc: "두 사람이 함께하면 서로의 일상이 조금 더 따뜻해지고 안온해집니다. 큰 이벤트보다 소소한 일상을 함께 쌓아가는 것이 이 인연의 가장 큰 행복입니다." },
+      monthlyChance: [55, 70, 82, 75, 88, 65, 50, 58, 62, 55, 48, 60],
+      readiness: { score: 80, comment: "봄·여름 기운이 강한 지금, 인연을 맞을 준비가 거의 다 되어 있습니다. 새로운 사람을 만나는 것에 열린 마음을 유지하면 곧 자연스러운 만남이 찾아옵니다." },
     },
     man: {
       bodySpec: { height: "174~179cm", figure: "든든하고 넉넉한 체형, 보기만 해도 믿음직한 인상", fashion: "단정한 캐주얼 + 클래식 아우터", vibe: "조용하지만 곁에 있으면 마음이 놓이는 사람" },
@@ -348,6 +396,18 @@ const PREMIUM_DEMO: Record<string, { woman: PremiumData; man: PremiumData }> = {
       caution: ["감정 표현이 적어 무관심해 보일 수 있습니다. 먼저 감정을 나누자고 제안하는 노력이 필요합니다.", "변화에 적응하는 속도가 느릴 수 있습니다. 새로운 상황에서 충분한 시간을 주는 것이 중요합니다.", "일상의 루틴을 매우 중요시해 예상치 못한 변화에 스트레스를 받을 수 있습니다."],
       advice: ["생활 속 커뮤니티에 꾸준히 참여하세요. 이 인연은 자연스럽고 반복적인 만남 속에서 시작됩니다.", "신뢰를 먼저 보여주세요. 이 배우자는 천천히 마음을 여는 타입이므로 꾸준함이 가장 중요합니다.", "여유롭고 따뜻한 분위기의 데이트 장소를 선택하세요. 조용한 카페나 공원이 좋은 시작점이 됩니다."],
       timeline: { meetAge: "28~30세", datingPeriod: "약 2~3년", marriageAge: "31~33세", children: "2명, 여유롭게 계획" },
+      nameHint: "'성', '동', '우' 계열의 든든한 느낌의 이름일 가능성이 높습니다. 무토의 안정적이고 믿음직한 기운이 중후한 이름과 잘 맞습니다.",
+      pastLife: "전생에 같은 동네 어귀의 대장장이와 그 집에 밥을 배달하던 소녀였습니다. 티격태격하면서도 서로를 챙기던 인연으로, 이번 생에 더 성숙한 사랑으로 다시 이어집니다.",
+      kakaoFirstMessage: "요즘 바쁘시죠? 밥은 잘 드시고 있어요? 오랜만에 연락해봤어요.",
+      firstDate: "저녁 6시, 동네 분위기 좋은 고기구이집에서 시작해 가볍게 맥주 한 잔 하는 소박하지만 알찬 코스입니다. 화려하지 않아도 편안하게 서로를 알아가는 시간이 이 배우자에게 가장 좋은 첫 만남입니다.",
+      conflictAndMakeup: "주로 '변화 vs 안정' 문제로 갈등이 생깁니다. 배우자는 익숙한 것을 선호하는데 상대가 새로운 시도를 강요하면 부담을 느낍니다. 화해는 시간이 지나면 자연스럽게 해결되는 편이며, 맛있는 음식 앞에서 언제 그랬냐는 듯 풀립니다.",
+      favoriteThings: { food: "든든한 한식·삼겹살, 뜨끈한 찌개 맛집", music: "편안한 발라드·7080 레트로, 잔잔한 포크", movie: "감동 실화·가족 드라마, 한국형 액션", place: "동네 단골 식당·공원 벤치·조용한 술집" },
+      warnType: "겉으로는 안정적으로 보이지만 의존성이 강하고 주도성이 없는 사람은 악연입니다. 처음엔 편해 보여도 결정적인 순간에 책임을 회피하는 타입과는 지치게 됩니다.",
+      celebrityVibe: "조인성의 따뜻하고 믿음직한 분위기에 손석구의 깊고 진한 눈빛이 더해진 인상입니다. 말수는 적어도 행동 하나하나에 진심이 담겨 있는 사람입니다.",
+      myCharm: "처음 봤을 때 당신의 여유롭고 든든한 분위기에 마음이 놓였어요. 무언가 기대고 싶은 느낌이랄까요. 조용하지만 주변을 세심하게 살피는 것 같아서 인상 깊었어요.",
+      chemistryType: { name: "평생 단짝 같은 사이", emoji: "🤝", desc: "두 사람이 함께하면 오랜 친구처럼 자연스럽고 편안합니다. 극적인 설렘보다는 깊고 진한 신뢰가 쌓이는 관계로, 나이 들수록 더 빛나는 인연입니다." },
+      monthlyChance: [48, 55, 62, 68, 72, 60, 52, 58, 85, 78, 65, 55],
+      readiness: { score: 65, comment: "지금은 자신의 기반을 다지는 시기로 인연을 맞을 준비가 서서히 되어가고 있습니다. 가을부터 주변 지인들과의 교류를 늘리면 자연스러운 소개팅 기회가 생깁니다." },
     },
   },
 };
@@ -358,52 +418,82 @@ function getDefaultPremium(isWoman: boolean) {
   return isWoman ? base.woman : base.man;
 }
 
+// 천간별 추가 신규 필드 (갑/무 외 나머지 fallback 데이터)
+const EXTRA_DEMO: Record<string, {
+  woman: Pick<PremiumData, "nameHint"|"pastLife"|"kakaoFirstMessage"|"firstDate"|"conflictAndMakeup"|"favoriteThings"|"warnType"|"celebrityVibe"|"myCharm"|"chemistryType"|"monthlyChance"|"readiness">;
+  man:   Pick<PremiumData, "nameHint"|"pastLife"|"kakaoFirstMessage"|"firstDate"|"conflictAndMakeup"|"favoriteThings"|"warnType"|"celebrityVibe"|"myCharm"|"chemistryType"|"monthlyChance"|"readiness">;
+}> = {
+  을: {
+    woman: {
+      nameHint: "'수', '유', '은' 계열의 부드럽고 우아한 이름일 가능성이 높습니다.",
+      pastLife: "전생에 함께 꽃밭을 가꾸던 정원사 남매였습니다. 서로를 아끼던 마음이 이번 생에 깊은 인연으로 이어집니다.",
+      kakaoFirstMessage: "안녕하세요~ 혹시 저 기억하세요? 오늘 날씨가 봄 같아서 갑자기 생각났어요 🌸",
+      firstDate: "오후 1시, 성수동 감성 카페에서 시작해 뚝섬 한강공원 산책으로 이어지는 봄날 같은 코스입니다.",
+      conflictAndMakeup: "감정을 솔직하게 표현하지 못해 서운함이 쌓이는 패턴이 있습니다. 화해는 따뜻한 음식을 함께 먹으며 자연스럽게 이루어집니다.",
+      favoriteThings: { food: "예쁜 브런치 카페·파스타", music: "인디팝·어쿠스틱 커버", movie: "감성 로맨스·힐링 드라마", place: "꽃시장·작은 전시회·강변 카페" },
+      warnType: "겉으로는 부드러워 보이지만 감정 조절이 안 되는 사람은 악연입니다. 표면적으로 비슷해 보여도 내면의 결이 다른 타입과는 오래 가지 못합니다.",
+      celebrityVibe: "수지의 청순하고 우아한 분위기에 한가인의 섬세한 눈빛이 더해진 인상입니다.",
+      myCharm: "처음 봤을 때 당신의 부드럽고 따뜻한 눈빛이 마음에 들었어요. 억지로 꾸미지 않은 자연스러움이 오히려 더 아름다웠어요.",
+      chemistryType: { name: "봄비 같은 설렘", emoji: "🌧️", desc: "두 사람이 함께하면 잔잔하지만 촉촉하게 서로를 채워주는 관계입니다. 처음엔 수줍지만 시간이 지날수록 깊어지는 인연입니다." },
+      monthlyChance: [50, 65, 88, 72, 60, 55, 48, 58, 70, 62, 55, 50],
+      readiness: { score: 75, comment: "봄 기운이 강한 지금, 인연을 맞을 준비가 잘 되어 있습니다. 자연스러운 모임과 일상적인 만남에서 인연이 시작될 것입니다." },
+    },
+    man: {
+      nameHint: "'진', '우', '태' 계열의 부드러우면서 강인한 이름일 가능성이 높습니다.",
+      pastLife: "전생에 함께 여행하던 나그네와 여관 주인이었습니다. 짧은 만남이었지만 서로에게 깊은 인상을 남긴 인연입니다.",
+      kakaoFirstMessage: "안녕하세요, 혹시 바쁘시지 않으면 잠깐 얘기 나눌 수 있을까요? 최근에 생각이 나서요.",
+      firstDate: "저녁 6시, 이태원 분위기 있는 레스토랑에서 저녁 식사 후 가볍게 칵테일 바로 이어지는 세련된 코스입니다.",
+      conflictAndMakeup: "결정을 미루는 습관 때문에 갈등이 생기기도 합니다. 화해는 상대방이 먼저 다가오면 금방 마음을 여는 방식입니다.",
+      favoriteThings: { food: "이탈리안·스테이크 레스토랑", music: "감성 재즈·뉴에이지", movie: "로맨스 멜로·예술영화", place: "갤러리·루프탑 바·한강뷰 카페" },
+      warnType: "처음엔 매력적이지만 이중적인 면모를 가진 사람은 악연입니다. 말과 행동이 다른 타입과는 결국 신뢰가 무너집니다.",
+      celebrityVibe: "정해인의 부드럽고 섬세한 분위기에 박보검의 따뜻한 미소가 더해진 인상입니다.",
+      myCharm: "처음 봤을 때 당신의 자연스럽고 편안한 분위기에 마음이 열렸어요. 뭔가 오래전부터 알던 사람 같은 느낌이 들었어요.",
+      chemistryType: { name: "잔잔한 강물 같은 사이", emoji: "🌊", desc: "두 사람이 함께하면 조용하지만 깊고 오래가는 관계입니다. 눈에 띄진 않아도 늘 곁에 있어주는 믿음직한 인연입니다." },
+      monthlyChance: [45, 60, 75, 80, 68, 55, 50, 60, 72, 65, 55, 48],
+      readiness: { score: 70, comment: "봄·여름에 걸쳐 인연을 맞을 준비가 되어 있습니다. 주변 사람들과 자연스럽게 어울리는 것이 인연의 출발점이 됩니다." },
+    },
+  },
+};
+
+function getExtraDemo(dayGan: string, isWoman: boolean) {
+  const entry = EXTRA_DEMO[dayGan] ?? EXTRA_DEMO["을"];
+  return isWoman ? entry.woman : entry.man;
+}
+
 function getDemoData(dayGan: string, isWoman: boolean) {
   const data = OHAENG_DEMO[dayGan] ?? OHAENG_DEMO["무"];
   const t = TITLES[dayGan] ?? TITLES["무"];
-  const premium = (PREMIUM_DEMO[dayGan] ?? null);
-  const premiumData = premium ? (isWoman ? premium.woman : premium.man) : getDefaultPremium(isWoman);
+  const premiumEntry = PREMIUM_DEMO[dayGan] ?? null;
+  // 갑/무는 직접 데이터, 나머지는 을 또는 무 fallback (새 필드 포함)
+  const premiumData = premiumEntry
+    ? (isWoman ? premiumEntry.woman : premiumEntry.man)
+    : getDefaultPremium(isWoman);
+  const extraData = getExtraDemo(dayGan, isWoman);
 
-  if (isWoman) {
-    return {
-      description: data.womanDesc,
-      imagePrompt: data.womanPrompt,
-      characteristics: data.womanTraits,
-      mbti: data.womanMbti,
-      job: data.womanJob,
-      hobbies: data.womanHobbies,
-      personality: data.womanPersonality,
-      loveStyle: data.womanLoveStyle,
-      firstMeet: data.womanFirstMeet,
-      lifeStyle: data.womanLifeStyle,
-      compatibility: data.womanCompatibility,
-      descTitle: t.woman.desc,
-      personalityTitle: t.woman.personality,
-      loveStyleTitle: t.woman.love,
-      lifeStyleTitle: t.woman.life,
-      firstMeetTitle: t.woman.meet,
-      ...premiumData,
-    };
-  }
-  return {
-    description: data.manDesc,
-    imagePrompt: data.manPrompt,
-    characteristics: data.manTraits,
-    mbti: data.manMbti,
-    job: data.manJob,
-    hobbies: data.manHobbies,
-    personality: data.manPersonality,
-    loveStyle: data.manLoveStyle,
-    firstMeet: data.manFirstMeet,
-    lifeStyle: data.manLifeStyle,
+  const base = isWoman ? {
+    description: data.womanDesc, imagePrompt: data.womanPrompt,
+    characteristics: data.womanTraits, mbti: data.womanMbti,
+    job: data.womanJob, hobbies: data.womanHobbies,
+    personality: data.womanPersonality, loveStyle: data.womanLoveStyle,
+    firstMeet: data.womanFirstMeet, lifeStyle: data.womanLifeStyle,
+    compatibility: data.womanCompatibility,
+    descTitle: t.woman.desc, personalityTitle: t.woman.personality,
+    loveStyleTitle: t.woman.love, lifeStyleTitle: t.woman.life,
+    firstMeetTitle: t.woman.meet,
+  } : {
+    description: data.manDesc, imagePrompt: data.manPrompt,
+    characteristics: data.manTraits, mbti: data.manMbti,
+    job: data.manJob, hobbies: data.manHobbies,
+    personality: data.manPersonality, loveStyle: data.manLoveStyle,
+    firstMeet: data.manFirstMeet, lifeStyle: data.manLifeStyle,
     compatibility: data.manCompatibility,
-    descTitle: t.man.desc,
-    personalityTitle: t.man.personality,
-    loveStyleTitle: t.man.love,
-    lifeStyleTitle: t.man.life,
+    descTitle: t.man.desc, personalityTitle: t.man.personality,
+    loveStyleTitle: t.man.love, lifeStyleTitle: t.man.life,
     firstMeetTitle: t.man.meet,
-    ...premiumData,
   };
+
+  // premiumData가 새 필드를 포함하지 않는 경우(이전 천간) extraData로 보완
+  return { ...base, ...extraData, ...premiumData };
 }
 
 export function getDemoAnalysis(gender: "male" | "female", sajuInfo: SajuInfo): SajuAnalysis {
