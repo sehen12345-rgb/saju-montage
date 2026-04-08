@@ -460,7 +460,7 @@ function getExtraDemo(dayGan: string, isWoman: boolean) {
   return isWoman ? entry.woman : entry.man;
 }
 
-function getDemoData(dayGan: string, isWoman: boolean) {
+export function getDemoData(dayGan: string, isWoman: boolean) {
   const data = OHAENG_DEMO[dayGan] ?? OHAENG_DEMO["무"];
   const t = TITLES[dayGan] ?? TITLES["무"];
   const premiumEntry = PREMIUM_DEMO[dayGan] ?? null;

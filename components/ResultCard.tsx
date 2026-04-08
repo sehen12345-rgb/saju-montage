@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSession, signIn } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import type { GenerateResult, SajuAnalysis } from "@/lib/types";
 import { isPaidForSaju, savePaidRecord, makeSajuHash } from "@/lib/paymentStorage";
 
@@ -282,8 +282,7 @@ function BlurredSection({ label }: { label: string }) {
 function PayModal({ onClose, onPay }: { onClose: () => void; onPay: () => void }) {
   const [paying, setPaying] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [timeLeft, setTimeLeft] = useState(599); // 9:59 countdown
-  const { data: session } = useSession();
+  const [timeLeft, setTimeLeft] = useState(599);
 
   useEffect(() => {
     const t = setInterval(() => {
@@ -298,17 +297,24 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: () => void }
   const minutes = String(Math.floor(timeLeft / 60)).padStart(2, "0");
   const seconds = String(timeLeft % 60).padStart(2, "0");
 
-  async function handlePay() {
+  async function handlePay(method: "카카오페이" | "카드") {
     if (paying) return;
     setPaying(true);
     setError(null);
 
     const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY;
+    const isDemoAllowed = process.env.NEXT_PUBLIC_DEMO_PAYMENT === "true";
 
+    // 데모 모드: NEXT_PUBLIC_DEMO_PAYMENT=true 일 때만 허용
     if (!clientKey || clientKey === "your_toss_client_key_here") {
-      await new Promise((r) => setTimeout(r, 1200));
+      if (isDemoAllowed) {
+        await new Promise((r) => setTimeout(r, 1200));
+        setPaying(false);
+        onPay();
+        return;
+      }
+      setError("결제 설정이 완료되지 않았습니다. 관리자에게 문의해주세요.");
       setPaying(false);
-      onPay();
       return;
     }
 
@@ -328,10 +334,10 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: () => void }
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const tossPayments = (window as any).TossPayments(clientKey);
-      await tossPayments.requestPayment("카드", {
+      await tossPayments.requestPayment(method, {
         amount: 990,
         orderId,
-        orderName: "내 배우자 얼굴봤다 프리미엄",
+        orderName: "사주 배우자 AI 몽타주",
         successUrl: `${window.location.origin}/payment/success`,
         failUrl: `${window.location.origin}/payment/fail`,
       });
@@ -347,123 +353,106 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: () => void }
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden max-h-[92vh] overflow-y-auto">
+
         {/* 헤더 */}
-        <div className="bg-gradient-to-r from-amber-500 to-orange-500 p-5 text-white text-center sticky top-0">
+        <div className="bg-gradient-to-r from-amber-500 to-orange-500 p-5 text-white text-center sticky top-0 z-10">
+          <button onClick={onClose} className="absolute top-4 right-4 text-white/70 hover:text-white text-xl leading-none">✕</button>
           <div className="text-3xl mb-1.5">🎨</div>
-          <h2 className="text-lg font-bold">배우자 몽타주 공개</h2>
-          <p className="text-amber-100 text-xs mt-0.5 mb-2">AI가 그린 운명의 상대 얼굴을 확인하세요</p>
-          {timeLeft > 0 ? (
+          <h2 className="text-lg font-bold">배우자 AI 몽타주 공개</h2>
+          <p className="text-amber-100 text-xs mt-0.5 mb-2">운명의 상대 얼굴 + 전체 분석 결과</p>
+          {timeLeft > 0 && (
             <div className="inline-flex items-center gap-1.5 bg-red-500/80 rounded-full px-3 py-1 text-xs font-bold">
               <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-              할인 종료까지 {minutes}:{seconds}
-            </div>
-          ) : (
-            <div className="inline-flex items-center gap-1.5 bg-gray-500/60 rounded-full px-3 py-1 text-xs">
-              할인 종료됨
+              특가 종료까지 {minutes}:{seconds}
             </div>
           )}
         </div>
 
-        {/* 포함 내용 */}
-        <div className="p-6 space-y-3">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">결제 후 공개되는 내용</p>
-          <div className="space-y-2">
-            {[
-              ["🎨", "배우자 AI 몽타주 이미지 공개", true],
-              ["💬", "배우자가 처음 보낼 카카오톡 메시지", true],
-              ["💑", "우리의 케미 타입 분석", true],
-              ["🌟", "닮은꼴 연예인 분위기", false],
-              ["💜", "배우자 눈에 비친 나의 매력포인트", false],
-              ["📅", "월별 인연운 차트 (12개월)", false],
-              ["🌱", "인연 준비도 점수", false],
-              ["✨", "배우자 이름 첫 글자 힌트", false],
-              ["🌙", "전생 인연 이야기", false],
-              ["💎", "배우자 스펙 & 취향 분석", false],
-              ["📊", "5개 궁합 점수 + 갈등 패턴", false],
-              ["🌸", "첫 만남 시나리오 & 타임라인", false],
-              ["💡", "인연을 당기는 조언 3가지", false],
-            ].map(([icon, text, highlight]) => (
-              <div key={text as string} className={`flex items-center gap-2 text-sm ${highlight ? "font-semibold text-amber-800" : "text-gray-600"}`}>
-                <span>{icon}</span>
-                <span>{text}</span>
-              </div>
-            ))}
+        <div className="p-5 space-y-4">
+
+          {/* 포함 항목 */}
+          <div>
+            <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-2.5">결제 후 공개되는 항목</p>
+            <div className="grid grid-cols-2 gap-1.5">
+              {[
+                ["🎨", "AI 배우자 몽타주"],
+                ["💬", "카카오톡 첫 메시지"],
+                ["💑", "케미 타입 분석"],
+                ["🌟", "닮은꼴 연예인 분위기"],
+                ["💜", "나의 매력포인트"],
+                ["📅", "월별 인연운 차트"],
+                ["✨", "이름 첫 글자 힌트"],
+                ["🌙", "전생 인연 이야기"],
+                ["💎", "외모·스펙 상세"],
+                ["📊", "5개 궁합 점수"],
+                ["🌸", "첫 만남 시나리오"],
+                ["💡", "인연 조언 3가지"],
+              ].map(([icon, text]) => (
+                <div key={text} className="flex items-center gap-1.5 text-xs text-gray-700 bg-gray-50 rounded-lg px-2.5 py-2">
+                  <span>{icon}</span><span>{text}</span>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* 가격 */}
-          <div className="bg-amber-50 rounded-2xl p-4 text-center border border-amber-200 mt-4">
-            <div className="flex items-center justify-center gap-2 mb-1">
+          <div className="bg-amber-50 rounded-2xl p-4 text-center border border-amber-200">
+            <div className="flex items-center justify-center gap-2 mb-0.5">
               <span className="text-sm text-gray-400 line-through">3,900원</span>
               <span className="text-xs bg-red-100 text-red-600 font-bold px-2 py-0.5 rounded-full">74% 할인</span>
             </div>
             <p className="text-3xl font-black text-amber-900">990<span className="text-lg font-bold">원</span></p>
-            <p className="text-xs text-gray-400 mt-1">단 한 번만 결제 · 커피 한 잔 값</p>
+            <p className="text-xs text-gray-400 mt-0.5">1회 결제 · 회원가입 불필요</p>
           </div>
 
-          {/* 오류 메시지 */}
+          {/* 오류 */}
           {error && (
             <div className="text-red-600 text-sm text-center bg-red-50 rounded-xl px-3 py-2 flex items-center gap-2">
-              <span>⚠️</span>
-              <span>{error}</span>
-              <button onClick={() => setError(null)} className="ml-auto text-red-400 hover:text-red-600">✕</button>
+              <span>⚠️</span><span className="flex-1">{error}</span>
+              <button onClick={() => setError(null)} className="text-red-400">✕</button>
             </div>
           )}
 
-          {/* 소셜 로그인 */}
-          {!session && (
-            <div className="space-y-2">
-              <p className="text-xs text-center text-gray-400 font-medium">로그인으로 결제 내역 영구 보관</p>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => signIn("kakao", { callbackUrl: "/result" })}
-                  className="flex-1 py-2.5 rounded-xl flex items-center justify-center font-bold text-xs text-gray-900 active:scale-95 transition-all"
-                  style={{ backgroundColor: "#FEE500" }}
-                >
-                  <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current mr-1"><path d="M12 3C6.48 3 2 6.48 2 10.8c0 2.72 1.6 5.12 4.04 6.56l-1.02 3.76 4.38-2.88c.84.12 1.72.18 2.6.18 5.52 0 10-3.48 10-7.8S17.52 3 12 3z"/></svg>
-                  카카오
-                </button>
-                <button
-                  onClick={() => signIn("naver", { callbackUrl: "/result" })}
-                  className="flex-1 py-2.5 rounded-xl flex items-center justify-center font-bold text-xs text-white active:scale-95 transition-all"
-                  style={{ backgroundColor: "#03C75A" }}
-                >
-                  <span className="font-black mr-1">N</span>네이버
-                </button>
-                <button
-                  onClick={() => signIn("google", { callbackUrl: "/result" })}
-                  className="flex-1 py-2.5 rounded-xl flex items-center justify-center font-bold text-xs text-gray-700 bg-white border border-gray-200 active:scale-95 transition-all"
-                >
-                  <svg viewBox="0 0 24 24" className="w-4 h-4 mr-1"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-                  구글
-                </button>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="flex-1 h-px bg-gray-200" />
-                <span className="text-xs text-gray-400">또는 바로 결제</span>
-                <div className="flex-1 h-px bg-gray-200" />
-              </div>
-            </div>
-          )}
+          {/* 결제 버튼 */}
+          <div className="space-y-2.5">
+            {/* 카카오페이 — primary */}
+            <button
+              onClick={() => handlePay("카카오페이")}
+              disabled={paying}
+              className="w-full py-4 rounded-2xl font-bold text-base text-gray-900 active:scale-95 disabled:opacity-60 transition-all flex items-center justify-center gap-2 shadow-md"
+              style={{ backgroundColor: "#FEE500" }}
+            >
+              {paying ? (
+                <span className="w-5 h-5 border-2 border-gray-400/40 border-t-gray-600 rounded-full animate-spin" />
+              ) : (
+                <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current shrink-0">
+                  <path d="M12 3C6.48 3 2 6.48 2 10.8c0 2.72 1.6 5.12 4.04 6.56l-1.02 3.76 4.38-2.88c.84.12 1.72.18 2.6.18 5.52 0 10-3.48 10-7.8S17.52 3 12 3z"/>
+                </svg>
+              )}
+              {paying ? "결제 처리 중..." : "카카오페이로 결제하기"}
+            </button>
 
-          <button
-            onClick={handlePay}
-            disabled={paying}
-            className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-lg shadow-lg hover:from-amber-600 hover:to-orange-600 transition-all active:scale-95 disabled:opacity-60"
-          >
-            {paying ? (
-              <span className="flex items-center justify-center gap-2">
-                <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                결제 처리 중...
-              </span>
-            ) : "✨ 990원으로 전체 보기"}
-          </button>
-          <button
-            onClick={onClose}
-            className="w-full py-3 text-gray-400 text-sm hover:text-gray-600 transition-colors"
-          >
-            나중에 볼게요
-          </button>
+            {/* 카드 결제 — secondary */}
+            <button
+              onClick={() => handlePay("카드")}
+              disabled={paying}
+              className="w-full py-3.5 rounded-2xl border-2 border-gray-200 text-gray-600 font-semibold text-sm hover:border-gray-300 active:scale-95 disabled:opacity-60 transition-all flex items-center justify-center gap-2"
+            >
+              💳 신용·체크카드로 결제
+            </button>
+
+            <button
+              onClick={onClose}
+              className="w-full py-2.5 text-gray-400 text-sm hover:text-gray-600 transition-colors"
+            >
+              나중에 볼게요
+            </button>
+          </div>
+
+          <p className="text-[10px] text-gray-400 text-center">
+            토스페이먼츠 PG · 결제 정보는 저장되지 않습니다
+          </p>
         </div>
       </div>
     </div>
@@ -473,16 +462,20 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: () => void }
 // ── 메인 컴포넌트 ──────────────────────────────────────────
 
 export default function ResultCard({ result, onReset }: Props) {
-  const { analysis, imageUrl } = result;
+  const { analysis } = result;
   const { data: session } = useSession();
+  const [currentImageUrl, setCurrentImageUrl] = useState(result.imageUrl);
   const [imgLoaded, setImgLoaded] = useState(false);
   const [imgError, setImgError] = useState(false);
+  const [regenerating, setRegenerating] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [storySharing, setStorySharing] = useState(false);
   const [storyToast, setStoryToast] = useState<string | null>(null);
   const [paid, setPaid] = useState(result.paid ?? false);
   const [showModal, setShowModal] = useState(false);
+
+  const imageUrl = currentImageUrl;
 
   const sajuHash = analysis?.sajuInfo
     ? makeSajuHash(
@@ -521,6 +514,19 @@ export default function ResultCard({ result, onReset }: Props) {
     } catch { /* ignore */ }
     // localStorage에도 저장 (데모 결제 시)
     if (sajuHash) savePaidRecord(sajuHash, `demo_${Date.now()}`);
+  }
+
+  function handleRegenerateImage() {
+    if (regenerating) return;
+    setRegenerating(true);
+    setImgLoaded(false);
+    setImgError(false);
+
+    const newSeed = Math.floor(Math.random() * 999999) + 1;
+    const encoded = encodeURIComponent(analysis.imagePrompt);
+    const newUrl = `https://image.pollinations.ai/prompt/${encoded}?width=768&height=768&model=flux&seed=${newSeed}&nologo=true&enhance=false`;
+    setCurrentImageUrl(newUrl);
+    setTimeout(() => setRegenerating(false), 500);
   }
 
   async function handleDownload() {
@@ -708,10 +714,16 @@ export default function ResultCard({ result, onReset }: Props) {
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-amber-50">
                   <span className="text-4xl">😓</span>
                   <p className="text-amber-700 text-sm">이미지를 불러오지 못했습니다</p>
-                  <button
-                    onClick={() => { setImgError(false); setImgLoaded(false); }}
-                    className="px-5 py-2 bg-amber-500 text-white rounded-xl text-sm font-semibold hover:bg-amber-600"
-                  >🔄 다시 시도</button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => { setImgError(false); setImgLoaded(false); }}
+                      className="px-4 py-2 bg-amber-200 text-amber-800 rounded-xl text-sm font-semibold hover:bg-amber-300"
+                    >🔄 재시도</button>
+                    <button
+                      onClick={handleRegenerateImage}
+                      className="px-4 py-2 bg-amber-500 text-white rounded-xl text-sm font-semibold hover:bg-amber-600"
+                    >✨ 다른 이미지</button>
+                  </div>
                 </div>
               )}
               {!imgError && (
@@ -726,11 +738,19 @@ export default function ResultCard({ result, onReset }: Props) {
               )}
               {imgLoaded && (
                 <>
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
-                  <div className="absolute bottom-4 left-0 right-0 text-center">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
+                  <div className="absolute bottom-4 left-0 right-0 flex items-center justify-center gap-3 px-4">
                     <span className="text-white text-sm font-semibold bg-black/40 px-3 py-1 rounded-full">
                       사주로 그린 배우자 초상화
                     </span>
+                    <button
+                      onClick={handleRegenerateImage}
+                      disabled={regenerating}
+                      className="text-white/80 text-xs bg-black/40 hover:bg-black/60 px-2 py-1 rounded-full transition-all active:scale-95 disabled:opacity-50 shrink-0"
+                      title="다른 모습 보기"
+                    >
+                      {regenerating ? "⏳" : "🔄 다른 모습"}
+                    </button>
                   </div>
                 </>
               )}

@@ -6,13 +6,13 @@ import Link from "next/link";
 import SajuInputForm from "@/components/SajuInputForm";
 import LoadingScreen from "@/components/LoadingScreen";
 import type { SajuInput, GenerateResult } from "@/lib/types";
+import { getSajuSeed } from "@/lib/prompts";
 
 export default function InputPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  const [isDemo, setIsDemo] = useState(false);
 
   async function handleSubmit(data: SajuInput) {
     setLoading(true);
@@ -20,7 +20,7 @@ export default function InputPage() {
     setLoadingStep(0);
 
     try {
-      // Step 1: 사주 분석
+      // Step 1: 사주 분석 (deterministic, instant)
       setLoadingStep(0);
       const analysisRes = await fetch("/api/analyze-saju", {
         method: "POST",
@@ -32,31 +32,27 @@ export default function InputPage() {
         throw new Error(err.error || "사주 분석 실패");
       }
       const analysis = await analysisRes.json();
-      const demoMode = !!analysis.demo;
-      setIsDemo(demoMode);
 
-      // Step 2: 인연 탐색
+      // Step 2: 인연 탐색 (visual pause)
       setLoadingStep(1);
+      await new Promise((r) => setTimeout(r, 1200));
 
-      // Step 3: 이미지 생성
+      // Step 3: 이미지 준비 (Pollinations URL — client-side, free)
       setLoadingStep(2);
-      const imageRes = await fetch("/api/generate-image", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          prompt: analysis.imagePrompt,
-          gender: data.gender,
-          sajuInfo: analysis.sajuInfo,
-          demo: demoMode,
-        }),
-      });
-      if (!imageRes.ok) {
-        const err = await imageRes.json();
-        throw new Error(err.error || "이미지 생성 실패");
-      }
-      const { imageUrl } = await imageRes.json();
+      await new Promise((r) => setTimeout(r, 800));
 
-      const result: GenerateResult = { name: data.name, analysis, imageUrl, gender: data.gender, demo: demoMode };
+      const spouseGender = data.gender === "male" ? "woman" : "man";
+      const seed = getSajuSeed(analysis.sajuInfo, spouseGender);
+      const encoded = encodeURIComponent(analysis.imagePrompt);
+      const imageUrl = `https://image.pollinations.ai/prompt/${encoded}?width=768&height=768&model=flux&seed=${seed}&nologo=true&enhance=false`;
+
+      const result: GenerateResult = {
+        name: data.name,
+        analysis,
+        imageUrl,
+        gender: data.gender,
+        demo: false,
+      };
       sessionStorage.setItem("sajuResult", JSON.stringify(result));
       router.push("/result");
     } catch (err) {

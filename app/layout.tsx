@@ -5,6 +5,7 @@ import AuthProvider from "@/components/AuthProvider";
 import Header from "@/components/Header";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://saju-montage.vercel.app"),
   title: "내 배우자 얼굴봤다 | 사주로 보는 운명의 상대",
   description: "사주팔자로 그려진 내 운명의 배우자 얼굴 🔮 AI가 직접 그린 몽타주를 확인해보세요. 무료 사주 분석 + 배우자 외모 · 성격 · 궁합까지!",
   openGraph: {
