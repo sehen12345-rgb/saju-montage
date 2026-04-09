@@ -239,7 +239,7 @@ function InfoSection({ icon, label, title, children }: {
   );
 }
 
-function ScoreBar({ label, score }: { label: string; score: number }) {
+function ScoreBar({ label, score, delay = 0 }: { label: string; score: number; delay?: number }) {
   const color =
     score >= 90 ? "bg-emerald-400" :
     score >= 80 ? "bg-amber-400" :
@@ -247,13 +247,13 @@ function ScoreBar({ label, score }: { label: string; score: number }) {
   return (
     <div className="flex items-center gap-3">
       <span className="text-xs text-gray-600 w-24 shrink-0">{label}</span>
-      <div className="flex-1 bg-gray-100 rounded-full h-2.5 overflow-hidden">
+      <div className="flex-1 bg-gray-100 rounded-full h-3 overflow-hidden">
         <div
-          className={`h-full rounded-full transition-all duration-700 ${color}`}
-          style={{ width: `${score}%` }}
+          className={`h-full rounded-full ${color}`}
+          style={{ width: `${score}%`, transition: `width 0.8s ease ${delay}ms` }}
         />
       </div>
-      <span className="text-xs font-bold text-gray-700 w-8 text-right">{score}</span>
+      <span className={`text-xs font-black w-8 text-right ${score >= 90 ? "text-emerald-600" : score >= 80 ? "text-amber-600" : "text-orange-500"}`}>{score}</span>
     </div>
   );
 }
@@ -475,6 +475,7 @@ export default function ResultCard({ result, onReset }: Props) {
   const [paid, setPaid] = useState(result.paid ?? false);
   const [showModal, setShowModal] = useState(false);
   const [justUnlocked, setJustUnlocked] = useState(false);
+  const [showStickyBtn, setShowStickyBtn] = useState(false);
 
   const imageUrl = currentImageUrl;
 
@@ -485,6 +486,14 @@ export default function ResultCard({ result, onReset }: Props) {
         result.gender ?? "male"
       )
     : "";
+
+  // 스크롤 시 스티키 결제 버튼 표시 (비결제 상태일 때만)
+  useEffect(() => {
+    if (paid) return;
+    const handler = () => setShowStickyBtn(window.scrollY > 300);
+    window.addEventListener("scroll", handler, { passive: true });
+    return () => window.removeEventListener("scroll", handler);
+  }, [paid]);
 
   // localStorage에 저장된 결제 상태 복원 (브라우저 재시작 후에도 유지)
   useEffect(() => {
@@ -659,6 +668,20 @@ export default function ResultCard({ result, onReset }: Props) {
     <>
       {showModal && <PayModal onClose={() => setShowModal(false)} onPay={handlePaySuccess} />}
 
+      {/* ── 스티키 결제 버튼 (비결제 + 스크롤 시) ── */}
+      {!paid && showStickyBtn && (
+        <div className="fixed bottom-0 left-0 right-0 z-40 p-3 animate-slideUp">
+          <button
+            onClick={() => setShowModal(true)}
+            className="w-full max-w-md mx-auto flex items-center justify-between gap-3 py-4 px-6 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold shadow-2xl active:scale-95 transition-all"
+            style={{ display: "flex" }}
+          >
+            <span className="text-lg">✨ 몽타주 + 전체 보기</span>
+            <span className="bg-white/20 rounded-xl px-3 py-1 text-sm font-black">990원</span>
+          </button>
+        </div>
+      )}
+
       <div className="space-y-5">
         {/* ── 사주 정보 ── */}
         <div className="bg-amber-50 rounded-2xl p-4 border border-amber-200">
@@ -711,6 +734,65 @@ export default function ResultCard({ result, onReset }: Props) {
               <div className="bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl p-4 text-white text-center animate-bounce shadow-lg">
                 <p className="text-xl font-black mb-0.5">🎉 완전 공개됨!</p>
                 <p className="text-sm text-emerald-100">배우자의 모든 것이 열렸습니다</p>
+              </div>
+            )}
+
+            {/* 종합 대시보드 카드 */}
+            {analysis.compatibilityScores && (
+              <div className="animate-popIn bg-gradient-to-br from-amber-900 to-orange-900 rounded-3xl p-5 text-white shadow-2xl">
+                <p className="text-xs text-amber-300 font-semibold mb-4 text-center uppercase tracking-widest">운명 보고서 요약</p>
+                <div className="flex items-center justify-between gap-4">
+                  {/* 원형 궁합 게이지 */}
+                  <div className="flex flex-col items-center gap-1 shrink-0">
+                    {(() => {
+                      const avg = Math.round(Object.values(analysis.compatibilityScores!).reduce((a,b)=>a+b,0)/5);
+                      const r = 36, c = 2*Math.PI*r;
+                      const dash = (avg/100)*c;
+                      return (
+                        <div className="relative w-24 h-24">
+                          <svg className="w-full h-full -rotate-90" viewBox="0 0 96 96">
+                            <circle cx="48" cy="48" r={r} fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="8"/>
+                            <circle cx="48" cy="48" r={r} fill="none" stroke="#fbbf24" strokeWidth="8"
+                              strokeDasharray={`${dash} ${c}`} strokeLinecap="round"
+                              style={{ transition: "stroke-dasharray 1.2s ease" }}/>
+                          </svg>
+                          <div className="absolute inset-0 flex flex-col items-center justify-center">
+                            <span className="text-2xl font-black text-amber-300">{avg}</span>
+                            <span className="text-[10px] text-amber-400">점</span>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                    <span className="text-xs text-amber-300">종합 궁합</span>
+                  </div>
+                  {/* 핵심 정보 */}
+                  <div className="flex-1 space-y-2">
+                    {[
+                      { icon: "🧠", label: "MBTI", value: analysis.mbti },
+                      { icon: "💼", label: "직업", value: analysis.job },
+                      { icon: "💑", label: "케미", value: analysis.chemistryType?.name },
+                      { icon: "💝", label: "사랑언어", value: analysis.loveLanguage?.primary },
+                    ].filter(i => i.value).map(item => (
+                      <div key={item.label} className="flex items-center gap-2">
+                        <span className="text-base shrink-0">{item.icon}</span>
+                        <span className="text-[10px] text-amber-400 w-12 shrink-0">{item.label}</span>
+                        <span className="text-xs font-semibold text-white truncate">{item.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                {analysis.readiness && (
+                  <div className="mt-4 pt-3 border-t border-white/10">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-xs text-amber-300">🌱 인연 준비도</span>
+                      <span className="text-sm font-black text-amber-300">{analysis.readiness.score}%</span>
+                    </div>
+                    <div className="w-full bg-white/10 rounded-full h-2">
+                      <div className="h-2 rounded-full bg-gradient-to-r from-amber-400 to-orange-400"
+                        style={{ width: `${analysis.readiness.score}%`, transition: "width 1.2s ease" }}/>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -873,7 +955,7 @@ export default function ResultCard({ result, onReset }: Props) {
                     { label: "생활 패턴", score: analysis.compatibilityScores.lifestyle },
                     { label: "소통 방식", score: analysis.compatibilityScores.communication },
                     { label: "재정 관념", score: analysis.compatibilityScores.finance },
-                  ].map((s) => <ScoreBar key={s.label} {...s} />)}
+                  ].map((s, i) => <ScoreBar key={s.label} {...s} delay={i * 120} />)}
                 </div>
               </div>
             )}

@@ -10,18 +10,18 @@ interface Props {
 
 const HOUR_OPTIONS = [
   { value: -1, label: "모름", sub: "시간을 모를 경우" },
-  { value: 0,  label: "00–01시", sub: "자시 (子時)" },
-  { value: 2,  label: "02–03시", sub: "축시 (丑時)" },
-  { value: 4,  label: "04–05시", sub: "인시 (寅時)" },
-  { value: 6,  label: "06–07시", sub: "묘시 (卯時)" },
-  { value: 8,  label: "08–09시", sub: "진시 (辰時)" },
-  { value: 10, label: "10–11시", sub: "사시 (巳時)" },
-  { value: 12, label: "12–13시", sub: "오시 (午時)" },
-  { value: 14, label: "14–15시", sub: "미시 (未時)" },
-  { value: 16, label: "16–17시", sub: "신시 (申時)" },
-  { value: 18, label: "18–19시", sub: "유시 (酉時)" },
-  { value: 20, label: "20–21시", sub: "술시 (戌時)" },
-  { value: 22, label: "22–23시", sub: "해시 (亥時)" },
+  { value: 23, label: "23–01시", sub: "자시 (子時)" },
+  { value: 1,  label: "01–03시", sub: "축시 (丑時)" },
+  { value: 3,  label: "03–05시", sub: "인시 (寅時)" },
+  { value: 5,  label: "05–07시", sub: "묘시 (卯時)" },
+  { value: 7,  label: "07–09시", sub: "진시 (辰時)" },
+  { value: 9,  label: "09–11시", sub: "사시 (巳時)" },
+  { value: 11, label: "11–13시", sub: "오시 (午時)" },
+  { value: 13, label: "13–15시", sub: "미시 (未時)" },
+  { value: 15, label: "15–17시", sub: "신시 (申時)" },
+  { value: 17, label: "17–19시", sub: "유시 (酉時)" },
+  { value: 19, label: "19–21시", sub: "술시 (戌時)" },
+  { value: 21, label: "21–23시", sub: "해시 (亥時)" },
 ];
 
 const currentYear = new Date().getFullYear();
