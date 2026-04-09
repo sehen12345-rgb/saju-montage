@@ -72,12 +72,12 @@ export default function Home() {
             {[
               ["🎨", "AI 배우자 몽타주"],
               ["💬", "카카오톡 첫 메시지"],
+              ["💝", "배우자 사랑 언어"],
+              ["🧠", "배우자 심리 분석"],
               ["✨", "이름 첫 글자 힌트"],
               ["🌙", "전생 인연 이야기"],
-              ["💎", "외모·직업·취미 스펙"],
               ["📊", "5가지 궁합 점수"],
-              ["💑", "케미 타입 분석"],
-              ["📅", "월별 인연운 차트"],
+              ["🚀", "인연 실천 가이드"],
             ].map(([icon, text]) => (
               <div key={text} className="flex items-center gap-2 text-sm text-gray-700">
                 <span>{icon}</span><span>{text}</span>

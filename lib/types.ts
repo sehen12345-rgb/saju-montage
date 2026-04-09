@@ -92,6 +92,15 @@ export interface SajuAnalysis {
     score: number;             // 인연 준비도 0~100
     comment: string;           // 준비도 코멘트
   };
+
+  // 신규 프리미엄 콘텐츠
+  loveLanguage?: {
+    primary: string;           // 주요 사랑 언어 (인정하는 말/봉사/선물/함께하는 시간/스킨십)
+    secondary: string;         // 보조 사랑 언어
+    desc: string;              // 배우자의 사랑 표현 방식 2문장
+  };
+  partnerPsychology?: string;  // 배우자 심리 분석 (어떤 사람에게 마음 열리는지)
+  actionGuide?: string[];      // 지금 당장 실천할 인연 행동 가이드 3가지
 }
 
 export interface SajuInfo {

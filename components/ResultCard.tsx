@@ -379,14 +379,14 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: () => void }
                 ["🎨", "AI 배우자 몽타주"],
                 ["💬", "카카오톡 첫 메시지"],
                 ["💑", "케미 타입 분석"],
-                ["🌟", "닮은꼴 연예인 분위기"],
-                ["💜", "나의 매력포인트"],
+                ["💝", "배우자 사랑 언어"],
+                ["🧠", "배우자 심리 분석"],
+                ["🚀", "인연 실천 가이드"],
+                ["🌟", "닮은꼴 연예인"],
                 ["📅", "월별 인연운 차트"],
                 ["✨", "이름 첫 글자 힌트"],
                 ["🌙", "전생 인연 이야기"],
-                ["💎", "외모·스펙 상세"],
                 ["📊", "5개 궁합 점수"],
-                ["🌸", "첫 만남 시나리오"],
                 ["💡", "인연 조언 3가지"],
               ].map(([icon, text]) => (
                 <div key={text} className="flex items-center gap-1.5 text-xs text-gray-700 bg-gray-50 rounded-lg px-2.5 py-2">
@@ -474,6 +474,7 @@ export default function ResultCard({ result, onReset }: Props) {
   const [storyToast, setStoryToast] = useState<string | null>(null);
   const [paid, setPaid] = useState(result.paid ?? false);
   const [showModal, setShowModal] = useState(false);
+  const [justUnlocked, setJustUnlocked] = useState(false);
 
   const imageUrl = currentImageUrl;
 
@@ -503,6 +504,8 @@ export default function ResultCard({ result, onReset }: Props) {
   function handlePaySuccess() {
     setShowModal(false);
     setPaid(true);
+    setJustUnlocked(true);
+    setTimeout(() => setJustUnlocked(false), 4000);
     // sessionStorage 업데이트
     try {
       const stored = sessionStorage.getItem("sajuResult");
@@ -703,6 +706,14 @@ export default function ResultCard({ result, onReset }: Props) {
         {paid ? (
           /* ── 결제 완료: 이미지 + 전체 분석 공개 ── */
           <>
+            {/* 잠금 해제 축하 배너 */}
+            {justUnlocked && (
+              <div className="bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl p-4 text-white text-center animate-bounce shadow-lg">
+                <p className="text-xl font-black mb-0.5">🎉 완전 공개됨!</p>
+                <p className="text-sm text-emerald-100">배우자의 모든 것이 열렸습니다</p>
+              </div>
+            )}
+
             {/* 몽타주 이미지 */}
             <div className="relative w-full aspect-square rounded-2xl overflow-hidden shadow-xl border-4 border-amber-300 bg-amber-50">
               {!imgLoaded && !imgError && (
@@ -791,6 +802,22 @@ export default function ResultCard({ result, onReset }: Props) {
               </div>
             )}
 
+            {/* 배우자의 사랑 언어 */}
+            {analysis.loveLanguage && (
+              <div className="bg-gradient-to-br from-rose-50 to-pink-50 rounded-2xl p-5 border border-rose-200 shadow-sm">
+                <p className="text-xs text-rose-400 font-medium mb-3">💝 배우자의 사랑 언어</p>
+                <div className="flex gap-2 mb-3">
+                  <span className="px-3 py-1.5 bg-rose-500 text-white rounded-full text-xs font-bold">
+                    1순위: {analysis.loveLanguage.primary}
+                  </span>
+                  <span className="px-3 py-1.5 bg-rose-200 text-rose-800 rounded-full text-xs font-semibold">
+                    2순위: {analysis.loveLanguage.secondary}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-700 leading-relaxed">{analysis.loveLanguage.desc}</p>
+              </div>
+            )}
+
             {/* 닮은꼴 연예인 분위기 */}
             {analysis.celebrityVibe && (
               <div className="bg-white rounded-2xl p-5 border border-amber-100 shadow-sm">
@@ -856,6 +883,15 @@ export default function ResultCard({ result, onReset }: Props) {
               <InfoSection icon="💭" label="성격" title={analysis.personalityTitle}>
                 <p className="text-gray-700 leading-relaxed text-sm">{analysis.personality}</p>
               </InfoSection>
+            )}
+
+            {/* 배우자 심리 분석 */}
+            {analysis.partnerPsychology && (
+              <div className="bg-gradient-to-br from-violet-50 to-indigo-50 rounded-2xl p-5 border border-violet-200 shadow-sm">
+                <p className="text-xs text-violet-500 font-medium mb-2">🧠 배우자 심리 분석</p>
+                <h4 className="text-sm font-bold text-violet-900 mb-3">이 사람의 마음을 여는 법</h4>
+                <p className="text-sm text-gray-700 leading-relaxed">{analysis.partnerPsychology}</p>
+              </div>
             )}
 
             {/* 연애 스타일 */}
@@ -1106,6 +1142,24 @@ export default function ResultCard({ result, onReset }: Props) {
                         {i + 1}
                       </span>
                       <p className="text-sm text-gray-700">{a}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 인연 실천 가이드 */}
+            {analysis.actionGuide && analysis.actionGuide.length > 0 && (
+              <div className="bg-gradient-to-br from-amber-900 to-orange-900 rounded-2xl p-5 text-white shadow-lg">
+                <p className="text-xs text-amber-300 font-medium mb-1">🚀 인연을 당기는 실천 가이드</p>
+                <h4 className="text-base font-bold text-white mb-4">지금 당장 시작하세요</h4>
+                <div className="space-y-3">
+                  {analysis.actionGuide.map((guide, i) => (
+                    <div key={i} className="flex gap-3 items-start bg-white/10 rounded-xl p-3 border border-white/20">
+                      <div className="w-7 h-7 rounded-full bg-amber-400 text-amber-900 text-xs font-black flex items-center justify-center shrink-0 mt-0.5">
+                        {i + 1}
+                      </div>
+                      <p className="text-sm text-amber-50 leading-relaxed">{guide}</p>
                     </div>
                   ))}
                 </div>
