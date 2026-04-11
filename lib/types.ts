@@ -1,3 +1,5 @@
+export type ProductType = "spouse" | "guardian";
+
 export interface SajuInput {
   name: string;
   birthYear: number;
@@ -5,6 +7,7 @@ export interface SajuInput {
   birthDay: number;
   birthHour: number;
   gender: "male" | "female";
+  productType?: ProductType;
 }
 
 export interface BodySpec {
@@ -112,9 +115,32 @@ export interface SajuInfo {
 
 export interface GenerateResult {
   name: string;
-  analysis: SajuAnalysis;
+  analysis: SajuAnalysis | GuardianAnalysis;
   imageUrl: string;
   gender?: "male" | "female";
   demo?: boolean;
   paid?: boolean;
+  productType?: ProductType;
+}
+
+export interface GuardianAnalysis {
+  sajuInfo: SajuInfo;
+  imagePrompt: string;
+  description: string;
+  characteristics: string[];
+  guardianType: string;
+  guardianTypeEmoji: string;
+  relationship: string;
+  luckAreas: { area: string; desc: string; score: number }[];
+  howToMeet: string;
+  meetTiming: { ageRange: string; season: string; situation: string };
+  myStrength: string;
+  benefit: string;
+  signToRecognize: string;
+  kakaoFirstMessage?: string;
+  pastLifeConnection?: string;
+  caution: string[];
+  actionGuide: string[];
+  monthlyLuck?: number[];
+  readiness?: { score: number; comment: string };
 }

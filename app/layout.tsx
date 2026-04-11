@@ -6,18 +6,18 @@ import Header from "@/components/Header";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://saju-montage.vercel.app"),
-  title: "내 배우자 얼굴봤다 | 사주로 보는 운명의 상대",
+  title: "내님은누구 | 사주로 보는 운명의 상대",
   description: "사주팔자로 그려진 내 운명의 배우자 얼굴 🔮 AI가 직접 그린 몽타주를 확인해보세요. 무료 사주 분석 + 배우자 외모 · 성격 · 궁합까지!",
   openGraph: {
-    title: "내 배우자 얼굴봤다 👀",
+    title: "내님은누구 👀",
     description: "사주팔자로 그려진 내 운명의 상대 얼굴 🔮 당신의 배우자는 어떻게 생겼을까요?",
     type: "website",
     locale: "ko_KR",
-    siteName: "내 배우자 얼굴봤다",
+    siteName: "내님은누구",
   },
   twitter: {
     card: "summary_large_image",
-    title: "내 배우자 얼굴봤다 👀",
+    title: "내님은누구 👀",
     description: "사주팔자로 그려진 내 운명의 상대 얼굴 🔮",
   },
   keywords: ["사주", "배우자", "몽타주", "운명", "궁합", "사주팔자", "AI", "이미지생성"],
@@ -33,17 +33,10 @@ export default function RootLayout({
       <head>
         <Script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js" strategy="afterInteractive" />
       </head>
-      <body className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
-        <div
-          className="fixed inset-0 opacity-[0.03] pointer-events-none"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='50%25' y='50%25' font-size='30' text-anchor='middle' dominant-baseline='central'%3E%E2%98%AF%3C/text%3E%3C/svg%3E")`,
-            backgroundSize: "60px 60px",
-          }}
-        />
+      <body className="min-h-screen bg-[#F2F2F7]">
         <AuthProvider>
           <Header />
-          <main className="relative z-10 min-h-screen">{children}</main>
+          <main className="min-h-screen">{children}</main>
         </AuthProvider>
       </body>
     </html>

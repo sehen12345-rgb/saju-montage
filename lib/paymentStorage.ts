@@ -39,3 +39,14 @@ export function makeSajuHash(yearPillar: string, monthPillar: string, dayPillar:
   }
   return Math.abs(hash).toString(36);
 }
+
+/** 사주 4기둥 + 성별 + 상품유형으로 해시 생성 */
+export function makeProductHash(yearPillar: string, monthPillar: string, dayPillar: string, hourPillar: string, gender: string, productType: string): string {
+  const str = `${productType}_${yearPillar}${monthPillar}${dayPillar}${hourPillar}${gender}`;
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash) + str.charCodeAt(i);
+    hash = hash & hash;
+  }
+  return Math.abs(hash).toString(36);
+}

@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "내 배우자 얼굴봤다 - 사주로 보는 운명의 상대";
+export const alt = "내님은누구 - 사주로 보는 운명의 상대";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -108,7 +108,7 @@ export default function OGImage() {
                 textShadow: "0 4px 20px rgba(0,0,0,0.3)",
               }}
             >
-              내 배우자 얼굴봤다
+              내님은누구
             </span>
             <span
               style={{

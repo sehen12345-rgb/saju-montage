@@ -9,8 +9,9 @@ interface Props {
 }
 
 const HOUR_OPTIONS = [
-  { value: -1, label: "모름", sub: "시간을 모를 경우" },
-  { value: 23, label: "23–01시", sub: "자시 (子時)" },
+  { value: -1, label: "모름",    sub: "시간을 모를 경우" },
+  { value: 23, label: "23–24시", sub: "야자시 (夜子時)" },
+  { value: 0,  label: "00–01시", sub: "정자시 (正子時)" },
   { value: 1,  label: "01–03시", sub: "축시 (丑時)" },
   { value: 3,  label: "03–05시", sub: "인시 (寅時)" },
   { value: 5,  label: "05–07시", sub: "묘시 (卯時)" },
@@ -35,7 +36,7 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
     birthHour: -1,
     gender: "male",
   });
-  const [step, setStep] = useState(0); // 0:기본정보 1:생년월일 2:시간
+  const [step, setStep] = useState(0);
 
   function set<K extends keyof SajuInput>(k: K, v: SajuInput[K]) {
     setForm((p) => ({ ...p, [k]: v }));
@@ -48,26 +49,28 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
 
   const isStep0Valid = form.name.trim().length > 0;
   const isStep1Valid = form.birthYear > 0 && form.birthMonth > 0 && form.birthDay > 0;
-
-  // 월별 최대 일수
   const maxDay = new Date(form.birthYear, form.birthMonth, 0).getDate();
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
 
       {/* 스텝 인디케이터 */}
-      <div className="flex items-center gap-2 mb-2">
+      <div className="flex items-center gap-0">
         {["기본 정보", "생년월일", "태어난 시"].map((label, i) => (
-          <div key={i} className="flex items-center gap-2 flex-1">
-            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 transition-all ${
-              i < step ? "bg-amber-500 text-white" :
-              i === step ? "bg-amber-500 text-white ring-4 ring-amber-200" :
-              "bg-gray-100 text-gray-400"
-            }`}>
-              {i < step ? "✓" : i + 1}
+          <div key={i} className="flex items-center flex-1">
+            <div className="flex flex-col items-center gap-1 flex-1">
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                i < step ? "bg-gray-900 text-white" :
+                i === step ? "bg-yellow-400 text-gray-900" :
+                "bg-gray-200 text-gray-400"
+              }`}>
+                {i < step ? "✓" : i + 1}
+              </div>
+              <span className={`text-[10px] font-medium ${i === step ? "text-gray-900" : "text-gray-400"}`}>{label}</span>
             </div>
-            <span className={`text-xs hidden sm:block ${i === step ? "text-amber-700 font-semibold" : "text-gray-400"}`}>{label}</span>
-            {i < 2 && <div className={`flex-1 h-0.5 ${i < step ? "bg-amber-400" : "bg-gray-100"}`} />}
+            {i < 2 && (
+              <div className={`h-0.5 w-8 mb-4 ${i < step ? "bg-gray-900" : "bg-gray-200"}`} />
+            )}
           </div>
         ))}
       </div>
@@ -75,9 +78,8 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
       {/* STEP 0: 기본 정보 */}
       {step === 0 && (
         <div className="space-y-4">
-          {/* 이름 */}
           <div>
-            <label className="block text-sm font-semibold text-amber-800 mb-2">이름</label>
+            <label className="block text-sm font-bold text-gray-700 mb-2">이름</label>
             <input
               type="text"
               value={form.name}
@@ -85,23 +87,22 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
               placeholder="홍길동"
               maxLength={20}
               autoFocus
-              className="w-full px-4 py-3.5 rounded-xl border-2 border-amber-200 bg-white text-amber-900 placeholder-amber-300 focus:border-amber-500 focus:outline-none text-base transition-colors"
+              className="w-full px-4 py-3.5 rounded-xl border-2 border-gray-200 bg-white text-gray-900 placeholder-gray-300 focus:border-gray-900 focus:outline-none text-base transition-colors"
             />
           </div>
 
-          {/* 성별 */}
           <div>
-            <label className="block text-sm font-semibold text-amber-800 mb-2">성별</label>
+            <label className="block text-sm font-bold text-gray-700 mb-2">성별</label>
             <div className="grid grid-cols-2 gap-3">
               {(["male", "female"] as const).map((g) => (
                 <button
                   key={g}
                   type="button"
                   onClick={() => set("gender", g)}
-                  className={`py-4 rounded-2xl border-2 font-bold text-lg transition-all ${
+                  className={`py-4 rounded-2xl border-2 font-bold text-base transition-all ${
                     form.gender === g
-                      ? "border-amber-500 bg-amber-500 text-white shadow-md scale-[1.02]"
-                      : "border-amber-100 bg-white text-amber-700 hover:border-amber-300"
+                      ? "border-gray-900 bg-gray-900 text-white"
+                      : "border-gray-200 bg-white text-gray-600 hover:border-gray-400"
                   }`}
                 >
                   {g === "male" ? "👨 남성" : "👩 여성"}
@@ -114,7 +115,7 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
             type="button"
             disabled={!isStep0Valid}
             onClick={() => setStep(1)}
-            className="w-full py-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-lg shadow-lg disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 transition-all"
+            className="w-full py-4 rounded-xl bg-gray-900 text-white font-bold text-base disabled:opacity-30 active:scale-95 transition-all"
           >
             다음 →
           </button>
@@ -124,18 +125,17 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
       {/* STEP 1: 생년월일 */}
       {step === 1 && (
         <div className="space-y-4">
-          <div className="flex items-center gap-2 mb-1">
-            <button type="button" onClick={() => setStep(0)} className="text-amber-500 text-sm hover:text-amber-700">← 이전</button>
-          </div>
+          <button type="button" onClick={() => setStep(0)} className="text-sm text-gray-500 flex items-center gap-1 hover:text-gray-800">
+            ← 이전
+          </button>
 
-          {/* 연도 */}
           <div>
-            <label className="block text-sm font-semibold text-amber-800 mb-2">태어난 해</label>
-            <div className="flex items-center gap-3">
+            <label className="block text-sm font-bold text-gray-700 mb-2">태어난 해</label>
+            <div className="flex items-center gap-3 bg-white rounded-xl border-2 border-gray-200 px-4 py-3">
               <button
                 type="button"
                 onClick={() => set("birthYear", Math.max(1930, form.birthYear - 1))}
-                className="w-10 h-10 rounded-full bg-amber-100 text-amber-700 font-bold text-lg hover:bg-amber-200 transition-all active:scale-95 shrink-0"
+                className="w-9 h-9 rounded-full bg-gray-100 text-gray-700 font-bold text-lg hover:bg-gray-200 transition-all active:scale-95 shrink-0"
               >−</button>
               <div className="flex-1 text-center">
                 <input
@@ -147,21 +147,20 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
                   }}
                   min={1930}
                   max={currentYear}
-                  className="w-24 text-center text-2xl font-black text-amber-900 border-b-2 border-amber-300 focus:border-amber-500 focus:outline-none bg-transparent"
+                  className="w-20 text-center text-2xl font-black text-gray-900 focus:outline-none bg-transparent"
                 />
-                <span className="text-amber-700 font-bold ml-1">년</span>
+                <span className="text-gray-600 font-bold ml-1">년</span>
               </div>
               <button
                 type="button"
                 onClick={() => set("birthYear", Math.min(currentYear, form.birthYear + 1))}
-                className="w-10 h-10 rounded-full bg-amber-100 text-amber-700 font-bold text-lg hover:bg-amber-200 transition-all active:scale-95 shrink-0"
+                className="w-9 h-9 rounded-full bg-gray-100 text-gray-700 font-bold text-lg hover:bg-gray-200 transition-all active:scale-95 shrink-0"
               >+</button>
             </div>
           </div>
 
-          {/* 월 */}
           <div>
-            <label className="block text-sm font-semibold text-amber-800 mb-2">월</label>
+            <label className="block text-sm font-bold text-gray-700 mb-2">월</label>
             <div className="grid grid-cols-6 gap-1.5">
               {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
                 <button
@@ -174,8 +173,8 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
                   }}
                   className={`py-2 rounded-xl text-sm font-bold transition-all active:scale-95 ${
                     form.birthMonth === m
-                      ? "bg-amber-500 text-white shadow-sm"
-                      : "bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-100"
+                      ? "bg-gray-900 text-white"
+                      : "bg-white text-gray-600 border border-gray-200 hover:border-gray-400"
                   }`}
                 >
                   {m}월
@@ -184,9 +183,8 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
             </div>
           </div>
 
-          {/* 일 */}
           <div>
-            <label className="block text-sm font-semibold text-amber-800 mb-2">일</label>
+            <label className="block text-sm font-bold text-gray-700 mb-2">일</label>
             <div className="grid grid-cols-7 gap-1">
               {Array.from({ length: maxDay }, (_, i) => i + 1).map((d) => (
                 <button
@@ -195,8 +193,8 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
                   onClick={() => set("birthDay", d)}
                   className={`py-2 rounded-lg text-sm font-bold transition-all active:scale-95 ${
                     form.birthDay === d
-                      ? "bg-amber-500 text-white shadow-sm"
-                      : "bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-100"
+                      ? "bg-gray-900 text-white"
+                      : "bg-white text-gray-600 border border-gray-200 hover:border-gray-400"
                   }`}
                 >
                   {d}
@@ -209,7 +207,7 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
             type="button"
             disabled={!isStep1Valid}
             onClick={() => setStep(2)}
-            className="w-full py-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-lg shadow-lg disabled:opacity-40 active:scale-95 transition-all"
+            className="w-full py-4 rounded-xl bg-gray-900 text-white font-bold text-base disabled:opacity-30 active:scale-95 transition-all"
           >
             다음 →
           </button>
@@ -219,13 +217,13 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
       {/* STEP 2: 태어난 시 */}
       {step === 2 && (
         <div className="space-y-4">
-          <div className="flex items-center gap-2 mb-1">
-            <button type="button" onClick={() => setStep(1)} className="text-amber-500 text-sm hover:text-amber-700">← 이전</button>
-          </div>
+          <button type="button" onClick={() => setStep(1)} className="text-sm text-gray-500 flex items-center gap-1 hover:text-gray-800">
+            ← 이전
+          </button>
 
           <div>
-            <label className="block text-sm font-semibold text-amber-800 mb-1">태어난 시간</label>
-            <p className="text-xs text-amber-500 mb-3">모르시면 '모름'을 선택해도 분석 가능합니다</p>
+            <label className="block text-sm font-bold text-gray-700 mb-1">태어난 시간</label>
+            <p className="text-xs text-gray-400 mb-3">모르시면 '모름'을 선택해도 분석 가능합니다</p>
             <div className="grid grid-cols-2 gap-2">
               {HOUR_OPTIONS.map((h) => (
                 <button
@@ -234,32 +232,39 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
                   onClick={() => set("birthHour", h.value)}
                   className={`px-3 py-3 rounded-xl border-2 text-left transition-all active:scale-95 ${
                     form.birthHour === h.value
-                      ? "border-amber-500 bg-amber-50 shadow-sm"
-                      : "border-amber-100 bg-white hover:border-amber-300"
+                      ? "border-gray-900 bg-gray-900 text-white"
+                      : "border-gray-200 bg-white hover:border-gray-400"
                   }`}
                 >
-                  <div className={`text-sm font-bold ${form.birthHour === h.value ? "text-amber-700" : "text-gray-700"}`}>
+                  <div className={`text-sm font-bold ${form.birthHour === h.value ? "text-white" : "text-gray-700"}`}>
                     {h.label}
                   </div>
-                  <div className="text-xs text-gray-400 mt-0.5">{h.sub}</div>
+                  <div className={`text-xs mt-0.5 ${form.birthHour === h.value ? "text-gray-300" : "text-gray-400"}`}>{h.sub}</div>
                 </button>
               ))}
             </div>
           </div>
 
           {/* 요약 */}
-          <div className="bg-amber-50 rounded-2xl p-4 border border-amber-200 text-sm text-amber-800 space-y-1">
-            <p className="font-semibold text-amber-600 text-xs uppercase tracking-wider mb-2">입력 정보 확인</p>
-            <div className="flex justify-between"><span className="text-gray-500">이름</span><span className="font-bold">{form.name}</span></div>
-            <div className="flex justify-between"><span className="text-gray-500">성별</span><span className="font-bold">{form.gender === "male" ? "남성" : "여성"}</span></div>
-            <div className="flex justify-between"><span className="text-gray-500">생년월일</span><span className="font-bold">{form.birthYear}년 {form.birthMonth}월 {form.birthDay}일</span></div>
-            <div className="flex justify-between"><span className="text-gray-500">태어난 시</span><span className="font-bold">{HOUR_OPTIONS.find(h => h.value === form.birthHour)?.label ?? "모름"}</span></div>
+          <div className="bg-gray-50 rounded-2xl p-4 border border-gray-200 text-sm space-y-1.5">
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">입력 정보 확인</p>
+            {[
+              { label: "이름", value: form.name },
+              { label: "성별", value: form.gender === "male" ? "남성" : "여성" },
+              { label: "생년월일", value: `${form.birthYear}년 ${form.birthMonth}월 ${form.birthDay}일` },
+              { label: "태어난 시", value: HOUR_OPTIONS.find(h => h.value === form.birthHour)?.label ?? "모름" },
+            ].map(({ label, value }) => (
+              <div key={label} className="flex justify-between">
+                <span className="text-gray-400">{label}</span>
+                <span className="font-bold text-gray-900">{value}</span>
+              </div>
+            ))}
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-lg shadow-lg hover:from-amber-600 hover:to-orange-600 transition-all disabled:opacity-60 disabled:cursor-not-allowed active:scale-95"
+            className="w-full py-4 rounded-xl bg-yellow-400 text-gray-900 font-bold text-base disabled:opacity-40 active:scale-95 transition-all"
           >
             {loading ? "사주 분석 중..." : "✨ 사주 분석 시작하기"}
           </button>

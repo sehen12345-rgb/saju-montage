@@ -69,7 +69,7 @@ async function createStoryBlob(imageUrl: string, analysis: SajuAnalysis): Promis
   ctx.fillStyle = "#92400e";
   ctx.font = "bold 52px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif";
   ctx.textAlign = "center";
-  ctx.fillText("내 배우자 얼굴봤다", W / 2, 110);
+  ctx.fillText("내님은누구", W / 2, 110);
 
   ctx.fillStyle = "#b45309";
   ctx.font = "36px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif";
@@ -212,7 +212,7 @@ async function createStoryBlob(imageUrl: string, analysis: SajuAnalysis): Promis
   ctx.font = "32px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif";
   ctx.textAlign = "center";
   ctx.globalAlpha = 0.6;
-  ctx.fillText("내 배우자 얼굴봤다 · saju-montage.vercel.app", W / 2, H - 60);
+  ctx.fillText("내님은누구 · saju-montage.vercel.app", W / 2, H - 60);
   ctx.globalAlpha = 1;
 
   return new Promise((resolve, reject) => {
@@ -225,51 +225,128 @@ interface Props {
   onReset: () => void;
 }
 
+// ── 오행 색상 매핑 ──────────────────────────────────────────
+const STEM_ELEMENT: Record<string, string> = {
+  갑: "wood", 을: "wood",
+  병: "fire", 정: "fire",
+  무: "earth", 기: "earth",
+  경: "metal", 신: "metal",
+  임: "water", 계: "water",
+};
+const BRANCH_ELEMENT: Record<string, string> = {
+  자: "water", 해: "water",
+  축: "earth", 진: "earth", 미: "earth", 술: "earth",
+  인: "wood", 묘: "wood",
+  사: "fire", 오: "fire",
+  신: "metal", 유: "metal",
+};
+const ELEMENT_COLOR: Record<string, string> = {
+  wood:  "bg-green-400 text-white",
+  fire:  "bg-red-400 text-white",
+  earth: "bg-yellow-400 text-gray-900",
+  metal: "bg-gray-300 text-gray-900",
+  water: "bg-blue-500 text-white",
+};
+// 한자 매핑
+const HAN_STEM: Record<string, string> = {
+  갑:"甲",을:"乙",병:"丙",정:"丁",무:"戊",기:"己",경:"庚",신:"辛",임:"壬",계:"癸",
+};
+const HAN_BRANCH: Record<string, string> = {
+  자:"子",축:"丑",인:"寅",묘:"卯",진:"辰",사:"巳",오:"午",미:"未",신:"申",유:"酉",술:"戌",해:"亥",
+};
+
+function SajuPillarCard({ sajuInfo }: { sajuInfo: import("@/lib/types").SajuInfo }) {
+  const pillars = [
+    { label: "시주", value: sajuInfo.hourPillar },
+    { label: "일주", value: sajuInfo.dayPillar },
+    { label: "월주", value: sajuInfo.monthPillar },
+    { label: "년주", value: sajuInfo.yearPillar },
+  ];
+
+  return (
+    <div className="bg-white rounded-3xl p-4 shadow-sm">
+      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">당신의 사주팔자</p>
+      {/* 라벨 row */}
+      <div className="grid grid-cols-4 gap-2 mb-2">
+        {pillars.map((p) => (
+          <div key={p.label} className="text-center text-xs text-gray-400 font-medium">{p.label}</div>
+        ))}
+      </div>
+      {/* 천간 row */}
+      <div className="grid grid-cols-4 gap-2 mb-1.5">
+        {pillars.map((p) => {
+          const stem = p.value[0] ?? "";
+          const el = STEM_ELEMENT[stem] ?? "earth";
+          const color = ELEMENT_COLOR[el];
+          const han = HAN_STEM[stem] ?? stem;
+          return (
+            <div key={p.label + "s"} className={`aspect-square rounded-2xl flex flex-col items-center justify-center ${color}`}>
+              <span className="text-xl font-black leading-none">{han}</span>
+              <span className="text-[9px] mt-0.5 opacity-80">+{stem}</span>
+            </div>
+          );
+        })}
+      </div>
+      {/* 지지 row */}
+      <div className="grid grid-cols-4 gap-2 mb-2">
+        {pillars.map((p) => {
+          const branch = p.value[1] ?? "";
+          const el = BRANCH_ELEMENT[branch] ?? "earth";
+          const color = ELEMENT_COLOR[el];
+          const han = HAN_BRANCH[branch] ?? branch;
+          return (
+            <div key={p.label + "b"} className={`aspect-square rounded-2xl flex flex-col items-center justify-center ${color}`}>
+              <span className="text-xl font-black leading-none">{han}</span>
+              <span className="text-[9px] mt-0.5 opacity-80">-{branch}</span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // ── 서브 컴포넌트 ──────────────────────────────────────────
 
 function InfoSection({ icon, label, title, children }: {
   icon: string; label: string; title?: string; children: React.ReactNode;
 }) {
   return (
-    <div className="bg-white rounded-2xl p-5 border border-amber-100 shadow-sm">
-      <p className="text-xs text-amber-400 font-medium mb-1">{icon} {label}</p>
-      {title && <h4 className="text-base font-bold text-amber-900 mb-3">{title}</h4>}
+    <div className="bg-white rounded-2xl p-5 shadow-sm">
+      <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">{icon} {label}</p>
+      {title && <h4 className="text-base font-bold text-gray-900 mb-3">{title}</h4>}
       {children}
     </div>
   );
 }
 
 function ScoreBar({ label, score, delay = 0 }: { label: string; score: number; delay?: number }) {
-  const color =
-    score >= 90 ? "bg-emerald-400" :
-    score >= 80 ? "bg-amber-400" :
-    score >= 70 ? "bg-orange-400" : "bg-red-400";
   return (
     <div className="flex items-center gap-3">
-      <span className="text-xs text-gray-600 w-24 shrink-0">{label}</span>
-      <div className="flex-1 bg-gray-100 rounded-full h-3 overflow-hidden">
+      <span className="text-xs text-gray-500 w-24 shrink-0">{label}</span>
+      <div className="flex-1 bg-gray-100 rounded-full h-2.5 overflow-hidden">
         <div
-          className={`h-full rounded-full ${color}`}
+          className="h-full rounded-full bg-yellow-400"
           style={{ width: `${score}%`, transition: `width 0.8s ease ${delay}ms` }}
         />
       </div>
-      <span className={`text-xs font-black w-8 text-right ${score >= 90 ? "text-emerald-600" : score >= 80 ? "text-amber-600" : "text-orange-500"}`}>{score}</span>
+      <span className="text-xs font-black w-8 text-right text-gray-700">{score}</span>
     </div>
   );
 }
 
 function BlurredSection({ label }: { label: string }) {
   return (
-    <div className="relative rounded-2xl overflow-hidden border border-amber-100">
+    <div className="relative rounded-2xl overflow-hidden border border-gray-200">
       <div className="p-5 blur-sm select-none pointer-events-none bg-white">
-        <p className="text-xs text-amber-400 font-medium mb-1">🔒 {label}</p>
-        <p className="text-base font-bold text-amber-900 mb-3">결제 후 확인하세요</p>
+        <p className="text-xs text-gray-400 font-bold uppercase mb-1">🔒 {label}</p>
+        <p className="text-base font-bold text-gray-900 mb-3">결제 후 확인하세요</p>
         <p className="text-sm text-gray-400 leading-relaxed">
-          이 내용은 결제 후 확인하실 수 있습니다. 지금 바로 990원으로 배우자의 모든 정보를 확인해보세요. 사주로 분석한 상세한 내용이 숨겨져 있습니다.
+          이 내용은 결제 후 확인하실 수 있습니다. 지금 바로 990원으로 배우자의 모든 정보를 확인해보세요.
         </p>
       </div>
-      <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-white/60 flex items-center justify-center">
-        <div className="bg-white/90 rounded-xl px-4 py-2 shadow text-sm font-semibold text-amber-700 border border-amber-200">
+      <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-white/70 flex items-center justify-center">
+        <div className="bg-white rounded-xl px-4 py-2 shadow-md text-sm font-bold text-gray-700 border border-gray-200">
           🔒 결제 후 공개
         </div>
       </div>
@@ -356,13 +433,13 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: () => void }
       <div className="bg-white rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden max-h-[92vh] overflow-y-auto">
 
         {/* 헤더 */}
-        <div className="bg-gradient-to-r from-amber-500 to-orange-500 p-5 text-white text-center sticky top-0 z-10">
-          <button onClick={onClose} className="absolute top-4 right-4 text-white/70 hover:text-white text-xl leading-none">✕</button>
+        <div className="bg-gray-900 p-5 text-white text-center sticky top-0 z-10">
+          <button onClick={onClose} className="absolute top-4 right-4 text-white/60 hover:text-white text-xl leading-none">✕</button>
           <div className="text-3xl mb-1.5">🎨</div>
           <h2 className="text-lg font-bold">배우자 AI 몽타주 공개</h2>
-          <p className="text-amber-100 text-xs mt-0.5 mb-2">운명의 상대 얼굴 + 전체 분석 결과</p>
+          <p className="text-gray-400 text-xs mt-0.5 mb-2">운명의 상대 얼굴 + 전체 분석 결과</p>
           {timeLeft > 0 && (
-            <div className="inline-flex items-center gap-1.5 bg-red-500/80 rounded-full px-3 py-1 text-xs font-bold">
+            <div className="inline-flex items-center gap-1.5 bg-red-500 rounded-full px-3 py-1 text-xs font-bold">
               <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
               특가 종료까지 {minutes}:{seconds}
             </div>
@@ -397,12 +474,12 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: () => void }
           </div>
 
           {/* 가격 */}
-          <div className="bg-amber-50 rounded-2xl p-4 text-center border border-amber-200">
+          <div className="bg-gray-50 rounded-2xl p-4 text-center border border-gray-200">
             <div className="flex items-center justify-center gap-2 mb-0.5">
               <span className="text-sm text-gray-400 line-through">3,900원</span>
               <span className="text-xs bg-red-100 text-red-600 font-bold px-2 py-0.5 rounded-full">74% 할인</span>
             </div>
-            <p className="text-3xl font-black text-amber-900">990<span className="text-lg font-bold">원</span></p>
+            <p className="text-3xl font-black text-gray-900">990<span className="text-lg font-bold">원</span></p>
             <p className="text-xs text-gray-400 mt-0.5">1회 결제 · 회원가입 불필요</p>
           </div>
 
@@ -462,7 +539,7 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: () => void }
 // ── 메인 컴포넌트 ──────────────────────────────────────────
 
 export default function ResultCard({ result, onReset }: Props) {
-  const { analysis } = result;
+  const analysis = result.analysis as SajuAnalysis;
   const { data: session } = useSession();
   const [currentImageUrl, setCurrentImageUrl] = useState(result.imageUrl);
   const [imgLoaded, setImgLoaded] = useState(false);
@@ -569,7 +646,7 @@ export default function ResultCard({ result, onReset }: Props) {
   }
 
   function handleShareTwitter() {
-    const text = `내 배우자 얼굴봤다 👀\n${analysis.characteristics.join(" · ")}\n\nsaju-montage.vercel.app\n#사주몽타주 #내배우자얼굴봤다 #운명의상대`;
+    const text = `내님은누구 👀\n${analysis.characteristics.join(" · ")}\n\nsaju-montage.vercel.app\n#사주몽타주 #내님은누구 #운명의상대`;
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, "_blank");
   }
 
@@ -589,8 +666,8 @@ export default function ResultCard({ result, onReset }: Props) {
       ) {
         await navigator.share({
           files: [file],
-          title: "내 배우자 얼굴봤다",
-          text: "내 배우자 얼굴봤다 👀 사주로 그린 운명의 상대 ✨ #사주몽타주 #내배우자얼굴봤다",
+          title: "내님은누구",
+          text: "내님은누구 👀 사주로 그린 운명의 상대 ✨ #사주몽타주 #내님은누구",
         });
         return;
       }
@@ -624,9 +701,9 @@ export default function ResultCard({ result, onReset }: Props) {
   }
 
   async function handleShare() {
-    const text = `내 배우자 얼굴봤다 👀\n${analysis.characteristics.join(" · ")}\n\n나도 해보기 → saju-montage.vercel.app ✨`;
+    const text = `내님은누구 👀\n${analysis.characteristics.join(" · ")}\n\n나도 해보기 → saju-montage.vercel.app ✨`;
     if (navigator.share) {
-      try { await navigator.share({ title: "내 배우자 얼굴봤다", text }); }
+      try { await navigator.share({ title: "내님은누구", text }); }
       catch { await copyToClipboard(text); }
     } else {
       await copyToClipboard(text);
@@ -673,37 +750,22 @@ export default function ResultCard({ result, onReset }: Props) {
         <div className="fixed bottom-0 left-0 right-0 z-40 p-3 animate-slideUp">
           <button
             onClick={() => setShowModal(true)}
-            className="w-full max-w-md mx-auto flex items-center justify-between gap-3 py-4 px-6 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold shadow-2xl active:scale-95 transition-all"
+            className="w-full max-w-md mx-auto flex items-center justify-between gap-3 py-4 px-6 rounded-2xl bg-yellow-400 text-gray-900 font-bold shadow-2xl active:scale-95 transition-all"
             style={{ display: "flex" }}
           >
             <span className="text-lg">✨ 몽타주 + 전체 보기</span>
-            <span className="bg-white/20 rounded-xl px-3 py-1 text-sm font-black">990원</span>
+            <span className="bg-gray-900/20 rounded-xl px-3 py-1 text-sm font-black">990원</span>
           </button>
         </div>
       )}
 
-      <div className="space-y-5">
-        {/* ── 사주 정보 ── */}
-        <div className="bg-amber-50 rounded-2xl p-4 border border-amber-200">
-          <h3 className="text-sm font-semibold text-amber-700 mb-2">당신의 사주</h3>
-          <div className="grid grid-cols-4 gap-2 text-center">
-            {[
-              { label: "년주", value: analysis.sajuInfo.yearPillar },
-              { label: "월주", value: analysis.sajuInfo.monthPillar },
-              { label: "일주", value: analysis.sajuInfo.dayPillar },
-              { label: "시주", value: analysis.sajuInfo.hourPillar },
-            ].map((p) => (
-              <div key={p.label} className="bg-white rounded-xl p-2 border border-amber-100">
-                <div className="text-xs text-amber-500">{p.label}</div>
-                <div className="text-lg font-bold text-amber-900">{p.value}</div>
-              </div>
-            ))}
-          </div>
-        </div>
+      <div className="space-y-4">
+        {/* ── 사주 기둥 (레퍼런스 스타일) ── */}
+        <SajuPillarCard sajuInfo={analysis.sajuInfo} />
 
         {/* ── 궁합 한마디 ── */}
         {analysis.compatibility && (
-          <div className="bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl p-4 text-center">
+          <div className="bg-gray-900 rounded-2xl p-4 text-center">
             <p className="text-white font-semibold text-sm">💫 {analysis.compatibility}</p>
           </div>
         )}
@@ -711,7 +773,7 @@ export default function ResultCard({ result, onReset }: Props) {
         {/* ── 핵심 키워드 (무료 힌트) ── */}
         <div className="flex flex-wrap gap-2 justify-center">
           {analysis.characteristics.map((c, i) => (
-            <span key={i} className="px-4 py-2 bg-gradient-to-r from-amber-400 to-orange-400 text-white rounded-full text-sm font-semibold shadow">
+            <span key={i} className="px-4 py-2 bg-yellow-400 text-gray-900 rounded-full text-sm font-bold">
               {c}
             </span>
           ))}
@@ -1294,7 +1356,7 @@ export default function ResultCard({ result, onReset }: Props) {
                 {storySharing ? "⏳" : "📸 스토리"}
               </button>
               <button
-                onClick={() => copyToClipboard(`내 배우자 얼굴봤다 👀\n${analysis.characteristics.join(" · ")}\n\n나도 해보기 → saju-montage.vercel.app\n#사주몽타주 #내배우자얼굴봤다 #운명의상대`)}
+                onClick={() => copyToClipboard(`내님은누구 👀\n${analysis.characteristics.join(" · ")}\n\n나도 해보기 → saju-montage.vercel.app\n#사주몽타주 #내님은누구 #운명의상대`)}
                 className={`py-3 rounded-xl border-2 font-semibold transition-all text-sm active:scale-95 ${copied ? "border-green-400 text-green-700 bg-green-50" : "border-gray-300 text-gray-600 hover:bg-gray-50"}`}
               >
                 {copied ? "✅ 복사됨" : "🔗 복사"}
@@ -1368,7 +1430,7 @@ export default function ResultCard({ result, onReset }: Props) {
               </div>
               <button
                 onClick={() => setShowModal(true)}
-                className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-lg shadow-xl hover:from-amber-600 hover:to-orange-600 transition-all active:scale-95"
+                className="w-full py-4 rounded-2xl bg-yellow-400 text-gray-900 font-bold text-lg active:scale-95 transition-all"
               >
                 ✨ 990원으로 몽타주 + 전체 보기
               </button>
@@ -1383,7 +1445,7 @@ export default function ResultCard({ result, onReset }: Props) {
 
         <button
           onClick={onReset}
-          className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold shadow-md hover:from-amber-600 hover:to-orange-600 transition-all active:scale-95"
+          className="w-full py-3 rounded-xl bg-gray-900 text-white font-bold active:scale-95 transition-all"
         >
           🔄 다시 해보기
         </button>

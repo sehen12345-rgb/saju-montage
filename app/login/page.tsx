@@ -65,7 +65,7 @@ function LoginContent() {
         {/* 헤더 */}
         <div className="text-center space-y-2">
           <div className="text-5xl">🔮</div>
-          <h1 className="text-2xl font-black text-amber-900">내 배우자 얼굴봤다</h1>
+          <h1 className="text-2xl font-black text-amber-900">내님은누구</h1>
           <p className="text-sm text-amber-600">로그인하면 분석 결과를 영구 보관합니다</p>
         </div>
 

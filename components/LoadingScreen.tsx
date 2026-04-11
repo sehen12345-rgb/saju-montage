@@ -2,10 +2,16 @@
 
 import { useState, useEffect } from "react";
 
-const STEPS = [
+const SPOUSE_STEPS = [
   { icon: "☯️", text: "사주팔자를 분석하는 중..." },
   { icon: "🔮", text: "배우자의 인연을 찾는 중..." },
   { icon: "🎨", text: "몽타주를 그리는 중..." },
+];
+
+const GUARDIAN_STEPS = [
+  { icon: "☯️", text: "사주팔자를 분석하는 중..." },
+  { icon: "🌟", text: "귀인의 인연을 찾는 중..." },
+  { icon: "🎨", text: "귀인 초상화를 그리는 중..." },
 ];
 
 const FUN_FACTS = [
@@ -21,7 +27,8 @@ const FUN_FACTS = [
   "사주에서 합(合)이 많으면 배우자와 인연이 깊다고 봅니다",
 ];
 
-export default function LoadingScreen({ step }: { step: number }) {
+export default function LoadingScreen({ step, productType = "spouse" }: { step: number; productType?: "spouse" | "guardian" }) {
+  const STEPS = productType === "guardian" ? GUARDIAN_STEPS : SPOUSE_STEPS;
   const [factIdx, setFactIdx] = useState(0);
   const [visible, setVisible] = useState(true);
 
@@ -90,7 +97,11 @@ export default function LoadingScreen({ step }: { step: number }) {
       </div>
 
       <p className="text-amber-600 text-xs animate-pulse text-center">
-        {step === 2 ? "✨ AI가 배우자 몽타주를 그리고 있어요... 조금만 기다려주세요" : "잠시만 기다려 주세요"}
+        {step === 2
+        ? productType === "guardian"
+          ? "✨ AI가 귀인 초상화를 그리고 있어요... 조금만 기다려주세요"
+          : "✨ AI가 배우자 몽타주를 그리고 있어요... 조금만 기다려주세요"
+        : "잠시만 기다려 주세요"}
       </p>
     </div>
   );
