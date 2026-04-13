@@ -51,25 +51,27 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
   const isStep1Valid = form.birthYear > 0 && form.birthMonth > 0 && form.birthDay > 0;
   const maxDay = new Date(form.birthYear, form.birthMonth, 0).getDate();
 
+  const stepLabels = ["기본 정보", "생년월일", "태어난 시"];
+
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
 
       {/* 스텝 인디케이터 */}
       <div className="flex items-center gap-0">
-        {["기본 정보", "생년월일", "태어난 시"].map((label, i) => (
+        {stepLabels.map((label, i) => (
           <div key={i} className="flex items-center flex-1">
             <div className="flex flex-col items-center gap-1 flex-1">
               <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                i < step ? "bg-gray-900 text-white" :
-                i === step ? "bg-yellow-400 text-gray-900" :
-                "bg-gray-200 text-gray-400"
+                i < step ? "bg-yellow-400 text-gray-900" :
+                i === step ? "bg-white text-gray-900" :
+                "bg-white/10 text-gray-500"
               }`}>
                 {i < step ? "✓" : i + 1}
               </div>
-              <span className={`text-[10px] font-medium ${i === step ? "text-gray-900" : "text-gray-400"}`}>{label}</span>
+              <span className={`text-[10px] font-medium ${i === step ? "text-white" : "text-gray-600"}`}>{label}</span>
             </div>
             {i < 2 && (
-              <div className={`h-0.5 w-8 mb-4 ${i < step ? "bg-gray-900" : "bg-gray-200"}`} />
+              <div className={`h-px w-8 mb-4 ${i < step ? "bg-yellow-400" : "bg-white/10"}`} />
             )}
           </div>
         ))}
@@ -79,7 +81,7 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
       {step === 0 && (
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">이름</label>
+            <label className="block text-sm font-bold text-gray-300 mb-2">이름</label>
             <input
               type="text"
               value={form.name}
@@ -87,12 +89,12 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
               placeholder="홍길동"
               maxLength={20}
               autoFocus
-              className="w-full px-4 py-3.5 rounded-xl border-2 border-gray-200 bg-white text-gray-900 placeholder-gray-300 focus:border-gray-900 focus:outline-none text-base transition-colors"
+              className="w-full px-4 py-3.5 rounded-xl border border-white/10 bg-white/5 text-white placeholder-gray-600 focus:border-white/30 focus:outline-none text-base transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">성별</label>
+            <label className="block text-sm font-bold text-gray-300 mb-2">성별</label>
             <div className="grid grid-cols-2 gap-3">
               {(["male", "female"] as const).map((g) => (
                 <button
@@ -101,8 +103,8 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
                   onClick={() => set("gender", g)}
                   className={`py-4 rounded-2xl border-2 font-bold text-base transition-all ${
                     form.gender === g
-                      ? "border-gray-900 bg-gray-900 text-white"
-                      : "border-gray-200 bg-white text-gray-600 hover:border-gray-400"
+                      ? "border-yellow-400 bg-yellow-400/10 text-yellow-400"
+                      : "border-white/10 bg-white/5 text-gray-400 hover:border-white/20"
                   }`}
                 >
                   {g === "male" ? "👨 남성" : "👩 여성"}
@@ -115,7 +117,7 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
             type="button"
             disabled={!isStep0Valid}
             onClick={() => setStep(1)}
-            className="w-full py-4 rounded-xl bg-gray-900 text-white font-bold text-base disabled:opacity-30 active:scale-95 transition-all"
+            className="w-full py-4 rounded-xl bg-white text-gray-900 font-black text-base disabled:opacity-20 active:scale-95 transition-all"
           >
             다음 →
           </button>
@@ -125,17 +127,17 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
       {/* STEP 1: 생년월일 */}
       {step === 1 && (
         <div className="space-y-4">
-          <button type="button" onClick={() => setStep(0)} className="text-sm text-gray-500 flex items-center gap-1 hover:text-gray-800">
+          <button type="button" onClick={() => setStep(0)} className="text-sm text-gray-500 flex items-center gap-1 hover:text-gray-300">
             ← 이전
           </button>
 
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">태어난 해</label>
-            <div className="flex items-center gap-3 bg-white rounded-xl border-2 border-gray-200 px-4 py-3">
+            <label className="block text-sm font-bold text-gray-300 mb-2">태어난 해</label>
+            <div className="flex items-center gap-3 bg-white/5 rounded-xl border border-white/10 px-4 py-3">
               <button
                 type="button"
                 onClick={() => set("birthYear", Math.max(1930, form.birthYear - 1))}
-                className="w-9 h-9 rounded-full bg-gray-100 text-gray-700 font-bold text-lg hover:bg-gray-200 transition-all active:scale-95 shrink-0"
+                className="w-9 h-9 rounded-full bg-white/10 text-white font-bold text-lg hover:bg-white/20 transition-all active:scale-95 shrink-0"
               >−</button>
               <div className="flex-1 text-center">
                 <input
@@ -147,20 +149,20 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
                   }}
                   min={1930}
                   max={currentYear}
-                  className="w-20 text-center text-2xl font-black text-gray-900 focus:outline-none bg-transparent"
+                  className="w-20 text-center text-2xl font-black text-white focus:outline-none bg-transparent"
                 />
-                <span className="text-gray-600 font-bold ml-1">년</span>
+                <span className="text-gray-400 font-bold ml-1">년</span>
               </div>
               <button
                 type="button"
                 onClick={() => set("birthYear", Math.min(currentYear, form.birthYear + 1))}
-                className="w-9 h-9 rounded-full bg-gray-100 text-gray-700 font-bold text-lg hover:bg-gray-200 transition-all active:scale-95 shrink-0"
+                className="w-9 h-9 rounded-full bg-white/10 text-white font-bold text-lg hover:bg-white/20 transition-all active:scale-95 shrink-0"
               >+</button>
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">월</label>
+            <label className="block text-sm font-bold text-gray-300 mb-2">월</label>
             <div className="grid grid-cols-6 gap-1.5">
               {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
                 <button
@@ -173,8 +175,8 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
                   }}
                   className={`py-2 rounded-xl text-sm font-bold transition-all active:scale-95 ${
                     form.birthMonth === m
-                      ? "bg-gray-900 text-white"
-                      : "bg-white text-gray-600 border border-gray-200 hover:border-gray-400"
+                      ? "bg-yellow-400 text-gray-900"
+                      : "bg-white/5 text-gray-400 border border-white/10 hover:border-white/30"
                   }`}
                 >
                   {m}월
@@ -184,7 +186,7 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">일</label>
+            <label className="block text-sm font-bold text-gray-300 mb-2">일</label>
             <div className="grid grid-cols-7 gap-1">
               {Array.from({ length: maxDay }, (_, i) => i + 1).map((d) => (
                 <button
@@ -193,8 +195,8 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
                   onClick={() => set("birthDay", d)}
                   className={`py-2 rounded-lg text-sm font-bold transition-all active:scale-95 ${
                     form.birthDay === d
-                      ? "bg-gray-900 text-white"
-                      : "bg-white text-gray-600 border border-gray-200 hover:border-gray-400"
+                      ? "bg-yellow-400 text-gray-900"
+                      : "bg-white/5 text-gray-400 border border-white/10 hover:border-white/30"
                   }`}
                 >
                   {d}
@@ -207,7 +209,7 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
             type="button"
             disabled={!isStep1Valid}
             onClick={() => setStep(2)}
-            className="w-full py-4 rounded-xl bg-gray-900 text-white font-bold text-base disabled:opacity-30 active:scale-95 transition-all"
+            className="w-full py-4 rounded-xl bg-white text-gray-900 font-black text-base disabled:opacity-20 active:scale-95 transition-all"
           >
             다음 →
           </button>
@@ -217,13 +219,13 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
       {/* STEP 2: 태어난 시 */}
       {step === 2 && (
         <div className="space-y-4">
-          <button type="button" onClick={() => setStep(1)} className="text-sm text-gray-500 flex items-center gap-1 hover:text-gray-800">
+          <button type="button" onClick={() => setStep(1)} className="text-sm text-gray-500 flex items-center gap-1 hover:text-gray-300">
             ← 이전
           </button>
 
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-1">태어난 시간</label>
-            <p className="text-xs text-gray-400 mb-3">모르시면 '모름'을 선택해도 분석 가능합니다</p>
+            <label className="block text-sm font-bold text-gray-300 mb-1">태어난 시간</label>
+            <p className="text-xs text-gray-600 mb-3">모르시면 '모름' 선택해도 분석 가능합니다</p>
             <div className="grid grid-cols-2 gap-2">
               {HOUR_OPTIONS.map((h) => (
                 <button
@@ -232,22 +234,22 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
                   onClick={() => set("birthHour", h.value)}
                   className={`px-3 py-3 rounded-xl border-2 text-left transition-all active:scale-95 ${
                     form.birthHour === h.value
-                      ? "border-gray-900 bg-gray-900 text-white"
-                      : "border-gray-200 bg-white hover:border-gray-400"
+                      ? "border-yellow-400 bg-yellow-400/10"
+                      : "border-white/10 bg-white/5 hover:border-white/20"
                   }`}
                 >
-                  <div className={`text-sm font-bold ${form.birthHour === h.value ? "text-white" : "text-gray-700"}`}>
+                  <div className={`text-sm font-bold ${form.birthHour === h.value ? "text-yellow-400" : "text-gray-300"}`}>
                     {h.label}
                   </div>
-                  <div className={`text-xs mt-0.5 ${form.birthHour === h.value ? "text-gray-300" : "text-gray-400"}`}>{h.sub}</div>
+                  <div className="text-xs mt-0.5 text-gray-600">{h.sub}</div>
                 </button>
               ))}
             </div>
           </div>
 
-          {/* 요약 */}
-          <div className="bg-gray-50 rounded-2xl p-4 border border-gray-200 text-sm space-y-1.5">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">입력 정보 확인</p>
+          {/* 입력 확인 */}
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-4 text-sm space-y-1.5">
+            <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">입력 확인</p>
             {[
               { label: "이름", value: form.name },
               { label: "성별", value: form.gender === "male" ? "남성" : "여성" },
@@ -255,8 +257,8 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
               { label: "태어난 시", value: HOUR_OPTIONS.find(h => h.value === form.birthHour)?.label ?? "모름" },
             ].map(({ label, value }) => (
               <div key={label} className="flex justify-between">
-                <span className="text-gray-400">{label}</span>
-                <span className="font-bold text-gray-900">{value}</span>
+                <span className="text-gray-500">{label}</span>
+                <span className="font-bold text-white">{value}</span>
               </div>
             ))}
           </div>
@@ -264,7 +266,7 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-4 rounded-xl bg-yellow-400 text-gray-900 font-bold text-base disabled:opacity-40 active:scale-95 transition-all"
+            className="w-full py-4 rounded-xl bg-gradient-to-r from-yellow-400 to-orange-400 text-gray-900 font-black text-base disabled:opacity-40 active:scale-95 transition-all shadow-lg shadow-yellow-500/20"
           >
             {loading ? "사주 분석 중..." : "✨ 사주 분석 시작하기"}
           </button>
