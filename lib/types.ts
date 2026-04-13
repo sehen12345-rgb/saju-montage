@@ -1,4 +1,4 @@
-export type ProductType = "spouse" | "guardian";
+export type ProductType = "spouse" | "guardian" | "enemy";
 
 export interface SajuInput {
   name: string;
@@ -115,12 +115,34 @@ export interface SajuInfo {
 
 export interface GenerateResult {
   name: string;
-  analysis: SajuAnalysis | GuardianAnalysis;
+  analysis: SajuAnalysis | GuardianAnalysis | EnemyAnalysis;
   imageUrl: string;
   gender?: "male" | "female";
   demo?: boolean;
   paid?: boolean;
   productType?: ProductType;
+}
+
+export interface EnemyAnalysis {
+  sajuInfo: SajuInfo;
+  imagePrompt: string;
+  description: string;
+  characteristics: string[];
+  enemyType: string;
+  enemyTypeEmoji: string;
+  relationship: string;
+  dangerAreas: { area: string; desc: string; score: number }[];
+  howToAvoid: string;
+  meetTiming: { ageRange: string; season: string; situation: string };
+  myWeakness: string;
+  damage: string;
+  signToRecognize: string;
+  kakaoFirstMessage?: string;
+  pastLifeConnection?: string;
+  caution: string[];
+  actionGuide: string[];
+  monthlyDanger?: number[];
+  readiness?: { score: number; comment: string };
 }
 
 export interface GuardianAnalysis {

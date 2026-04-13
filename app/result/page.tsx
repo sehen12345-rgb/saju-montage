@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import ResultCard from "@/components/ResultCard";
 import GuardianResultCard from "@/components/GuardianResultCard";
+import EnemyResultCard from "@/components/EnemyResultCard";
 import type { GenerateResult } from "@/lib/types";
 
 export default function ResultPage() {
@@ -40,6 +41,7 @@ export default function ResultPage() {
   }
 
   const isGuardian = result.productType === "guardian";
+  const isEnemy = result.productType === "enemy";
   const analysis = result.analysis as { sajuInfo: { yearPillar: string; monthPillar: string; dayPillar: string; hourPillar: string } };
 
   return (
@@ -57,7 +59,7 @@ export default function ResultPage() {
               </p>
               <p className="text-sm text-gray-500">{result.gender === "male" ? "남성" : "여성"}</p>
               <p className="text-xs text-gray-400 font-semibold">
-                {isGuardian ? "🌟 내귀인은누구" : "💑 내님은누구"}
+                {isGuardian ? "🌟 내귀인은누구" : isEnemy ? "😤 내웬수는누구" : "💑 내님은누구"}
               </p>
             </div>
             <button
@@ -78,6 +80,8 @@ export default function ResultPage() {
 
         {isGuardian ? (
           <GuardianResultCard result={result} onReset={handleReset} />
+        ) : isEnemy ? (
+          <EnemyResultCard result={result} onReset={handleReset} />
         ) : (
           <ResultCard result={result} onReset={handleReset} />
         )}

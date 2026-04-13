@@ -33,6 +33,17 @@ const GUARDIAN_FEATURES = [
   ["🚀", "귀인 실천 가이드"],
 ];
 
+const ENEMY_FEATURES = [
+  ["😤", "웬수 AI 프로필"],
+  ["💬", "웬수의 접근 메시지"],
+  ["⚠️", "피해 영역 3가지"],
+  ["🛡️", "웬수 피하는 방법"],
+  ["🌙", "전생 악연 이야기"],
+  ["📅", "웬수 출현 시기"],
+  ["📊", "월별 위험도 차트"],
+  ["🚀", "자기보호 실천 가이드"],
+];
+
 export default function Home() {
   const router = useRouter();
   const [reviewIdx, setReviewIdx] = useState(0);
@@ -48,7 +59,7 @@ export default function Home() {
     return () => clearInterval(t);
   }, []);
 
-  function handleSelectProduct(product: "spouse" | "guardian") {
+  function handleSelectProduct(product: "spouse" | "guardian" | "enemy") {
     sessionStorage.setItem("selectedProduct", product);
     router.push("/input");
   }
@@ -173,11 +184,51 @@ export default function Home() {
           </button>
         </div>
 
-        {/* 두 개 다 해보기 */}
+        {/* 상품 카드 3: 내웬수는누구 */}
+        <div className="bg-white rounded-3xl shadow-sm overflow-hidden border-2 border-transparent hover:border-red-300 transition-all">
+          <div className="p-5">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-2xl bg-red-100 flex items-center justify-center text-2xl shrink-0">😤</div>
+              <div>
+                <h2 className="text-lg font-black text-gray-900">내웬수는누구</h2>
+                <p className="text-xs text-gray-500">사주로 보는 나의 악연·조심해야 할 인물</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-1.5 mb-4">
+              {ENEMY_FEATURES.map(([icon, text]) => (
+                <div key={text as string} className="flex items-center gap-1.5 py-1">
+                  <span className="text-sm">{icon}</span>
+                  <span className="text-xs text-gray-600">{text}</span>
+                </div>
+              ))}
+            </div>
+            <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-400 line-through">3,900원</span>
+                <span className="text-2xl font-black text-gray-900">990원</span>
+                <span className="text-xs bg-red-100 text-red-600 font-bold px-2 py-0.5 rounded-full">74% 할인</span>
+              </div>
+              <button
+                onClick={() => handleSelectProduct("enemy")}
+                className="px-5 py-3 bg-gray-900 text-white font-bold text-sm rounded-2xl active:scale-95 transition-all"
+              >
+                선택하기 →
+              </button>
+            </div>
+          </div>
+          <button
+            onClick={() => handleSelectProduct("enemy")}
+            className="w-full py-3.5 bg-red-500 text-white font-black text-base active:scale-95 transition-all"
+          >
+            😤 내웬수 분석 시작하기
+          </button>
+        </div>
+
+        {/* 세 개 다 해보기 */}
         <div className="bg-gray-900 rounded-2xl p-4 text-center">
-          <p className="text-xs text-gray-400 mb-1">💡 둘 다 궁금하다면?</p>
-          <p className="text-white text-sm font-bold">배우자 + 귀인 분석을 각각 해보세요</p>
-          <p className="text-gray-400 text-xs mt-1">각 990원 · 합산 1,980원</p>
+          <p className="text-xs text-gray-400 mb-1">💡 전부 다 궁금하다면?</p>
+          <p className="text-white text-sm font-bold">배우자 + 귀인 + 웬수 분석을 각각 해보세요</p>
+          <p className="text-gray-400 text-xs mt-1">각 990원 · 합산 2,970원</p>
         </div>
 
         {/* 리뷰 */}

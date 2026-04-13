@@ -16,7 +16,7 @@ export default function InputPage() {
 
   useEffect(() => {
     const stored = sessionStorage.getItem("selectedProduct") as ProductType | null;
-    if (stored === "spouse" || stored === "guardian") {
+    if (stored === "spouse" || stored === "guardian" || stored === "enemy") {
       setProductType(stored);
     } else {
       setProductType("spouse");
@@ -24,6 +24,7 @@ export default function InputPage() {
   }, []);
 
   const isGuardian = productType === "guardian";
+  const isEnemy = productType === "enemy";
 
   async function handleSubmit(data: SajuInput) {
     setLoading(true);
@@ -33,7 +34,7 @@ export default function InputPage() {
     try {
       setLoadingStep(0);
 
-      const apiPath = isGuardian ? "/api/analyze-guardian" : "/api/analyze-saju";
+      const apiPath = isGuardian ? "/api/analyze-guardian" : isEnemy ? "/api/analyze-enemy" : "/api/analyze-saju";
       const analysisRes = await fetch(apiPath, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -53,9 +54,14 @@ export default function InputPage() {
 
       let imageUrl: string;
       if (isGuardian) {
-        // 귀인 이미지: guardian 성별 반전 (귀인은 조력자이므로 성별 제한 없음, 동성도 가능)
         const guardianGender = data.gender === "male" ? "man" : "woman";
         const seed = getSajuSeed(analysis.sajuInfo, guardianGender);
+        const encoded = encodeURIComponent(analysis.imagePrompt);
+        imageUrl = `https://image.pollinations.ai/prompt/${encoded}?width=768&height=768&model=flux&seed=${seed}&nologo=true&enhance=false`;
+      } else if (isEnemy) {
+        // 웬수: 성별 무관, 시드는 고유하게
+        const enemyGender = data.gender === "male" ? "woman" : "man";
+        const seed = getSajuSeed(analysis.sajuInfo, enemyGender) + 9999;
         const encoded = encodeURIComponent(analysis.imagePrompt);
         imageUrl = `https://image.pollinations.ai/prompt/${encoded}?width=768&height=768&model=flux&seed=${seed}&nologo=true&enhance=false`;
       } else {
@@ -95,15 +101,17 @@ export default function InputPage() {
             <div className="bg-white rounded-3xl shadow-sm p-5 mb-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-yellow-400 flex items-center justify-center text-xl">
-                  {isGuardian ? "🌟" : "💑"}
+                  {isGuardian ? "🌟" : isEnemy ? "😤" : "💑"}
                 </div>
                 <div>
                   <p className="font-bold text-gray-900 text-sm">
-                    {isGuardian ? "내귀인은누구" : "내님은누구"}
+                    {isGuardian ? "내귀인은누구" : isEnemy ? "내웬수는누구" : "내님은누구"}
                   </p>
                   <p className="text-xs text-gray-400 mt-0.5">
                     {isGuardian
                       ? "생년월일시와 성별을 입력해주세요 · 귀인 분석"
+                      : isEnemy
+                      ? "생년월일시와 성별을 입력해주세요 · 악연 분석"
                       : "생년월일시와 성별을 입력해주세요 · 배우자 분석"}
                   </p>
                 </div>
@@ -117,26 +125,39 @@ export default function InputPage() {
                   setProductType("spouse");
                   sessionStorage.setItem("selectedProduct", "spouse");
                 }}
-                className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${
-                  !isGuardian
+                className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                  productType === "spouse"
                     ? "bg-gray-900 text-white"
                     : "text-gray-500 hover:text-gray-700"
                 }`}
               >
-                💑 내님은누구
+                💑 내님
               </button>
               <button
                 onClick={() => {
                   setProductType("guardian");
                   sessionStorage.setItem("selectedProduct", "guardian");
                 }}
-                className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${
-                  isGuardian
+                className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                  productType === "guardian"
                     ? "bg-gray-900 text-white"
                     : "text-gray-500 hover:text-gray-700"
                 }`}
               >
-                🌟 내귀인은누구
+                🌟 내귀인
+              </button>
+              <button
+                onClick={() => {
+                  setProductType("enemy");
+                  sessionStorage.setItem("selectedProduct", "enemy");
+                }}
+                className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                  productType === "enemy"
+                    ? "bg-red-500 text-white"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                😤 내웬수
               </button>
             </div>
 

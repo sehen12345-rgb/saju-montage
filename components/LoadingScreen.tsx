@@ -14,6 +14,12 @@ const GUARDIAN_STEPS = [
   { icon: "🎨", text: "귀인 초상화를 그리는 중..." },
 ];
 
+const ENEMY_STEPS = [
+  { icon: "☯️", text: "사주팔자를 분석하는 중..." },
+  { icon: "😤", text: "악연의 기운을 추적하는 중..." },
+  { icon: "🎨", text: "웬수 초상화를 그리는 중..." },
+];
+
 const FUN_FACTS = [
   "사주팔자에서 일간(日干)은 '나 자신'을 나타냅니다",
   "관성(官星)은 배우자와 직업운에 영향을 줍니다",
@@ -27,8 +33,8 @@ const FUN_FACTS = [
   "사주에서 합(合)이 많으면 배우자와 인연이 깊다고 봅니다",
 ];
 
-export default function LoadingScreen({ step, productType = "spouse" }: { step: number; productType?: "spouse" | "guardian" }) {
-  const STEPS = productType === "guardian" ? GUARDIAN_STEPS : SPOUSE_STEPS;
+export default function LoadingScreen({ step, productType = "spouse" }: { step: number; productType?: "spouse" | "guardian" | "enemy" }) {
+  const STEPS = productType === "guardian" ? GUARDIAN_STEPS : productType === "enemy" ? ENEMY_STEPS : SPOUSE_STEPS;
   const [factIdx, setFactIdx] = useState(0);
   const [visible, setVisible] = useState(true);
 
@@ -100,6 +106,8 @@ export default function LoadingScreen({ step, productType = "spouse" }: { step: 
         {step === 2
         ? productType === "guardian"
           ? "✨ AI가 귀인 초상화를 그리고 있어요... 조금만 기다려주세요"
+          : productType === "enemy"
+          ? "✨ AI가 웬수 초상화를 그리고 있어요... 조금만 기다려주세요"
           : "✨ AI가 배우자 몽타주를 그리고 있어요... 조금만 기다려주세요"
         : "잠시만 기다려 주세요"}
       </p>
