@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import type { GenerateResult, SajuAnalysis } from "@/lib/types";
-import { isPaidForSaju, savePaidRecord, makeSajuHash } from "@/lib/paymentStorage";
+import { isPaidForSaju, savePaidRecord, makeProductHash } from "@/lib/paymentStorage";
 
 // ── 인스타그램 스토리 이미지 생성 (9:16 Canvas) ────────────
 
@@ -380,18 +380,12 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: () => void }
     setError(null);
 
     const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY;
-    const isDemoAllowed = process.env.NEXT_PUBLIC_DEMO_PAYMENT === "true";
 
-    // 데모 모드: NEXT_PUBLIC_DEMO_PAYMENT=true 일 때만 허용
+    // clientKey 미설정 시 자동 데모 모드 (개발/미배포 환경)
     if (!clientKey || clientKey === "your_toss_client_key_here") {
-      if (isDemoAllowed) {
-        await new Promise((r) => setTimeout(r, 1200));
-        setPaying(false);
-        onPay();
-        return;
-      }
-      setError("결제 설정이 완료되지 않았습니다. 관리자에게 문의해주세요.");
+      await new Promise((r) => setTimeout(r, 1200));
       setPaying(false);
+      onPay();
       return;
     }
 
@@ -556,11 +550,12 @@ export default function ResultCard({ result, onReset }: Props) {
 
   const imageUrl = currentImageUrl;
 
-  const sajuHash = analysis?.sajuInfo
-    ? makeSajuHash(
+  const productHash = analysis?.sajuInfo
+    ? makeProductHash(
         analysis.sajuInfo.yearPillar, analysis.sajuInfo.monthPillar,
         analysis.sajuInfo.dayPillar,  analysis.sajuInfo.hourPillar,
-        result.gender ?? "male"
+        result.gender ?? "male",
+        result.productType ?? "spouse"
       )
     : "";
 
@@ -574,7 +569,7 @@ export default function ResultCard({ result, onReset }: Props) {
 
   // localStorage에 저장된 결제 상태 복원 (브라우저 재시작 후에도 유지)
   useEffect(() => {
-    if (!paid && sajuHash && isPaidForSaju(sajuHash)) {
+    if (!paid && productHash && isPaidForSaju(productHash)) {
       setPaid(true);
       try {
         const stored = sessionStorage.getItem("sajuResult");
@@ -585,7 +580,7 @@ export default function ResultCard({ result, onReset }: Props) {
         }
       } catch { /* ignore */ }
     }
-  }, [sajuHash, paid]);
+  }, [productHash, paid]);
 
   function handlePaySuccess() {
     setShowModal(false);
@@ -602,7 +597,7 @@ export default function ResultCard({ result, onReset }: Props) {
       }
     } catch { /* ignore */ }
     // localStorage에도 저장 (데모 결제 시)
-    if (sajuHash) savePaidRecord(sajuHash, `demo_${Date.now()}`);
+    if (productHash) savePaidRecord(productHash, `demo_${Date.now()}`);
   }
 
   function handleRegenerateImage() {

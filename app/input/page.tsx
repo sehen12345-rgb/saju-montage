@@ -83,6 +83,8 @@ export default function InputPage() {
         productType,
       };
       sessionStorage.setItem("sajuResult", JSON.stringify(result));
+      // 모바일 앱 전환(카카오페이 등) 시 sessionStorage 소실 대비 백업
+      localStorage.setItem("sajuResult_backup", JSON.stringify(result));
       router.push("/result");
     } catch (err) {
       setError(err instanceof Error ? err.message : "오류가 발생했습니다.");

@@ -18,14 +18,20 @@ export default function ResultPage() {
   const [result, setResult] = useState<GenerateResult | null>(null);
 
   useEffect(() => {
-    const stored = sessionStorage.getItem("sajuResult");
+    // 모바일 앱 전환(카카오페이 등) 시 sessionStorage 소실 대비: localStorage 백업 참조
+    const stored =
+      sessionStorage.getItem("sajuResult") ??
+      localStorage.getItem("sajuResult_backup");
     if (!stored) { router.replace("/input"); return; }
     try {
       const parsed = JSON.parse(stored);
       if (!parsed?.analysis) throw new Error("invalid");
+      // sessionStorage 복원
+      sessionStorage.setItem("sajuResult", JSON.stringify(parsed));
       setResult(parsed);
     } catch {
       sessionStorage.removeItem("sajuResult");
+      localStorage.removeItem("sajuResult_backup");
       router.replace("/input");
     }
   }, [router]);

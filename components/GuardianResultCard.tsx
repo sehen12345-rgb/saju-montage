@@ -107,17 +107,12 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: () => void }
     setError(null);
 
     const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY;
-    const isDemoAllowed = process.env.NEXT_PUBLIC_DEMO_PAYMENT === "true";
 
+    // clientKey 미설정 시 자동 데모 모드
     if (!clientKey || clientKey === "your_toss_client_key_here") {
-      if (isDemoAllowed) {
-        await new Promise((r) => setTimeout(r, 1200));
-        setPaying(false);
-        onPay();
-        return;
-      }
-      setError("결제 설정이 완료되지 않았습니다. 관리자에게 문의해주세요.");
+      await new Promise((r) => setTimeout(r, 1200));
       setPaying(false);
+      onPay();
       return;
     }
 

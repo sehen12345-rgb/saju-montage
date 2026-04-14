@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { savePaidRecord, makeSajuHash } from "@/lib/paymentStorage";
+import { savePaidRecord, makeProductHash } from "@/lib/paymentStorage";
 
 function PaymentSuccessContent() {
   const router = useRouter();
@@ -30,17 +30,22 @@ function PaymentSuccessContent() {
       .then((data) => {
         if (data.success) {
           // sessionStorage & localStorage에 결제 상태 저장
+          // 모바일(카카오페이 앱 전환) 시 sessionStorage 소실 대비: localStorage 백업도 참조
           try {
-            const stored = sessionStorage.getItem("sajuResult");
+            const stored =
+              sessionStorage.getItem("sajuResult") ??
+              localStorage.getItem("sajuResult_backup");
             if (stored) {
               const parsed = JSON.parse(stored);
               parsed.paid = true;
               sessionStorage.setItem("sajuResult", JSON.stringify(parsed));
+              localStorage.removeItem("sajuResult_backup");
               if (parsed.analysis?.sajuInfo) {
                 const { yearPillar, monthPillar, dayPillar, hourPillar } = parsed.analysis.sajuInfo;
                 const gender = parsed.gender ?? "male";
-                const sajuHash = makeSajuHash(yearPillar, monthPillar, dayPillar, hourPillar, gender);
-                if (orderId) savePaidRecord(sajuHash, orderId);
+                const productType = parsed.productType ?? "spouse";
+                const hash = makeProductHash(yearPillar, monthPillar, dayPillar, hourPillar, gender, productType);
+                if (orderId) savePaidRecord(hash, orderId);
               }
             }
           } catch (e) {
