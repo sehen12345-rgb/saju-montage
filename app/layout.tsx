@@ -34,6 +34,17 @@ export default function RootLayout({
         <Script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js" strategy="afterInteractive" />
       </head>
       <body className="min-h-screen bg-[#0d0d12]">
+        {/* 구버전 캐시 강제 초기화 */}
+        <Script id="cache-bust" strategy="beforeInteractive">{`
+          (function(){
+            var v = localStorage.getItem('app_version');
+            if(v !== '20260414') {
+              sessionStorage.clear();
+              localStorage.removeItem('sajuResult_backup');
+              localStorage.setItem('app_version','20260414');
+            }
+          })();
+        `}</Script>
         <AuthProvider>
           <Header />
           <main className="min-h-screen">{children}</main>
