@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { calculateSaju } from "@/lib/saju";
+import { calculateSaju, buildSajuContext } from "@/lib/saju";
 import Anthropic from "@anthropic-ai/sdk";
 import type { GuardianAnalysis, SajuInfo } from "@/lib/types";
 
@@ -106,6 +106,7 @@ async function analyzeGuardianWithClaude(
     const hourStr = birthHour >= 0 ? `${birthHour}시` : "시간 모름";
     const guardianGender = gender === "male" ? "남성 또는 여성" : "남성 또는 여성";
 
+    const sajuContext = buildSajuContext(sajuInfo);
     const prompt = `당신은 사주명리학 전문가이자 귀인(贵人) 운세 분석가입니다. 아래 사주를 깊이 분석하여 이 사람의 귀인(인생을 도와줄 조력자)에 대한 완전한 운명 보고서를 생성해주세요.
 
 사주 정보:
@@ -114,7 +115,9 @@ async function analyzeGuardianWithClaude(
 - 성별: ${genderLabel}
 - 사주팔자: 년주 ${sajuInfo.yearPillar} / 월주 ${sajuInfo.monthPillar} / 일주 ${sajuInfo.dayPillar} / 시주 ${sajuInfo.hourPillar}
 
-사주의 오행, 십신, 일간의 특성을 반영하여 진짜 개인화된 귀인 분석을 해주세요. 귀인은 삶의 중요한 순간에 도움을 주는 ${guardianGender} 조력자입니다.
+${sajuContext}
+
+위 사주 해석을 반드시 모든 항목에 반영하여 이 사람만의 고유한 귀인 분석을 생성하세요. 특히 일간 특성과 부족한 오행을 보완해주는 귀인의 모습을 구체적으로 묘사하세요.
 순수 JSON만 응답하세요 (마크다운 코드블록 없이):
 {
   "guardianType": "귀인 유형 (예: 사업 귀인, 금전 귀인, 학업 귀인, 인생 멘토형, 감성 귀인)",
@@ -140,9 +143,9 @@ async function analyzeGuardianWithClaude(
   "pastLifeConnection": "전생 인연 이야기 2-3문장 (구체적 시대·관계·상황, 감성적으로)",
   "caution": ["주의사항1 (1-2문장, 구체적 상황)", "주의사항2", "주의사항3"],
   "actionGuide": ["귀인을 당기는 실천 가이드1 (매우 구체적인 행동)", "실천 행동2", "실천 행동3"],
-  "monthlyLuck": [70, 60, 80, 75, 65, 90, 85, 70, 60, 75, 80, 65],
+  "monthlyLuck": [1월~12월 귀인운 각각 0~100 숫자 12개, 사주 오행·계절 특성 반영해 각 달마다 다르게],
   "readiness": {
-    "score": 75,
+    "score": 귀인 준비도 0~100(사주 기반),
     "comment": "귀인 준비도 코멘트 2문장 (현재 상태와 개선 방향)"
   },
   "imagePrompt": "English portrait prompt for AI image generation: wise trustworthy person, describe appearance based on saju elements (water/wood/fire/earth/metal energy), kind yet authoritative face, professional and warm, photorealistic, studio lighting, high quality"

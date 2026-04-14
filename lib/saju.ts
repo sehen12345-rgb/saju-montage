@@ -220,3 +220,118 @@ export function calculateSaju(year: number, month: number, day: number, hour: nu
 
   return { yearPillar, monthPillar, dayPillar, hourPillar };
 }
+
+// ─────────────────────────────────────────────────────────────
+// 사주 심화 해석 컨텍스트 (Claude 프롬프트 강화용)
+// ─────────────────────────────────────────────────────────────
+
+/** 천간 → 오행 */
+const GAN_ELEMENT: Record<string, string> = {
+  갑: "木(양)", 을: "木(음)", 병: "火(양)", 정: "火(음)",
+  무: "土(양)", 기: "土(음)", 경: "金(양)", 신: "金(음)",
+  임: "水(양)", 계: "水(음)",
+};
+
+/** 지지 → 오행 */
+const JI_ELEMENT: Record<string, string> = {
+  자: "水", 축: "土", 인: "木", 묘: "木",
+  진: "土", 사: "火", 오: "火", 미: "土",
+  신: "金", 유: "金", 술: "土", 해: "水",
+};
+
+/** 일간별 핵심 성격 특성 (명리학 기반) */
+const DAY_MASTER_TRAITS: Record<string, { element: string; personality: string; strength: string; weakness: string; relationStyle: string }> = {
+  갑: { element: "木(양·양목)", personality: "리더십 강하고 직선적, 원칙주의자, 추진력 넘침", strength: "결단력·개척 정신·정직함", weakness: "고집스럽고 타협 어려움, 유연성 부족", relationStyle: "주도적으로 이끌려 하며 관계에서 책임감 강함" },
+  을: { element: "木(음·음목)", personality: "유연하고 적응력 뛰어남, 감성적이며 눈치 빠름", strength: "사교성·공감 능력·섬세함", weakness: "우유부단하고 타인 눈치를 지나치게 봄", relationStyle: "상대에게 맞춰주려 하며 배려심이 깊음" },
+  병: { element: "火(양·양화)", personality: "열정적이고 외향적, 존재감 강하며 카리스마 있음", strength: "에너지·긍정성·표현력·영향력", weakness: "감정 기복 크고 과시 욕구, 지속력 약함", relationStyle: "열정적이고 드라마틱한 사랑 표현, 주목받길 원함" },
+  정: { element: "火(음·음화)", personality: "따뜻하고 섬세한 감성, 예술적 감각 뛰어남", strength: "직관력·감수성·헌신성·따뜻함", weakness: "감정에 치우치며 상처받기 쉬움", relationStyle: "세심하게 챙기며 감정 공유를 중시함" },
+  무: { element: "土(양·양토)", personality: "믿음직스럽고 중후함, 현실적이고 포용력 있음", strength: "신뢰감·안정감·중재력·포용력", weakness: "변화 싫어하고 고집스럽고 둔감해 보일 수 있음", relationStyle: "안정적·장기적 관계 지향, 책임감으로 사랑 표현" },
+  기: { element: "土(음·음토)", personality: "세심하고 꼼꼼함, 실용적이며 봉사 정신 강함", strength: "성실함·꼼꼼함·현실 감각·배려심", weakness: "소심하고 걱정 많으며 결정 어려움", relationStyle: "작은 것에 세심히 챙기며 조용히 헌신함" },
+  경: { element: "金(양·양금)", personality: "강직하고 원칙적, 결단력 있으며 자존심 강함", strength: "추진력·결단력·명예욕·의리", weakness: "냉정해 보이고 자존심 강해 타협 어려움", relationStyle: "의리와 책임감으로 지키며 표현은 서툴지만 깊음" },
+  신: { element: "金(음·음금)", personality: "날카롭고 영리함, 언변 뛰어나고 심미안 있음", strength: "분석력·언어능력·심미안·재치", weakness: "비판적이고 예민하며 자기 기준 높음", relationStyle: "이성적으로 판단하며 상대에게 높은 기준 적용" },
+  임: { element: "水(양·양수)", personality: "총명하고 적응력 강함, 자유로운 영혼, 다방면 관심", strength: "지적 능력·융통성·추진력·포용력", weakness: "변덕스럽고 끈기 부족, 집중력 분산", relationStyle: "자유롭고 다양한 만남 즐기나 깊어지면 진지해짐" },
+  계: { element: "水(음·음수)", personality: "깊은 사고력과 직관력, 감성적이며 지혜로움", strength: "통찰력·섬세함·감수성·지혜", weakness: "내성적이고 표현 부족, 감정 숨기는 경향", relationStyle: "내면 깊이 감정을 쌓으며 신뢰 형성 후 헌신" },
+};
+
+/** 지지별 숨겨진 기운 (지장간 요약) */
+const JI_HIDDEN: Record<string, string> = {
+  자: "임·계(水 강)", 축: "기·신·계(土·金·水)", 인: "무·병·갑(土·火·木)",
+  묘: "갑·을(木 강)", 진: "을·계·무(木·水·土)", 사: "무·경·병(土·金·火)",
+  오: "기·정(土·火 강)", 미: "정·을·기(火·木·土)", 신: "무·임·경(土·水·金)",
+  유: "경·신(金 강)", 술: "신·정·무(金·火·土)", 해: "무·갑·임(土·木·水)",
+};
+
+/**
+ * 4기둥에서 오행 분포·일간 특성·신강신약 등을 계산해 Claude 프롬프트용 컨텍스트 문자열 반환
+ */
+export function buildSajuContext(sajuInfo: SajuInfo): string {
+  const pillars = [sajuInfo.yearPillar, sajuInfo.monthPillar, sajuInfo.dayPillar, sajuInfo.hourPillar];
+
+  // 천간 4개 추출
+  const stems = pillars.map(p => p[0]);
+  // 지지 4개 추출
+  const branches = pillars.map(p => p[1]);
+
+  // 일간
+  const dayMaster = stems[2];
+  const traits = DAY_MASTER_TRAITS[dayMaster] ?? { element: "不明", personality: "미상", strength: "미상", weakness: "미상", relationStyle: "미상" };
+
+  // 오행 카운트 (천간 4개 기준)
+  const elemCount: Record<string, number> = { 木: 0, 火: 0, 土: 0, 金: 0, 水: 0 };
+  for (const s of stems) {
+    const e = GAN_ELEMENT[s] ?? "";
+    if (e.startsWith("木")) elemCount["木"]++;
+    else if (e.startsWith("火")) elemCount["火"]++;
+    else if (e.startsWith("土")) elemCount["土"]++;
+    else if (e.startsWith("金")) elemCount["金"]++;
+    else if (e.startsWith("水")) elemCount["水"]++;
+  }
+  for (const b of branches) {
+    const e = JI_ELEMENT[b] ?? "";
+    if (e) elemCount[e] = (elemCount[e] ?? 0) + 1;
+  }
+
+  const elemStr = Object.entries(elemCount)
+    .filter(([, v]) => v > 0)
+    .sort(([, a], [, b]) => b - a)
+    .map(([k, v]) => `${k}${v}개`)
+    .join(", ");
+
+  const dominant = Object.entries(elemCount).sort(([, a], [, b]) => b - a)[0]?.[0] ?? "土";
+  const lacking = Object.entries(elemCount).filter(([, v]) => v === 0).map(([k]) => k).join("·") || "없음";
+
+  // 일간과 월지 관계로 신강/신약 간략 판단
+  const monthBranch = branches[1];
+  const monthElem = JI_ELEMENT[monthBranch] ?? "";
+  const dayElem = (GAN_ELEMENT[dayMaster] ?? "").split("(")[0]; // 木/火/土/金/水
+  const sameOrGen = monthElem === dayElem; // 신강 경향
+  const strengthLabel = sameOrGen ? "신강(身强) 경향 - 일간이 강함" : "신약(身弱) 경향 - 일간 보완 필요";
+
+  // 지지 지장간
+  const hiddenStems = branches.map(b => `${b}(${JI_HIDDEN[b] ?? "미상"})`).join(", ");
+
+  return `
+【일간(日干) - 이 사주의 핵심】
+- 일간: ${dayMaster}(${traits.element})
+- 성격 핵심: ${traits.personality}
+- 강점: ${traits.strength}
+- 약점/주의: ${traits.weakness}
+- 관계 스타일: ${traits.relationStyle}
+
+【오행(五行) 분포】
+- 분포: ${elemStr}
+- 강한 오행: ${dominant}
+- 부족한 오행: ${lacking}
+- ${strengthLabel}
+
+【4기둥 천간 오행】
+- 년간 ${stems[0]}(${GAN_ELEMENT[stems[0]] ?? "미상"}) / 월간 ${stems[1]}(${GAN_ELEMENT[stems[1]] ?? "미상"}) / 일간 ${stems[2]}(${GAN_ELEMENT[stems[2]] ?? "미상"}) / 시간 ${stems[3]}(${GAN_ELEMENT[stems[3]] ?? "미상"})
+
+【지지(地支) 지장간 - 숨겨진 기운】
+- ${hiddenStems}
+
+【분석 지침】
+위 사주 데이터를 바탕으로 반드시 이 사람만의 고유한 특성을 도출하세요.
+특히 일간 "${dayMaster}"의 특성과 오행 분포(${dominant} 강세, ${lacking} 부족)가
+배우자/귀인/악연의 성격·외모·만남 방식·궁합에 어떻게 반영되는지 구체적으로 서술하세요.`.trim();
+}

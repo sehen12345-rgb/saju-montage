@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { calculateSaju } from "@/lib/saju";
+import { calculateSaju, buildSajuContext } from "@/lib/saju";
 import Anthropic from "@anthropic-ai/sdk";
 import type { EnemyAnalysis, SajuInfo } from "@/lib/types";
 
@@ -101,6 +101,7 @@ async function analyzeEnemyWithClaude(
     const genderLabel = gender === "male" ? "남성" : "여성";
     const hourStr = birthHour >= 0 ? `${birthHour}시` : "시간 모름";
 
+    const sajuContext = buildSajuContext(sajuInfo);
     const prompt = `당신은 사주명리학 전문가이자 악연(惡緣) 분석가입니다. 아래 사주를 깊이 분석하여 이 사람의 웬수(악연·해로운 인연)에 대한 완전한 운명 보고서를 생성해주세요.
 
 사주 정보:
@@ -109,7 +110,9 @@ async function analyzeEnemyWithClaude(
 - 성별: ${genderLabel}
 - 사주팔자: 년주 ${sajuInfo.yearPillar} / 월주 ${sajuInfo.monthPillar} / 일주 ${sajuInfo.dayPillar} / 시주 ${sajuInfo.hourPillar}
 
-사주의 오행, 십신, 일간의 특성을 반영하여 진짜 개인화된 악연 분석을 해주세요. 웬수는 삶에서 해를 끼치거나 에너지를 빼앗는 인물입니다.
+${sajuContext}
+
+위 사주 해석을 반드시 모든 항목에 반영하여 이 사람만의 고유한 악연 분석을 생성하세요. 특히 일간의 약점과 부족한 오행을 파고드는 웬수의 특성을 구체적으로 묘사하세요.
 순수 JSON만 응답하세요 (마크다운 코드블록 없이):
 {
   "enemyType": "악연 유형 (예: 질투형 악연, 배신형 악연, 사기형 악연, 에너지 흡혈형, 경쟁형 악연)",
@@ -135,9 +138,9 @@ async function analyzeEnemyWithClaude(
   "pastLifeConnection": "전생 악연 이야기 2-3문장 (구체적 시대·관계·갈등, 감성적으로)",
   "caution": ["주의사항1 (1-2문장, 구체적 상황)", "주의사항2", "주의사항3"],
   "actionGuide": ["웬수를 피하는 실천 가이드1 (매우 구체적인 행동)", "실천 행동2", "실천 행동3"],
-  "monthlyDanger": [55, 70, 45, 60, 80, 50, 65, 75, 40, 60, 70, 55],
+  "monthlyDanger": [1월~12월 악연 위험도 각각 0~100 숫자 12개, 사주 오행·계절 특성 반영해 각 달마다 다르게],
   "readiness": {
-    "score": 60,
+    "score": 악연 방어력 0~100(사주 기반),
     "comment": "악연 방어력 코멘트 2문장 (현재 상태와 개선 방향)"
   },
   "imagePrompt": "English portrait prompt for AI image generation: charming yet deceptive person, superficially attractive but cold calculating eyes, two-faced nature, stylish appearance, dramatic cinematic lighting with subtle shadows, photorealistic, high quality"

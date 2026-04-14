@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { calculateSaju } from "@/lib/saju";
+import { calculateSaju, buildSajuContext } from "@/lib/saju";
 import { getSajuSeed } from "@/lib/prompts";
 import { buildFullDeterministicAnalysis } from "@/lib/deterministic";
 import type { SajuInput, SajuAnalysis, SajuInfo } from "@/lib/types";
@@ -23,6 +23,7 @@ async function analyzeWithClaude(
     const genderLabel = gender === "male" ? "남성" : "여성";
     const hourStr = birthHour >= 0 ? `${birthHour}시` : "시간 모름";
 
+    const sajuContext = buildSajuContext(sajuInfo);
     const prompt = `당신은 사주명리학 전문가이자 운명 분석가입니다. 아래 사주를 깊이 분석하여 ${spouseLabel}의 완전한 운명 보고서를 생성해주세요.
 
 사주 정보:
@@ -31,7 +32,9 @@ async function analyzeWithClaude(
 - 성별: ${genderLabel}
 - 사주팔자: 년주 ${sajuInfo.yearPillar} / 월주 ${sajuInfo.monthPillar} / 일주 ${sajuInfo.dayPillar} / 시주 ${sajuInfo.hourPillar}
 
-사주의 오행, 십신, 일간의 특성을 반영하여 진짜 개인화된 분석을 해주세요. 다른 사주와 절대 똑같은 내용이 나오면 안 됩니다.
+${sajuContext}
+
+위 사주 해석을 반드시 모든 항목에 반영하여 이 사람만의 고유한 ${spouseLabel} 분석을 생성하세요. 다른 사람과 겹치는 내용이 있으면 안 됩니다.
 순수 JSON만 응답하세요 (마크다운 코드블록 없이):
 {
   "description": "배우자 외모 설명 2-3문장 (구체적 이목구비·분위기·피부톤 등, 사주 오행 특성 반영)",
@@ -61,11 +64,11 @@ async function analyzeWithClaude(
     "children": "자녀 수 (예: 1~2명)"
   },
   "compatibilityScores": {
-    "personality": 75,
-    "values": 88,
-    "lifestyle": 80,
-    "communication": 85,
-    "finance": 78
+    "personality": 사주 기반 성격 궁합 점수(0~100),
+    "values": 가치관 궁합 점수(0~100),
+    "lifestyle": 생활 패턴 궁합 점수(0~100),
+    "communication": 소통 궁합 점수(0~100),
+    "finance": 재정 관념 궁합 점수(0~100)
   },
   "nameHint": "이름 첫 글자 힌트 1문장 (구체적 초성/계열 언급)",
   "pastLife": "전생 인연 이야기 3-4문장 (구체적 시대·장소·상황, 감성적으로)",
@@ -88,9 +91,9 @@ async function analyzeWithClaude(
   },
   "caution": ["주의사항1 (1-2문장, 구체적 상황)", "주의사항2", "주의사항3"],
   "advice": ["인연 조언1 (지금 당장 할 수 있는 구체적 행동)", "인연 조언2", "인연 조언3"],
-  "monthlyChance": [70, 60, 80, 75, 65, 90, 85, 70, 60, 75, 80, 65],
+  "monthlyChance": [1월~12월 인연운 각각 0~100 숫자 12개, 사주 오행·계절 특성 반영해 각 달마다 다르게],
   "readiness": {
-    "score": 75,
+    "score": 인연 준비도 0~100(사주 기반),
     "comment": "인연 준비도 코멘트 2문장 (현재 상태와 개선 방향)"
   },
   "loveLanguage": {
