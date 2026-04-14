@@ -162,72 +162,85 @@ export default function InputPage() {
     setError(null);
     setLoadingStep(0);
 
-    // API 호출 + 실패 시 모의 데이터 폴백
-    let analysis;
-    let usedMock = false;
     try {
-      const apiPath = isGuardian ? "/api/analyze-guardian" : isEnemy ? "/api/analyze-enemy" : "/api/analyze-saju";
-      const ctrl = new AbortController();
-      const timeout = setTimeout(() => ctrl.abort(), 55000); // 55초 타임아웃
-      const analysisRes = await fetch(apiPath, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, productType }),
-        signal: ctrl.signal,
-      });
-      clearTimeout(timeout);
-      if (analysisRes.ok) {
-        analysis = await analysisRes.json();
-      } else {
-        throw new Error("api_fail");
+      // ── 1. API 호출 (실패 시 모의 데이터 폴백) ──
+      let analysis;
+      let usedMock = false;
+      try {
+        const apiPath = isGuardian ? "/api/analyze-guardian" : isEnemy ? "/api/analyze-enemy" : "/api/analyze-saju";
+        const ctrl = new AbortController();
+        const timeout = setTimeout(() => ctrl.abort(), 25000); // 25초 타임아웃
+        const analysisRes = await fetch(apiPath, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...data, productType }),
+          signal: ctrl.signal,
+        });
+        clearTimeout(timeout);
+        if (analysisRes.ok) {
+          analysis = await analysisRes.json();
+        } else {
+          throw new Error("api_fail");
+        }
+      } catch {
+        usedMock = true;
+        if (isGuardian) {
+          analysis = buildMockGuardianAnalysis(data.name, data.birthYear);
+        } else if (isEnemy) {
+          analysis = buildMockEnemyAnalysis(data.name, data.birthYear);
+        } else {
+          analysis = buildMockSpouseAnalysis(data.name, data.birthYear, data.gender);
+        }
       }
-    } catch {
-      // API 실패 → 모의 데이터로 폴백
-      usedMock = true;
+
+      setLoadingStep(1);
+      await new Promise((r) => setTimeout(r, 800));
+      setLoadingStep(2);
+      await new Promise((r) => setTimeout(r, 600));
+
+      // ── 2. 이미지 URL 생성 ──
+      const sajuInfo = analysis.sajuInfo ?? {
+        yearPillar: "갑자", monthPillar: "병인", dayPillar: "무오", hourPillar: "경신",
+      };
+      let imageUrl: string;
       if (isGuardian) {
-        analysis = buildMockGuardianAnalysis(data.name, data.birthYear);
+        const g = data.gender === "male" ? "man" : "woman";
+        const seed = getSajuSeed(sajuInfo, g);
+        const prompt = analysis.imagePrompt ?? `wise trustworthy ${g}, photorealistic portrait`;
+        imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=768&height=768&model=flux&seed=${seed}&nologo=true&enhance=false`;
       } else if (isEnemy) {
-        analysis = buildMockEnemyAnalysis(data.name, data.birthYear);
+        const g = data.gender === "male" ? "woman" : "man";
+        const seed = getSajuSeed(sajuInfo, g) + 9999;
+        const prompt = analysis.imagePrompt ?? `charming deceptive ${g}, photorealistic portrait`;
+        imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=768&height=768&model=flux&seed=${seed}&nologo=true&enhance=false`;
       } else {
-        analysis = buildMockSpouseAnalysis(data.name, data.birthYear, data.gender);
+        const g = data.gender === "male" ? "woman" : "man";
+        const seed = getSajuSeed(sajuInfo, g);
+        const prompt = analysis.imagePrompt ?? `beautiful ${g}, warm smile, photorealistic portrait`;
+        imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=768&height=768&model=flux&seed=${seed}&nologo=true&enhance=false`;
       }
+
+      // ── 3. 결과 저장 ──
+      const result: GenerateResult = {
+        name: data.name,
+        analysis,
+        imageUrl,
+        gender: data.gender,
+        demo: usedMock,
+        paid: true, // TODO: TossPayments 승인 후 삭제
+        productType,
+      };
+      const json = JSON.stringify(result);
+      try { sessionStorage.setItem("sajuResult", json); } catch { /* private mode */ }
+      try { localStorage.setItem("sajuResult_backup", json); } catch { /* storage full */ }
+
+      router.push("/result");
+    } catch (err) {
+      console.error("handleSubmit error:", err);
+      setError("분석 중 오류가 발생했습니다. 다시 시도해주세요.");
+      setLoading(false);
+      setLoadingStep(0);
     }
-
-    setLoadingStep(1);
-    await new Promise((r) => setTimeout(r, 1200));
-    setLoadingStep(2);
-    await new Promise((r) => setTimeout(r, 800));
-
-    let imageUrl: string;
-    if (isGuardian) {
-      const guardianGender = data.gender === "male" ? "man" : "woman";
-      const seed = getSajuSeed(analysis.sajuInfo, guardianGender);
-      const prompt = analysis.imagePrompt ?? `wise trustworthy ${guardianGender}, photorealistic portrait`;
-      imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=768&height=768&model=flux&seed=${seed}&nologo=true&enhance=false`;
-    } else if (isEnemy) {
-      const enemyGender = data.gender === "male" ? "woman" : "man";
-      const seed = getSajuSeed(analysis.sajuInfo, enemyGender) + 9999;
-      const prompt = analysis.imagePrompt ?? `charming deceptive ${enemyGender}, photorealistic portrait`;
-      imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=768&height=768&model=flux&seed=${seed}&nologo=true&enhance=false`;
-    } else {
-      const spouseGender = data.gender === "male" ? "woman" : "man";
-      const seed = getSajuSeed(analysis.sajuInfo, spouseGender);
-      const prompt = analysis.imagePrompt ?? `beautiful ${spouseGender}, warm smile, photorealistic portrait`;
-      imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=768&height=768&model=flux&seed=${seed}&nologo=true&enhance=false`;
-    }
-
-    const result: GenerateResult = {
-      name: data.name,
-      analysis,
-      imageUrl,
-      gender: data.gender,
-      demo: usedMock,
-      paid: true, // TODO: TossPayments 승인 후 이 줄 삭제
-      productType,
-    };
-    sessionStorage.setItem("sajuResult", JSON.stringify(result));
-    localStorage.setItem("sajuResult_backup", JSON.stringify(result));
-    router.push("/result");
   }
 
   return (
