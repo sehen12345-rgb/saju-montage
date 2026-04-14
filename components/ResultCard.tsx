@@ -639,7 +639,8 @@ export default function ResultCard({ result, onReset }: Props) {
       a.click();
       URL.revokeObjectURL(url);
     } catch {
-      alert("이미지 저장에 실패했습니다.");
+      // 프록시 실패 시 직접 열기 fallback
+      window.open(imageUrl, "_blank");
     } finally {
       setDownloading(false);
     }

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const RETRY_COUNT = 5;
-const RETRY_DELAY_MS = 3000;
+const RETRY_COUNT = 2;
+const RETRY_DELAY_MS = 2000;
 
 function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
     try {
       const res = await fetch(url, {
         headers: { "User-Agent": "Mozilla/5.0" },
-        signal: AbortSignal.timeout(60000),
+        signal: AbortSignal.timeout(20000),
       });
 
       if (res.status === 429) {

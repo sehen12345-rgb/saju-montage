@@ -1,0 +1,22 @@
+{
+  "functions": {
+    "app/api/analyze-saju/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/analyze-guardian/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/analyze-enemy/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/proxy-image/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/generate-image/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/payment/confirm/route.ts": {
+      "maxDuration": 30
+    }
+  }
+}
