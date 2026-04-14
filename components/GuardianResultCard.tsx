@@ -101,52 +101,13 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: () => void }
   const minutes = String(Math.floor(timeLeft / 60)).padStart(2, "0");
   const seconds = String(timeLeft % 60).padStart(2, "0");
 
-  async function handlePay(method: "카카오페이" | "카드") {
+  // TODO: TossPayments PG 승인 후 실제 결제 로직으로 교체
+  async function handlePay(_method: "카카오페이" | "카드") {
     if (paying) return;
     setPaying(true);
-    setError(null);
-
-    const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY;
-
-    // clientKey 미설정 시 자동 데모 모드
-    if (!clientKey || clientKey === "your_toss_client_key_here") {
-      await new Promise((r) => setTimeout(r, 1200));
-      setPaying(false);
-      onPay();
-      return;
-    }
-
-    try {
-      if (!document.querySelector('script[src*="js.tosspayments.com"]')) {
-        await new Promise<void>((resolve, reject) => {
-          const script = document.createElement("script");
-          script.src = "https://js.tosspayments.com/v1/payment";
-          script.onload = () => resolve();
-          script.onerror = () => reject(new Error("결제 모듈 로드 실패"));
-          document.head.appendChild(script);
-        });
-      }
-
-      const orderId = `guardian${Date.now()}${Math.random().toString(36).slice(2, 7)}`;
-      sessionStorage.setItem("paymentOrderId", orderId);
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const tossPayments = (window as any).TossPayments(clientKey);
-      await tossPayments.requestPayment(method, {
-        amount: 990,
-        orderId,
-        orderName: "사주 귀인 AI 분석",
-        successUrl: `${window.location.origin}/payment/success`,
-        failUrl: `${window.location.origin}/payment/fail`,
-      });
-    } catch (err) {
-      const errName = err instanceof Error ? err.name : "";
-      const isCanceled = errName === "AbortError" || errName === "USER_CANCEL";
-      if (!isCanceled) {
-        setError("결제 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
-      }
-      setPaying(false);
-    }
+    await new Promise((r) => setTimeout(r, 1000));
+    setPaying(false);
+    onPay();
   }
 
   return (
