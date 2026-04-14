@@ -504,7 +504,8 @@ export default function ResultCard({ result, onReset }: Props) {
   const [copied, setCopied] = useState(false);
   const [storySharing, setStorySharing] = useState(false);
   const [storyToast, setStoryToast] = useState<string | null>(null);
-  const [paid, setPaid] = useState(result.paid ?? false);
+  // TODO: TossPayments PG 승인 후 아래를 (result.paid ?? false) 로 변경
+  const [paid, setPaid] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [justUnlocked, setJustUnlocked] = useState(false);
   const [showStickyBtn, setShowStickyBtn] = useState(false);

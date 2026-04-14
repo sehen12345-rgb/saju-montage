@@ -239,7 +239,8 @@ export default function GuardianResultCard({ result, onReset }: Props) {
   const [imgError, setImgError] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [paid, setPaid] = useState(result.paid ?? false);
+  // TODO: TossPayments PG 승인 후 아래를 (result.paid ?? false) 로 변경
+  const [paid, setPaid] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [justUnlocked, setJustUnlocked] = useState(false);
   const [showStickyBtn, setShowStickyBtn] = useState(false);
