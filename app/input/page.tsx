@@ -80,6 +80,7 @@ export default function InputPage() {
         imageUrl,
         gender: data.gender,
         demo: false,
+        paid: true, // TODO: TossPayments 승인 후 이 줄 삭제
         productType,
       };
       sessionStorage.setItem("sajuResult", JSON.stringify(result));
