@@ -61,16 +61,16 @@ function PaymentSuccessContent() {
 
   if (status === "confirming") {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-4">
+      <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-[#0d0d12]">
         <div className="max-w-sm w-full text-center space-y-6">
           <div className="relative w-20 h-20 mx-auto">
-            <div className="absolute inset-0 rounded-full border-4 border-amber-200" />
-            <div className="absolute inset-0 rounded-full border-4 border-t-amber-500 animate-spin" />
+            <div className="absolute inset-0 rounded-full border-4 border-yellow-900" />
+            <div className="absolute inset-0 rounded-full border-4 border-t-yellow-400 animate-spin" />
             <div className="absolute inset-0 flex items-center justify-center text-3xl">🔮</div>
           </div>
           <div>
-            <h2 className="text-xl font-bold text-amber-900">결제 확인 중...</h2>
-            <p className="text-amber-600 text-sm mt-2">잠시만 기다려주세요</p>
+            <h2 className="text-xl font-bold text-white">결제 확인 중...</h2>
+            <p className="text-gray-400 text-sm mt-2">잠시만 기다려주세요</p>
           </div>
         </div>
       </div>
@@ -79,30 +79,30 @@ function PaymentSuccessContent() {
 
   if (status === "done") {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-4">
+      <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-[#0d0d12]">
         <div className="max-w-sm w-full text-center space-y-6">
           <div className="text-6xl">✨</div>
           <div>
-            <h2 className="text-2xl font-bold text-amber-900">결제 완료!</h2>
-            <p className="text-amber-600 text-sm mt-2">배우자 완전 분석 보고서를 확인하세요</p>
+            <h2 className="text-2xl font-bold text-white">결제 완료!</h2>
+            <p className="text-yellow-400 text-sm mt-2">완전 분석 보고서를 확인하세요</p>
           </div>
-          <div className="text-sm text-gray-400 animate-pulse">결과 페이지로 이동 중...</div>
+          <div className="text-sm text-gray-500 animate-pulse">결과 페이지로 이동 중...</div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4">
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-[#0d0d12]">
       <div className="max-w-sm w-full text-center space-y-6">
         <div className="text-6xl">😓</div>
         <div>
-          <h2 className="text-2xl font-bold text-red-800">결제 확인 실패</h2>
-          <p className="text-red-600 text-sm mt-2">{errorMsg}</p>
+          <h2 className="text-2xl font-bold text-white">결제 확인 실패</h2>
+          <p className="text-red-400 text-sm mt-2">{errorMsg}</p>
         </div>
         <button
           onClick={() => router.push("/result")}
-          className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-lg shadow-lg hover:from-amber-600 hover:to-orange-600 transition-all"
+          className="w-full py-4 rounded-2xl bg-yellow-400 text-gray-900 font-bold text-lg shadow-lg hover:bg-yellow-300 transition-all active:scale-95"
         >
           결과 페이지로 돌아가기
         </button>

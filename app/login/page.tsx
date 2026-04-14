@@ -65,12 +65,12 @@ function LoginContent() {
         {/* 헤더 */}
         <div className="text-center space-y-2">
           <div className="text-5xl">🔮</div>
-          <h1 className="text-2xl font-black text-amber-900">내님은누구</h1>
-          <p className="text-sm text-amber-600">로그인하면 분석 결과를 영구 보관합니다</p>
+          <h1 className="text-2xl font-black text-white">내님은누구</h1>
+          <p className="text-sm text-gray-400">로그인하면 분석 결과를 영구 보관합니다</p>
         </div>
 
         {/* 카드 */}
-        <div className="bg-white rounded-3xl shadow-xl border border-amber-100 p-6">
+        <div className="bg-[#13131a] border border-white/10 rounded-3xl shadow-xl p-6">
           {!showEmail ? (
             <div className="space-y-3">
               {/* 카카오 */}
@@ -98,7 +98,7 @@ function LoginContent() {
               {/* 구글 */}
               <button
                 onClick={() => signIn("google", { callbackUrl })}
-                className="w-full py-3.5 rounded-2xl flex items-center justify-center gap-3 font-bold text-[15px] text-gray-700 bg-white border-2 border-gray-200 active:scale-95 transition-all hover:bg-gray-50"
+                className="w-full py-3.5 rounded-2xl flex items-center justify-center gap-3 font-bold text-[15px] text-white bg-white/10 border border-white/10 active:scale-95 transition-all hover:bg-white/20"
               >
                 <svg viewBox="0 0 24 24" className="w-5 h-5">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -111,15 +111,15 @@ function LoginContent() {
 
               {/* 구분선 */}
               <div className="flex items-center gap-3 py-1">
-                <div className="flex-1 h-px bg-gray-200" />
-                <span className="text-xs text-gray-400">또는</span>
-                <div className="flex-1 h-px bg-gray-200" />
+                <div className="flex-1 h-px bg-white/10" />
+                <span className="text-xs text-gray-500">또는</span>
+                <div className="flex-1 h-px bg-white/10" />
               </div>
 
               {/* 이메일 */}
               <button
                 onClick={() => setShowEmail(true)}
-                className="w-full py-3.5 rounded-2xl flex items-center justify-center gap-3 font-bold text-[15px] text-gray-700 bg-white border-2 border-gray-200 active:scale-95 transition-all hover:bg-gray-50"
+                className="w-full py-3.5 rounded-2xl flex items-center justify-center gap-3 font-bold text-[15px] text-gray-300 bg-white/5 border border-white/10 active:scale-95 transition-all hover:bg-white/10"
               >
                 <svg viewBox="0 0 24 24" className="w-5 h-5 fill-none stroke-current stroke-2">
                   <rect x="2" y="4" width="20" height="16" rx="2"/>
@@ -132,15 +132,15 @@ function LoginContent() {
             <div className="text-center space-y-4 py-4">
               <div className="text-5xl">✅</div>
               <div>
-                <p className="font-bold text-amber-900 text-lg">로그인 완료!</p>
-                <p className="text-sm text-gray-500 mt-1">{email} 계정으로 로그인했습니다</p>
+                <p className="font-bold text-white text-lg">로그인 완료!</p>
+                <p className="text-sm text-gray-400 mt-1">{email} 계정으로 로그인했습니다</p>
               </div>
               <button
                 onClick={() => {
                   const safe = callbackUrl.startsWith("/") ? callbackUrl : "/result";
                   router.push(safe);
                 }}
-                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-base active:scale-95 transition-all"
+                className="w-full py-3.5 rounded-2xl bg-yellow-400 text-gray-900 font-bold text-base active:scale-95 transition-all hover:bg-yellow-300"
               >
                 계속하기 →
               </button>
@@ -150,18 +150,18 @@ function LoginContent() {
               <button
                 type="button"
                 onClick={() => setShowEmail(false)}
-                className="text-sm text-amber-600 flex items-center gap-1 hover:text-amber-800 transition-colors"
+                className="text-sm text-yellow-400 flex items-center gap-1 hover:text-yellow-300 transition-colors"
               >
                 ← 다른 방법으로 로그인
               </button>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">이메일 주소</label>
+                <label className="block text-sm font-semibold text-gray-300 mb-2">이메일 주소</label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="example@email.com"
-                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-amber-400 focus:outline-none text-sm transition-colors"
+                  className="w-full px-4 py-3 rounded-xl border border-white/10 bg-white/5 text-white placeholder-gray-600 focus:border-yellow-400 focus:outline-none text-sm transition-colors"
                   autoFocus
                   required
                 />
@@ -169,11 +169,11 @@ function LoginContent() {
               <button
                 type="submit"
                 disabled={emailLoading}
-                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-base disabled:opacity-60 active:scale-95 transition-all"
+                className="w-full py-3.5 rounded-2xl bg-yellow-400 text-gray-900 font-bold text-base disabled:opacity-60 active:scale-95 transition-all hover:bg-yellow-300"
               >
                 {emailLoading ? "처리 중..." : "이메일로 시작하기"}
               </button>
-              <p className="text-xs text-center text-gray-400">이메일을 입력하면 바로 로그인됩니다</p>
+              <p className="text-xs text-center text-gray-500">이메일을 입력하면 바로 로그인됩니다</p>
             </form>
           )}
         </div>
@@ -181,7 +181,7 @@ function LoginContent() {
         {/* 로그인 없이 계속 */}
         <button
           onClick={handleSkip}
-          className="w-full py-3 text-sm text-gray-400 hover:text-gray-600 transition-colors"
+          className="w-full py-3 text-sm text-gray-500 hover:text-gray-300 transition-colors"
         >
           로그인 없이 계속하기 →
         </button>
