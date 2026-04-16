@@ -27,6 +27,21 @@ const HOUR_OPTIONS = [
 
 const currentYear = new Date().getFullYear();
 
+const STEP_HINTS = [
+  {
+    icon: "☯",
+    text: "성별에 따라 관성(官星)·재성(財星) 방향이 달라집니다. 여성은 관성, 남성은 재성이 배우자 기운입니다.",
+  },
+  {
+    icon: "📅",
+    text: "생년은 년주(年柱), 생월은 월주(月柱), 생일은 일주(日柱)를 결정합니다. 일주는 배우자 자리가 담긴 가장 중요한 기둥입니다.",
+  },
+  {
+    icon: "⏰",
+    text: "태어난 시간은 시주(時柱)를 결정합니다. 모르셔도 분석 가능하지만, 알면 훨씬 정밀한 결과를 얻을 수 있어요.",
+  },
+];
+
 export default function SajuInputForm({ onSubmit, loading }: Props) {
   const [form, setForm] = useState<SajuInput>({
     name: "",
@@ -77,6 +92,12 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
         ))}
       </div>
 
+      {/* 사주 힌트 박스 */}
+      <div className="flex items-start gap-2.5 bg-yellow-500/5 border border-yellow-500/15 rounded-2xl px-3.5 py-3">
+        <span className="text-yellow-400 text-base shrink-0 mt-0.5">{STEP_HINTS[step].icon}</span>
+        <p className="text-[11px] text-yellow-200/70 leading-relaxed">{STEP_HINTS[step].text}</p>
+      </div>
+
       {/* STEP 0: 기본 정보 */}
       {step === 0 && (
         <div className="space-y-4">
@@ -111,6 +132,9 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
                 </button>
               ))}
             </div>
+            <p className="text-[10px] text-gray-600 mt-1.5 text-center">
+              성별에 따라 관성·재성 방향이 달라집니다
+            </p>
           </div>
 
           <button
@@ -132,7 +156,9 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
           </button>
 
           <div>
-            <label className="block text-sm font-bold text-gray-300 mb-2">태어난 해</label>
+            <label className="block text-sm font-bold text-gray-300 mb-2">
+              태어난 해 <span className="text-[10px] text-gray-600 font-normal">— 년주(年柱) 결정</span>
+            </label>
             <div className="flex items-center gap-3 bg-white/5 rounded-xl border border-white/10 px-4 py-3">
               <button
                 type="button"
@@ -162,7 +188,9 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-gray-300 mb-2">월</label>
+            <label className="block text-sm font-bold text-gray-300 mb-2">
+              월 <span className="text-[10px] text-gray-600 font-normal">— 월주(月柱) 결정</span>
+            </label>
             <div className="grid grid-cols-6 gap-1.5">
               {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
                 <button
@@ -186,7 +214,9 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-gray-300 mb-2">일</label>
+            <label className="block text-sm font-bold text-gray-300 mb-2">
+              일 <span className="text-[10px] text-gray-600 font-normal">— 일주(日柱) 결정 ★ 배우자 자리</span>
+            </label>
             <div className="grid grid-cols-7 gap-1">
               {Array.from({ length: maxDay }, (_, i) => i + 1).map((d) => (
                 <button
@@ -224,8 +254,10 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
           </button>
 
           <div>
-            <label className="block text-sm font-bold text-gray-300 mb-1">태어난 시간</label>
-            <p className="text-xs text-gray-600 mb-3">모르시면 '모름' 선택해도 분석 가능합니다</p>
+            <label className="block text-sm font-bold text-gray-300 mb-1">
+              태어난 시간 <span className="text-[10px] text-gray-600 font-normal">— 시주(時柱) 결정</span>
+            </label>
+            <p className="text-xs text-gray-600 mb-3">모르셔도 분석 가능하지만, 알면 훨씬 정밀해집니다</p>
             <div className="grid grid-cols-2 gap-2">
               {HOUR_OPTIONS.map((h) => (
                 <button
@@ -249,16 +281,16 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
 
           {/* 입력 확인 */}
           <div className="bg-white/5 border border-white/10 rounded-2xl p-4 text-sm space-y-1.5">
-            <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">입력 확인</p>
+            <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">사주 입력 확인</p>
             {[
               { label: "이름", value: form.name },
-              { label: "성별", value: form.gender === "male" ? "남성" : "여성" },
+              { label: "성별", value: form.gender === "male" ? "남성 (재성 분석)" : "여성 (관성 분석)" },
               { label: "생년월일", value: `${form.birthYear}년 ${form.birthMonth}월 ${form.birthDay}일` },
               { label: "태어난 시", value: HOUR_OPTIONS.find(h => h.value === form.birthHour)?.label ?? "모름" },
             ].map(({ label, value }) => (
               <div key={label} className="flex justify-between">
                 <span className="text-gray-500">{label}</span>
-                <span className="font-bold text-white">{value}</span>
+                <span className="font-bold text-white text-right">{value}</span>
               </div>
             ))}
           </div>
@@ -268,7 +300,7 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
             disabled={loading}
             className="w-full py-4 rounded-xl bg-gradient-to-r from-yellow-400 to-orange-400 text-gray-900 font-black text-base disabled:opacity-40 active:scale-95 transition-all shadow-lg shadow-yellow-500/20"
           >
-            {loading ? "사주 분석 중..." : "✨ 사주 분석 시작하기"}
+            {loading ? "사주 분석 중..." : "✨ 사주팔자 분석 시작하기"}
           </button>
         </div>
       )}
