@@ -8,22 +8,60 @@ interface Props {
   loading: boolean;
 }
 
-const HOUR_OPTIONS = [
-  { value: -1, label: "모름",    sub: "시간을 모를 경우" },
-  { value: 23, label: "23–24시", sub: "야자시 (夜子時)" },
-  { value: 0,  label: "00–01시", sub: "정자시 (正子時)" },
-  { value: 1,  label: "01–03시", sub: "축시 (丑時)" },
-  { value: 3,  label: "03–05시", sub: "인시 (寅時)" },
-  { value: 5,  label: "05–07시", sub: "묘시 (卯時)" },
-  { value: 7,  label: "07–09시", sub: "진시 (辰時)" },
-  { value: 9,  label: "09–11시", sub: "사시 (巳時)" },
-  { value: 11, label: "11–13시", sub: "오시 (午時)" },
-  { value: 13, label: "13–15시", sub: "미시 (未時)" },
-  { value: 15, label: "15–17시", sub: "신시 (申時)" },
-  { value: 17, label: "17–19시", sub: "유시 (酉時)" },
-  { value: 19, label: "19–21시", sub: "술시 (戌時)" },
-  { value: 21, label: "21–23시", sub: "해시 (亥時)" },
-];
+// 1시간 단위 → 시주 매핑
+const HOUR_TO_SHI: Record<number, { shi: string; han: string }> = {
+  23: { shi: "야자시", han: "夜子時" },
+  0:  { shi: "자시",   han: "子時" },
+  1:  { shi: "축시",   han: "丑時" },
+  2:  { shi: "축시",   han: "丑時" },
+  3:  { shi: "인시",   han: "寅時" },
+  4:  { shi: "인시",   han: "寅時" },
+  5:  { shi: "묘시",   han: "卯時" },
+  6:  { shi: "묘시",   han: "卯時" },
+  7:  { shi: "진시",   han: "辰時" },
+  8:  { shi: "진시",   han: "辰時" },
+  9:  { shi: "사시",   han: "巳時" },
+  10: { shi: "사시",   han: "巳時" },
+  11: { shi: "오시",   han: "午時" },
+  12: { shi: "오시",   han: "午時" },
+  13: { shi: "미시",   han: "未時" },
+  14: { shi: "미시",   han: "未時" },
+  15: { shi: "신시",   han: "申時" },
+  16: { shi: "신시",   han: "申時" },
+  17: { shi: "유시",   han: "酉時" },
+  18: { shi: "유시",   han: "酉時" },
+  19: { shi: "술시",   han: "戌時" },
+  20: { shi: "술시",   han: "戌時" },
+  21: { shi: "해시",   han: "亥時" },
+  22: { shi: "해시",   han: "亥時" },
+};
+
+// 시주가 같은 시간끼리 같은 색상 그룹
+const SHI_COLORS: Record<string, string> = {
+  "야자시": "border-purple-500/40 bg-purple-500/8",
+  "자시":   "border-blue-500/40 bg-blue-500/8",
+  "축시":   "border-slate-500/40 bg-slate-500/8",
+  "인시":   "border-green-600/40 bg-green-600/8",
+  "묘시":   "border-green-400/40 bg-green-400/8",
+  "진시":   "border-teal-500/40 bg-teal-500/8",
+  "사시":   "border-red-500/40 bg-red-500/8",
+  "오시":   "border-orange-500/40 bg-orange-500/8",
+  "미시":   "border-yellow-500/40 bg-yellow-500/8",
+  "신시":   "border-amber-500/40 bg-amber-500/8",
+  "유시":   "border-rose-500/40 bg-rose-500/8",
+  "술시":   "border-pink-500/40 bg-pink-500/8",
+  "해시":   "border-indigo-500/40 bg-indigo-500/8",
+};
+
+function getHourLabel(hour: number): string {
+  return `${String(hour).padStart(2, "0")}:00`;
+}
+
+function getHourSummary(hour: number): string {
+  if (hour < 0) return "모름";
+  const shi = HOUR_TO_SHI[hour];
+  return `${getHourLabel(hour)} (${shi?.shi ?? ""})`;
+}
 
 const currentYear = new Date().getFullYear();
 
@@ -257,26 +295,58 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
             <label className="block text-sm font-bold text-gray-300 mb-1">
               태어난 시간 <span className="text-[10px] text-gray-600 font-normal">— 시주(時柱) 결정</span>
             </label>
-            <p className="text-xs text-gray-600 mb-3">모르셔도 분석 가능하지만, 알면 훨씬 정밀해집니다</p>
-            <div className="grid grid-cols-2 gap-2">
-              {HOUR_OPTIONS.map((h) => (
-                <button
-                  key={h.value}
-                  type="button"
-                  onClick={() => set("birthHour", h.value)}
-                  className={`px-3 py-3 rounded-xl border-2 text-left transition-all active:scale-95 ${
-                    form.birthHour === h.value
-                      ? "border-yellow-400 bg-yellow-400/10"
-                      : "border-white/10 bg-white/5 hover:border-white/20"
-                  }`}
-                >
-                  <div className={`text-sm font-bold ${form.birthHour === h.value ? "text-yellow-400" : "text-gray-300"}`}>
-                    {h.label}
-                  </div>
-                  <div className="text-xs mt-0.5 text-gray-600">{h.sub}</div>
-                </button>
-              ))}
+            <p className="text-xs text-gray-600 mb-3">1시간 단위로 선택하면 시주가 더 정밀해집니다</p>
+
+            {/* 모름 버튼 */}
+            <button
+              type="button"
+              onClick={() => set("birthHour", -1)}
+              className={`w-full py-2.5 rounded-xl border-2 font-bold text-sm mb-3 transition-all active:scale-95 ${
+                form.birthHour === -1
+                  ? "border-yellow-400 bg-yellow-400/10 text-yellow-400"
+                  : "border-white/10 bg-white/5 text-gray-400 hover:border-white/20"
+              }`}
+            >
+              ❓ 모름 — 시간을 모를 경우 (분석 가능)
+            </button>
+
+            {/* 1시간 단위 그리드 */}
+            <div className="grid grid-cols-4 gap-1.5">
+              {Array.from({ length: 24 }, (_, i) => i).map((h) => {
+                const shi = HOUR_TO_SHI[h];
+                const isSelected = form.birthHour === h;
+                const groupCls = SHI_COLORS[shi?.shi ?? ""] ?? "";
+                return (
+                  <button
+                    key={h}
+                    type="button"
+                    onClick={() => set("birthHour", h)}
+                    className={`py-2.5 rounded-xl border transition-all active:scale-95 text-center ${
+                      isSelected
+                        ? "border-yellow-400 bg-yellow-400/15 shadow-sm shadow-yellow-500/20"
+                        : `${groupCls} hover:border-white/30`
+                    }`}
+                  >
+                    <div className={`text-sm font-black leading-none ${isSelected ? "text-yellow-400" : "text-white"}`}>
+                      {String(h).padStart(2, "0")}시
+                    </div>
+                    <div className={`text-[9px] mt-0.5 font-medium ${isSelected ? "text-yellow-300" : "text-gray-500"}`}>
+                      {shi?.shi ?? ""}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
+
+            {/* 선택된 시주 표시 */}
+            {form.birthHour >= 0 && (
+              <div className="mt-3 flex items-center gap-2 bg-yellow-500/5 border border-yellow-500/20 rounded-xl px-3 py-2">
+                <span className="text-yellow-400 text-xs font-bold">시주(時柱)</span>
+                <span className="text-white text-xs font-bold">{HOUR_TO_SHI[form.birthHour]?.shi}</span>
+                <span className="text-gray-500 text-xs">{HOUR_TO_SHI[form.birthHour]?.han}</span>
+                <span className="text-gray-600 text-xs ml-auto">{getHourLabel(form.birthHour)} 출생</span>
+              </div>
+            )}
           </div>
 
           {/* 입력 확인 */}
@@ -286,7 +356,7 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
               { label: "이름", value: form.name },
               { label: "성별", value: form.gender === "male" ? "남성 (재성 분석)" : "여성 (관성 분석)" },
               { label: "생년월일", value: `${form.birthYear}년 ${form.birthMonth}월 ${form.birthDay}일` },
-              { label: "태어난 시", value: HOUR_OPTIONS.find(h => h.value === form.birthHour)?.label ?? "모름" },
+              { label: "태어난 시", value: getHourSummary(form.birthHour) },
             ].map(({ label, value }) => (
               <div key={label} className="flex justify-between">
                 <span className="text-gray-500">{label}</span>
