@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "내님은누구 - 사주로 보는 운명의 상대";
+export const alt = "내님은누구 · 귀인은누구 · 웬수는누구 — 사주팔자 AI 운명 분석";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -13,162 +13,241 @@ export default function OGImage() {
           width: "100%",
           height: "100%",
           display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          background: "linear-gradient(135deg, #78350f 0%, #b45309 30%, #d97706 60%, #f59e0b 100%)",
+          background: "#0a0a10",
           position: "relative",
           overflow: "hidden",
+          fontFamily: '"Noto Sans KR", "Apple SD Gothic Neo", sans-serif',
         }}
       >
-        {/* 배경 원형 장식 */}
-        <div
-          style={{
-            position: "absolute",
-            top: -120,
-            right: -80,
-            width: 480,
-            height: 480,
-            borderRadius: "50%",
-            background: "rgba(255,255,255,0.06)",
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            bottom: -100,
-            left: -60,
-            width: 360,
-            height: 360,
-            borderRadius: "50%",
-            background: "rgba(255,255,255,0.05)",
-          }}
-        />
-        {/* 육각형 패턴 배경 */}
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            opacity: 0.04,
-            fontSize: 48,
-            display: "flex",
-            flexWrap: "wrap",
-            gap: 40,
-            padding: 20,
-          }}
-        >
-          {Array.from({ length: 60 }).map((_, i) => (
-            <span key={i}>☯</span>
-          ))}
-        </div>
+        {/* ── 배경 글로우 ── */}
+        <div style={{
+          position: "absolute", top: -200, left: "30%",
+          width: 600, height: 600, borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(124,58,237,0.18) 0%, transparent 70%)",
+          display: "flex",
+        }} />
+        <div style={{
+          position: "absolute", bottom: -150, right: 80,
+          width: 400, height: 400, borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(244,63,94,0.12) 0%, transparent 70%)",
+          display: "flex",
+        }} />
+        <div style={{
+          position: "absolute", bottom: 0, left: 0,
+          width: 350, height: 350, borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(245,158,11,0.10) 0%, transparent 70%)",
+          display: "flex",
+        }} />
 
-        {/* 메인 콘텐츠 */}
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 24,
-            zIndex: 10,
-          }}
-        >
-          {/* 아이콘 뱃지 */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: 120,
-              height: 120,
-              borderRadius: "50%",
-              background: "rgba(255,255,255,0.15)",
-              border: "3px solid rgba(255,255,255,0.3)",
-              fontSize: 64,
-            }}
-          >
-            🔮
+        {/* ── 배경 별 ── */}
+        {[
+          { top: 48, left: 90, size: 3, opacity: 0.5 },
+          { top: 120, left: 220, size: 2, opacity: 0.3 },
+          { top: 72, left: 440, size: 2, opacity: 0.4 },
+          { top: 200, left: 30, size: 3, opacity: 0.35 },
+          { top: 320, left: 160, size: 2, opacity: 0.25 },
+          { top: 500, left: 80, size: 3, opacity: 0.4 },
+          { top: 560, left: 280, size: 2, opacity: 0.3 },
+          { top: 440, left: 340, size: 3, opacity: 0.2 },
+          { top: 60, left: 560, size: 2, opacity: 0.35 },
+          { top: 580, left: 460, size: 2, opacity: 0.3 },
+        ].map((s, i) => (
+          <div key={i} style={{
+            position: "absolute", top: s.top, left: s.left,
+            width: s.size, height: s.size, borderRadius: "50%",
+            background: "#ffffff", opacity: s.opacity, display: "flex",
+          }} />
+        ))}
+
+        {/* ── 좌측 콘텐츠 ── */}
+        <div style={{
+          display: "flex", flexDirection: "column",
+          justifyContent: "center", padding: "60px 0 60px 72px",
+          width: 640, gap: 0, zIndex: 10,
+        }}>
+
+          {/* 브랜드 배지 */}
+          <div style={{
+            display: "flex", alignItems: "center", gap: 10,
+            marginBottom: 28,
+          }}>
+            <div style={{
+              display: "flex", alignItems: "center", justifyContent: "center",
+              width: 44, height: 44, borderRadius: 12,
+              background: "rgba(124,58,237,0.25)",
+              border: "1px solid rgba(124,58,237,0.4)",
+              fontSize: 22,
+            }}>🔮</div>
+            <div style={{
+              display: "flex", alignItems: "center", gap: 6,
+              padding: "6px 14px", borderRadius: 100,
+              background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.12)",
+            }}>
+              <span style={{ color: "#a78bfa", fontSize: 13, fontWeight: 700, letterSpacing: 1 }}>
+                4,200년 사주 × AI 분석
+              </span>
+            </div>
           </div>
 
-          {/* 타이틀 */}
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: 12,
-            }}
-          >
-            <span
-              style={{
-                fontSize: 80,
-                fontWeight: 900,
-                color: "#ffffff",
-                letterSpacing: "-2px",
-                lineHeight: 1,
-                textShadow: "0 4px 20px rgba(0,0,0,0.3)",
-              }}
-            >
+          {/* 메인 타이틀 */}
+          <div style={{
+            display: "flex", flexDirection: "column", gap: 4, marginBottom: 20,
+          }}>
+            <span style={{
+              fontSize: 68, fontWeight: 900, color: "#ffffff",
+              lineHeight: 1.05, letterSpacing: "-2px",
+            }}>
               내님은누구
             </span>
-            <span
-              style={{
-                fontSize: 34,
-                color: "rgba(255,255,255,0.85)",
-                fontWeight: 500,
-                letterSpacing: "1px",
-              }}
-            >
-              사주팔자로 그려진 운명의 상대 ✨
+            <span style={{
+              fontSize: 26, fontWeight: 500, color: "rgba(255,255,255,0.45)",
+              letterSpacing: "4px", marginTop: 4,
+            }}>
+              내귀인은누구 · 내웬수는누구
+            </span>
+          </div>
+
+          {/* 훅 카피 */}
+          <div style={{
+            display: "flex", flexDirection: "column", gap: 2, marginBottom: 36,
+          }}>
+            <span style={{
+              fontSize: 30, fontWeight: 700,
+              color: "#fbbf24",
+              lineHeight: 1.4,
+            }}>
+              당신의 사주팔자 안에
+            </span>
+            <span style={{
+              fontSize: 30, fontWeight: 700,
+              color: "#ffffff",
+              lineHeight: 1.4,
+            }}>
+              이미 그 사람이 있습니다
             </span>
           </div>
 
           {/* 구분선 */}
-          <div
-            style={{
-              width: 80,
-              height: 3,
-              background: "rgba(255,255,255,0.4)",
-              borderRadius: 2,
-            }}
-          />
+          <div style={{
+            width: 48, height: 2,
+            background: "linear-gradient(to right, #fbbf24, transparent)",
+            marginBottom: 28, display: "flex",
+          }} />
 
-          {/* 기능 태그들 */}
-          <div
-            style={{
-              display: "flex",
-              gap: 16,
-            }}
-          >
-            {["🎨 AI 몽타주 생성", "🔮 사주 심층 분석", "💫 무료 체험"].map((tag) => (
-              <div
-                key={tag}
-                style={{
-                  padding: "10px 22px",
-                  background: "rgba(255,255,255,0.15)",
-                  border: "1px solid rgba(255,255,255,0.25)",
-                  borderRadius: 100,
-                  color: "white",
-                  fontSize: 24,
-                  fontWeight: 600,
-                }}
-              >
-                {tag}
-              </div>
-            ))}
+          {/* 통계 */}
+          <div style={{
+            display: "flex", alignItems: "center", gap: 24,
+          }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              <span style={{ fontSize: 28, fontWeight: 900, color: "#fbbf24" }}>41,200+</span>
+              <span style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", fontWeight: 500 }}>분석 완료</span>
+            </div>
+            <div style={{
+              width: 1, height: 36,
+              background: "rgba(255,255,255,0.1)", display: "flex",
+            }} />
+            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              <span style={{ fontSize: 28, fontWeight: 900, color: "#fbbf24" }}>97%</span>
+              <span style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", fontWeight: 500 }}>만족도</span>
+            </div>
+            <div style={{
+              width: 1, height: 36,
+              background: "rgba(255,255,255,0.1)", display: "flex",
+            }} />
+            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              <span style={{ fontSize: 28, fontWeight: 900, color: "#fbbf24" }}>990원~</span>
+              <span style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", fontWeight: 500 }}>1회 분석</span>
+            </div>
           </div>
         </div>
 
-        {/* 하단 URL */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: 36,
-            color: "rgba(255,255,255,0.5)",
-            fontSize: 22,
-            letterSpacing: "1px",
-          }}
-        >
-          saju-montage.vercel.app
+        {/* ── 우측 상품 카드 ── */}
+        <div style={{
+          display: "flex", flexDirection: "column",
+          justifyContent: "center", gap: 16,
+          flex: 1, padding: "60px 60px 60px 20px", zIndex: 10,
+        }}>
+
+          {/* 배우자 카드 */}
+          <div style={{
+            display: "flex", alignItems: "center", gap: 16,
+            padding: "20px 24px", borderRadius: 20,
+            background: "rgba(244,63,94,0.08)",
+            border: "1px solid rgba(244,63,94,0.25)",
+          }}>
+            <div style={{
+              display: "flex", alignItems: "center", justifyContent: "center",
+              width: 52, height: 52, borderRadius: 14,
+              background: "linear-gradient(135deg, #f43f5e, #ec4899)",
+              fontSize: 26, flexShrink: 0,
+            }}>💑</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+              <span style={{ fontSize: 22, fontWeight: 800, color: "#ffffff" }}>내님은누구</span>
+              <span style={{ fontSize: 14, color: "rgba(255,255,255,0.45)", fontWeight: 400 }}>
+                운명의 배우자 AI 몽타주 · 이름 힌트 · 궁합 분석
+              </span>
+            </div>
+          </div>
+
+          {/* 귀인 카드 */}
+          <div style={{
+            display: "flex", alignItems: "center", gap: 16,
+            padding: "20px 24px", borderRadius: 20,
+            background: "rgba(245,158,11,0.08)",
+            border: "1px solid rgba(245,158,11,0.25)",
+          }}>
+            <div style={{
+              display: "flex", alignItems: "center", justifyContent: "center",
+              width: 52, height: 52, borderRadius: 14,
+              background: "linear-gradient(135deg, #f59e0b, #fcd34d)",
+              fontSize: 26, flexShrink: 0,
+            }}>🌟</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+              <span style={{ fontSize: 22, fontWeight: 800, color: "#ffffff" }}>내귀인은누구</span>
+              <span style={{ fontSize: 14, color: "rgba(255,255,255,0.45)", fontWeight: 400 }}>
+                인생을 바꿀 귀인 프로필 · 만남 시기 · 귀인운 차트
+              </span>
+            </div>
+          </div>
+
+          {/* 웬수 카드 */}
+          <div style={{
+            display: "flex", alignItems: "center", gap: 16,
+            padding: "20px 24px", borderRadius: 20,
+            background: "rgba(100,116,139,0.08)",
+            border: "1px solid rgba(100,116,139,0.25)",
+          }}>
+            <div style={{
+              display: "flex", alignItems: "center", justifyContent: "center",
+              width: 52, height: 52, borderRadius: 14,
+              background: "linear-gradient(135deg, #64748b, #94a3b8)",
+              fontSize: 26, flexShrink: 0,
+            }}>😤</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+              <span style={{ fontSize: 22, fontWeight: 800, color: "#ffffff" }}>내웬수는누구</span>
+              <span style={{ fontSize: 14, color: "rgba(255,255,255,0.45)", fontWeight: 400 }}>
+                조심해야 할 악연 분석 · 접근 패턴 · 자기보호 가이드
+              </span>
+            </div>
+          </div>
+
+          {/* URL */}
+          <div style={{
+            display: "flex", alignItems: "center", gap: 8,
+            marginTop: 4, padding: "10px 18px", borderRadius: 100,
+            background: "rgba(255,255,255,0.04)",
+            border: "1px solid rgba(255,255,255,0.08)",
+            alignSelf: "flex-start",
+          }}>
+            <div style={{
+              width: 6, height: 6, borderRadius: "50%",
+              background: "#4ade80", display: "flex",
+            }} />
+            <span style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", letterSpacing: 0.5 }}>
+              saju-montage.vercel.app
+            </span>
+          </div>
         </div>
       </div>
     ),
