@@ -287,8 +287,8 @@ export default function Home() {
                 {/* 잠금 항목 */}
                 <div className={`rounded-2xl border ${p.borderColor} p-3 bg-white/2`}>
                   <div className="flex items-center gap-1.5 mb-2">
-                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">990원으로 공개</span>
-                    <span className="text-[9px] text-red-400 bg-red-500/10 px-1.5 py-0.5 rounded-full font-bold">74% 할인</span>
+                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">2,000원으로 공개</span>
+                    <span className="text-[9px] text-red-400 bg-red-500/10 px-1.5 py-0.5 rounded-full font-bold">67% 할인</span>
                   </div>
                   <div className="grid grid-cols-2 gap-1">
                     {p.paidItems.map((item) => (
@@ -303,8 +303,8 @@ export default function Home() {
 
               {/* 가격 */}
               <div className="flex items-center gap-2 mb-3">
-                <span className="text-sm text-gray-600 line-through">3,900원</span>
-                <span className="text-2xl font-black text-white">990원</span>
+                <span className="text-sm text-gray-600 line-through">6,000원</span>
+                <span className="text-2xl font-black text-white">2,000원</span>
                 <span className="text-xs text-gray-500">· 1회 결제</span>
               </div>
             </div>
@@ -323,7 +323,7 @@ export default function Home() {
         <div className="bg-gradient-to-r from-purple-900/40 to-indigo-900/40 border border-purple-500/20 rounded-2xl p-4 text-center">
           <p className="text-xs text-purple-300 mb-1">💡 셋 다 궁금하다면?</p>
           <p className="text-white text-sm font-bold">배우자 + 귀인 + 웬수 각각 분석</p>
-          <p className="text-gray-500 text-xs mt-1">각 990원 · 합산 2,970원 · 개별 결제</p>
+          <p className="text-gray-500 text-xs mt-1">각 2,000원 개별 결제 또는 <span className="text-purple-300 font-bold">3개 묶음 5,000원</span></p>
         </div>
 
         {/* ── 리뷰 ── */}

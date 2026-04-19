@@ -135,6 +135,7 @@ const PRODUCT_META = {
   spouse:  { emoji: "💑", name: "내님은누구",   sub: "운명의 배우자 분석",  color: "from-rose-500 to-pink-600" },
   guardian:{ emoji: "🌟", name: "내귀인은누구", sub: "인생 귀인 분석",      color: "from-amber-400 to-yellow-500" },
   enemy:   { emoji: "😤", name: "내웬수는누구", sub: "악연·조심 인물 분석", color: "from-slate-500 to-slate-600" },
+  bundle:  { emoji: "🔮", name: "3개 묶음",      sub: "배우자+귀인+웬수 분석", color: "from-purple-500 to-violet-600" },
 };
 
 export default function InputPage() {

@@ -156,7 +156,7 @@ export default function OGImage() {
               background: "rgba(255,255,255,0.1)", display: "flex",
             }} />
             <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              <span style={{ fontSize: 28, fontWeight: 900, color: "#fbbf24" }}>990원~</span>
+              <span style={{ fontSize: 28, fontWeight: 900, color: "#fbbf24" }}>2,000원~</span>
               <span style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", fontWeight: 500 }}>1회 분석</span>
             </div>
           </div>

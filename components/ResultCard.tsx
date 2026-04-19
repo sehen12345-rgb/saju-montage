@@ -264,8 +264,8 @@ function SajuPillarCard({ sajuInfo }: { sajuInfo: import("@/lib/types").SajuInfo
   ];
 
   return (
-    <div className="bg-white rounded-3xl p-4 shadow-sm">
-      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">당신의 사주팔자</p>
+    <div className="bg-[#13131a] border border-white/8 rounded-3xl p-4">
+      <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">당신의 사주팔자</p>
       {/* 라벨 row */}
       <div className="grid grid-cols-4 gap-2 mb-2">
         {pillars.map((p) => (
@@ -312,9 +312,9 @@ function InfoSection({ icon, label, title, children }: {
   icon: string; label: string; title?: string; children: React.ReactNode;
 }) {
   return (
-    <div className="bg-white rounded-2xl p-5 shadow-sm">
-      <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">{icon} {label}</p>
-      {title && <h4 className="text-base font-bold text-gray-900 mb-3">{title}</h4>}
+    <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+      <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">{icon} {label}</p>
+      {title && <h4 className="text-base font-bold text-white mb-3">{title}</h4>}
       {children}
     </div>
   );
@@ -323,30 +323,30 @@ function InfoSection({ icon, label, title, children }: {
 function ScoreBar({ label, score, delay = 0 }: { label: string; score: number; delay?: number }) {
   return (
     <div className="flex items-center gap-3">
-      <span className="text-xs text-gray-500 w-24 shrink-0">{label}</span>
-      <div className="flex-1 bg-gray-100 rounded-full h-2.5 overflow-hidden">
+      <span className="text-xs text-gray-400 w-24 shrink-0">{label}</span>
+      <div className="flex-1 bg-white/8 rounded-full h-2 overflow-hidden">
         <div
-          className="h-full rounded-full bg-yellow-400"
+          className="h-full rounded-full bg-gradient-to-r from-yellow-400 to-amber-400"
           style={{ width: `${score}%`, transition: `width 0.8s ease ${delay}ms` }}
         />
       </div>
-      <span className="text-xs font-black w-8 text-right text-gray-700">{score}</span>
+      <span className="text-xs font-black w-8 text-right text-amber-400">{score}</span>
     </div>
   );
 }
 
 function BlurredSection({ label }: { label: string }) {
   return (
-    <div className="relative rounded-2xl overflow-hidden border border-gray-200">
-      <div className="p-5 blur-sm select-none pointer-events-none bg-white">
-        <p className="text-xs text-gray-400 font-bold uppercase mb-1">🔒 {label}</p>
-        <p className="text-base font-bold text-gray-900 mb-3">결제 후 확인하세요</p>
-        <p className="text-sm text-gray-400 leading-relaxed">
-          이 내용은 결제 후 확인하실 수 있습니다. 지금 바로 990원으로 배우자의 모든 정보를 확인해보세요.
+    <div className="relative rounded-2xl overflow-hidden border border-white/8">
+      <div className="p-5 blur-sm select-none pointer-events-none bg-[#13131a]">
+        <p className="text-xs text-gray-500 font-bold uppercase mb-1">🔒 {label}</p>
+        <p className="text-base font-bold text-white mb-3">결제 후 확인하세요</p>
+        <p className="text-sm text-gray-500 leading-relaxed">
+          이 내용은 결제 후 확인하실 수 있습니다. 지금 바로 2,000원으로 배우자의 모든 정보를 확인해보세요.
         </p>
       </div>
-      <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-white/70 flex items-center justify-center">
-        <div className="bg-white rounded-xl px-4 py-2 shadow-md text-sm font-bold text-gray-700 border border-gray-200">
+      <div className="absolute inset-0 bg-gradient-to-b from-[#13131a]/20 to-[#13131a]/80 flex items-center justify-center">
+        <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-4 py-2 text-sm font-bold text-white">
           🔒 결제 후 공개
         </div>
       </div>
@@ -357,133 +357,120 @@ function BlurredSection({ label }: { label: string }) {
 // ── 결제 모달 ──────────────────────────────────────────────
 
 function PayModal({ onClose, onPay }: { onClose: () => void; onPay: () => void }) {
-  const [paying, setPaying] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [paying, setPaying] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState(599);
 
   useEffect(() => {
     const t = setInterval(() => {
-      setTimeLeft((s) => {
-        if (s <= 1) { clearInterval(t); return 0; }
-        return s - 1;
-      });
+      setTimeLeft((s) => { if (s <= 1) { clearInterval(t); return 0; } return s - 1; });
     }, 1000);
     return () => clearInterval(t);
   }, []);
 
-  const minutes = String(Math.floor(timeLeft / 60)).padStart(2, "0");
-  const seconds = String(timeLeft % 60).padStart(2, "0");
+  const mm = String(Math.floor(timeLeft / 60)).padStart(2, "0");
+  const ss = String(timeLeft % 60).padStart(2, "0");
 
-  // TODO: TossPayments PG 승인 후 실제 결제 로직으로 교체
-  async function handlePay(_method: "카카오페이" | "카드") {
+  async function handlePay(type: "individual" | "bundle" | "card") {
     if (paying) return;
-    setPaying(true);
-    await new Promise((r) => setTimeout(r, 1000));
-    setPaying(false);
+    setPaying(type);
+    await new Promise((r) => setTimeout(r, 900));
+    setPaying(null);
     onPay();
   }
 
+  const ITEMS = ["🎨 AI 배우자 몽타주", "✨ 이름 첫 글자 힌트", "💬 카카오톡 첫 메시지", "🌙 전생 인연 이야기", "💑 케미 타입 분석", "📊 5가지 궁합 점수", "💝 배우자 사랑 언어", "🧠 심리 분석", "📅 월별 인연운 차트", "🌟 닮은꼴 분위기", "🚀 인연 실천 가이드", "💡 인연 조언 3가지"];
+
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden max-h-[92vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3 bg-black/70 backdrop-blur-md">
+      <div className="bg-[#0f0f18] border border-white/10 rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden max-h-[94vh] overflow-y-auto">
 
         {/* 헤더 */}
-        <div className="bg-gray-900 p-5 text-white text-center sticky top-0 z-10">
-          <button onClick={onClose} className="absolute top-4 right-4 text-white/60 hover:text-white text-xl leading-none">✕</button>
-          <div className="text-3xl mb-1.5">🎨</div>
-          <h2 className="text-lg font-bold">배우자 AI 몽타주 공개</h2>
-          <p className="text-gray-400 text-xs mt-0.5 mb-2">운명의 상대 얼굴 + 전체 분석 결과</p>
-          {timeLeft > 0 && (
-            <div className="inline-flex items-center gap-1.5 bg-red-500 rounded-full px-3 py-1 text-xs font-bold">
-              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-              특가 종료까지 {minutes}:{seconds}
-            </div>
-          )}
+        <div className="relative p-5 text-center border-b border-white/8">
+          <div className="absolute inset-0 bg-gradient-to-br from-rose-900/30 via-transparent to-amber-900/20 pointer-events-none" />
+          <button onClick={onClose} className="absolute top-4 right-4 text-white/40 hover:text-white text-xl z-10">✕</button>
+          <div className="relative">
+            <div className="text-4xl mb-2">🔮</div>
+            <h2 className="text-xl font-black text-white">배우자 몽타주 공개</h2>
+            <p className="text-gray-400 text-xs mt-1 mb-3">운명의 상대 얼굴 + 완전 분석 보고서</p>
+            {timeLeft > 0 && (
+              <div className="inline-flex items-center gap-2 bg-red-500/20 border border-red-500/30 rounded-full px-3 py-1.5 text-xs font-bold text-red-400">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
+                특가 종료까지 {mm}:{ss}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="p-5 space-y-4">
-
           {/* 포함 항목 */}
-          <div>
-            <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-2.5">결제 후 공개되는 항목</p>
-            <div className="grid grid-cols-2 gap-1.5">
-              {[
-                ["🎨", "AI 배우자 몽타주"],
-                ["💬", "카카오톡 첫 메시지"],
-                ["💑", "케미 타입 분석"],
-                ["💝", "배우자 사랑 언어"],
-                ["🧠", "배우자 심리 분석"],
-                ["🚀", "인연 실천 가이드"],
-                ["🌟", "닮은꼴 연예인"],
-                ["📅", "월별 인연운 차트"],
-                ["✨", "이름 첫 글자 힌트"],
-                ["🌙", "전생 인연 이야기"],
-                ["📊", "5개 궁합 점수"],
-                ["💡", "인연 조언 3가지"],
-              ].map(([icon, text]) => (
-                <div key={text} className="flex items-center gap-1.5 text-xs text-gray-700 bg-gray-50 rounded-lg px-2.5 py-2">
-                  <span>{icon}</span><span>{text}</span>
-                </div>
-              ))}
-            </div>
+          <div className="grid grid-cols-2 gap-1.5">
+            {ITEMS.map((item) => (
+              <div key={item} className="flex items-center gap-2 text-xs text-gray-300 bg-white/4 border border-white/6 rounded-xl px-2.5 py-2">
+                <span>{item}</span>
+              </div>
+            ))}
           </div>
 
-          {/* 가격 */}
-          <div className="bg-gray-50 rounded-2xl p-4 text-center border border-gray-200">
-            <div className="flex items-center justify-center gap-2 mb-0.5">
-              <span className="text-sm text-gray-400 line-through">3,900원</span>
-              <span className="text-xs bg-red-100 text-red-600 font-bold px-2 py-0.5 rounded-full">74% 할인</span>
+          {/* ── 번들 특가 (추천) ── */}
+          <div className="relative rounded-2xl border-2 border-purple-500/50 bg-purple-500/8 p-4 overflow-hidden">
+            <div className="absolute top-0 right-0 bg-purple-500 text-white text-[10px] font-black px-3 py-1 rounded-bl-xl">BEST</div>
+            <p className="text-xs font-bold text-purple-300 mb-1">💜 3개 묶음 특가</p>
+            <p className="text-sm text-white font-bold mb-0.5">배우자 + 귀인 + 웬수 전부 공개</p>
+            <div className="flex items-baseline gap-2 mb-3">
+              <span className="text-xs text-gray-500 line-through">6,000원</span>
+              <span className="text-2xl font-black text-purple-300">5,000원</span>
+              <span className="text-xs text-purple-400 font-bold">1,000원 절약</span>
             </div>
-            <p className="text-3xl font-black text-gray-900">990<span className="text-lg font-bold">원</span></p>
-            <p className="text-xs text-gray-400 mt-0.5">1회 결제 · 회원가입 불필요</p>
-          </div>
-
-          {/* 오류 */}
-          {error && (
-            <div className="text-red-600 text-sm text-center bg-red-50 rounded-xl px-3 py-2 flex items-center gap-2">
-              <span>⚠️</span><span className="flex-1">{error}</span>
-              <button onClick={() => setError(null)} className="text-red-400">✕</button>
-            </div>
-          )}
-
-          {/* 결제 버튼 */}
-          <div className="space-y-2.5">
-            {/* 카카오페이 — primary */}
             <button
-              onClick={() => handlePay("카카오페이")}
-              disabled={paying}
-              className="w-full py-4 rounded-2xl font-bold text-base text-gray-900 active:scale-95 disabled:opacity-60 transition-all flex items-center justify-center gap-2 shadow-md"
+              onClick={() => handlePay("bundle")}
+              disabled={!!paying}
+              className="w-full py-3.5 rounded-xl bg-gradient-to-r from-purple-600 to-violet-600 text-white font-black text-sm active:scale-95 disabled:opacity-60 transition-all flex items-center justify-center gap-2"
+            >
+              {paying === "bundle" ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : "💜 5,000원으로 3개 전부 보기"}
+            </button>
+          </div>
+
+          {/* ── 개별 결제 ── */}
+          <div className="space-y-2">
+            <p className="text-[11px] text-gray-500 text-center">— 또는 이 상품만 —</p>
+            <div className="bg-white/4 border border-white/8 rounded-2xl p-3 text-center">
+              <div className="flex items-center justify-center gap-2 mb-0.5">
+                <span className="text-xs text-gray-500 line-through">6,000원</span>
+                <span className="text-xs bg-rose-500/20 text-rose-400 font-bold px-2 py-0.5 rounded-full">67% 할인</span>
+              </div>
+              <p className="text-2xl font-black text-white">2,000<span className="text-base font-bold">원</span></p>
+              <p className="text-xs text-gray-500 mt-0.5">1회 결제 · 회원가입 불필요</p>
+            </div>
+
+            <button
+              onClick={() => handlePay("individual")}
+              disabled={!!paying}
+              className="w-full py-4 rounded-2xl font-black text-base text-gray-900 active:scale-95 disabled:opacity-60 transition-all flex items-center justify-center gap-2 shadow-lg"
               style={{ backgroundColor: "#FEE500" }}
             >
-              {paying ? (
-                <span className="w-5 h-5 border-2 border-gray-400/40 border-t-gray-600 rounded-full animate-spin" />
-              ) : (
-                <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current shrink-0">
-                  <path d="M12 3C6.48 3 2 6.48 2 10.8c0 2.72 1.6 5.12 4.04 6.56l-1.02 3.76 4.38-2.88c.84.12 1.72.18 2.6.18 5.52 0 10-3.48 10-7.8S17.52 3 12 3z"/>
-                </svg>
+              {paying === "individual" ? <span className="w-5 h-5 border-2 border-gray-400/40 border-t-gray-700 rounded-full animate-spin" /> : (
+                <>
+                  <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current shrink-0"><path d="M12 3C6.48 3 2 6.48 2 10.8c0 2.72 1.6 5.12 4.04 6.56l-1.02 3.76 4.38-2.88c.84.12 1.72.18 2.6.18 5.52 0 10-3.48 10-7.8S17.52 3 12 3z"/></svg>
+                  카카오페이 2,000원
+                </>
               )}
-              {paying ? "결제 처리 중..." : "카카오페이로 결제하기"}
-            </button>
-
-            {/* 카드 결제 — secondary */}
-            <button
-              onClick={() => handlePay("카드")}
-              disabled={paying}
-              className="w-full py-3.5 rounded-2xl border-2 border-gray-200 text-gray-600 font-semibold text-sm hover:border-gray-300 active:scale-95 disabled:opacity-60 transition-all flex items-center justify-center gap-2"
-            >
-              💳 신용·체크카드로 결제
             </button>
 
             <button
-              onClick={onClose}
-              className="w-full py-2.5 text-gray-400 text-sm hover:text-gray-600 transition-colors"
+              onClick={() => handlePay("card")}
+              disabled={!!paying}
+              className="w-full py-3.5 rounded-2xl border border-white/15 text-gray-300 font-semibold text-sm active:scale-95 disabled:opacity-60 transition-all flex items-center justify-center gap-2"
             >
+              {paying === "card" ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : "💳 신용·체크카드 2,000원"}
+            </button>
+
+            <button onClick={onClose} className="w-full py-2.5 text-gray-600 text-sm hover:text-gray-400 transition-colors">
               나중에 볼게요
             </button>
           </div>
 
-          <p className="text-[10px] text-gray-400 text-center">
-            토스페이먼츠 PG · 결제 정보는 저장되지 않습니다
+          <p className="text-[10px] text-gray-600 text-center">
+            토스페이먼츠 PG · 결제 정보 저장 없음
           </p>
         </div>
       </div>
@@ -712,7 +699,7 @@ export default function ResultCard({ result, onReset }: Props) {
             style={{ display: "flex" }}
           >
             <span className="text-lg">✨ 몽타주 + 전체 보기</span>
-            <span className="bg-gray-900/20 rounded-xl px-3 py-1 text-sm font-black">990원</span>
+            <span className="bg-gray-900/20 rounded-xl px-3 py-1 text-sm font-black">2,000원</span>
           </button>
         </div>
       )}
@@ -739,7 +726,7 @@ export default function ResultCard({ result, onReset }: Props) {
 
         {/* ── 외모 특징 텍스트 (무료 힌트) ── */}
         <InfoSection icon="✨" label="외모 힌트" title={analysis.descTitle}>
-          <p className="text-gray-700 leading-relaxed text-sm">{analysis.description}</p>
+          <p className="text-gray-300 leading-relaxed text-sm">{analysis.description}</p>
         </InfoSection>
 
         {/* ════════════════════════════════
@@ -817,24 +804,24 @@ export default function ResultCard({ result, onReset }: Props) {
             )}
 
             {/* 몽타주 이미지 */}
-            <div className="relative w-full aspect-square rounded-2xl overflow-hidden shadow-xl border-4 border-amber-300 bg-amber-50">
+            <div className="relative w-full aspect-square rounded-2xl overflow-hidden shadow-xl border border-white/10 bg-[#13131a]">
               {!imgLoaded && !imgError && (
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="w-10 h-10 rounded-full border-4 border-amber-200 border-t-amber-500 animate-spin" />
                 </div>
               )}
               {imgError && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-amber-50">
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#13131a]">
                   <span className="text-4xl">😓</span>
-                  <p className="text-amber-700 text-sm">이미지를 불러오지 못했습니다</p>
+                  <p className="text-gray-400 text-sm">이미지를 불러오지 못했습니다</p>
                   <div className="flex gap-2">
                     <button
                       onClick={() => { setImgError(false); setImgLoaded(false); }}
-                      className="px-4 py-2 bg-amber-200 text-amber-800 rounded-xl text-sm font-semibold hover:bg-amber-300"
+                      className="px-4 py-2 bg-white/10 text-gray-300 rounded-xl text-sm font-semibold hover:bg-white/15"
                     >🔄 재시도</button>
                     <button
                       onClick={handleRegenerateImage}
-                      className="px-4 py-2 bg-amber-500 text-white rounded-xl text-sm font-semibold hover:bg-amber-600"
+                      className="px-4 py-2 bg-amber-500/80 text-white rounded-xl text-sm font-semibold hover:bg-amber-500"
                     >✨ 다른 이미지</button>
                   </div>
                 </div>
@@ -870,7 +857,7 @@ export default function ResultCard({ result, onReset }: Props) {
             </div>
 
             {/* 배우자 프로필 카드 */}
-            <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-5 border border-amber-200 shadow-sm">
+            <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
               <p className="text-xs text-amber-500 font-medium mb-3">💌 배우자 프로필</p>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 {[
@@ -879,17 +866,17 @@ export default function ResultCard({ result, onReset }: Props) {
                   { icon: "📏", label: "키", value: analysis.bodySpec?.height },
                   { icon: "👗", label: "스타일", value: analysis.bodySpec?.fashion },
                 ].filter(i => i.value).map((item) => (
-                  <div key={item.label} className="bg-white/80 rounded-xl p-3 border border-amber-100">
+                  <div key={item.label} className="bg-white/5 rounded-xl p-3 border border-white/8">
                     <div className="text-base mb-0.5">{item.icon}</div>
                     <div className="text-[10px] text-amber-400">{item.label}</div>
-                    <div className="text-xs font-bold text-amber-900 leading-snug mt-0.5">{item.value}</div>
+                    <div className="text-xs font-bold text-white leading-snug mt-0.5">{item.value}</div>
                   </div>
                 ))}
               </div>
               {analysis.bodySpec?.vibe && (
-                <div className="mt-2 bg-white/80 rounded-xl px-3 py-2 border border-amber-100">
+                <div className="mt-2 bg-white/5 rounded-xl px-3 py-2 border border-white/8">
                   <span className="text-[10px] text-amber-400">분위기 </span>
-                  <span className="text-xs font-semibold text-amber-900">{analysis.bodySpec.vibe}</span>
+                  <span className="text-xs font-semibold text-gray-200">{analysis.bodySpec.vibe}</span>
                 </div>
               )}
             </div>
@@ -906,25 +893,25 @@ export default function ResultCard({ result, onReset }: Props) {
 
             {/* 배우자의 사랑 언어 */}
             {analysis.loveLanguage && (
-              <div className="bg-gradient-to-br from-rose-50 to-pink-50 rounded-2xl p-5 border border-rose-200 shadow-sm">
+              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
                 <p className="text-xs text-rose-400 font-medium mb-3">💝 배우자의 사랑 언어</p>
                 <div className="flex gap-2 mb-3">
                   <span className="px-3 py-1.5 bg-rose-500 text-white rounded-full text-xs font-bold">
                     1순위: {analysis.loveLanguage.primary}
                   </span>
-                  <span className="px-3 py-1.5 bg-rose-200 text-rose-800 rounded-full text-xs font-semibold">
+                  <span className="px-3 py-1.5 bg-rose-900/40 text-rose-300 border border-rose-500/30 rounded-full text-xs font-semibold">
                     2순위: {analysis.loveLanguage.secondary}
                   </span>
                 </div>
-                <p className="text-sm text-gray-700 leading-relaxed">{analysis.loveLanguage.desc}</p>
+                <p className="text-sm text-gray-300 leading-relaxed">{analysis.loveLanguage.desc}</p>
               </div>
             )}
 
             {/* 닮은꼴 연예인 분위기 */}
             {analysis.celebrityVibe && (
-              <div className="bg-white rounded-2xl p-5 border border-amber-100 shadow-sm">
+              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
                 <p className="text-xs text-amber-400 font-medium mb-2">🌟 닮은꼴 연예인 분위기</p>
-                <p className="text-sm text-gray-700 leading-relaxed">{analysis.celebrityVibe}</p>
+                <p className="text-sm text-gray-300 leading-relaxed">{analysis.celebrityVibe}</p>
               </div>
             )}
 
@@ -933,7 +920,7 @@ export default function ResultCard({ result, onReset }: Props) {
               <InfoSection icon="🎯" label="취미">
                 <div className="flex flex-wrap gap-2">
                   {analysis.hobbies.map((h, i) => (
-                    <span key={i} className="px-3 py-1 bg-green-50 border border-green-200 text-green-700 rounded-full text-sm">
+                    <span key={i} className="px-3 py-1 bg-emerald-900/30 border border-emerald-700/30 text-emerald-300 rounded-full text-sm">
                       {h}
                     </span>
                   ))}
@@ -943,7 +930,7 @@ export default function ResultCard({ result, onReset }: Props) {
 
             {/* 배우자 스펙 */}
             {analysis.bodySpec && (
-              <div className="bg-white rounded-2xl p-5 border border-amber-100 shadow-sm">
+              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
                 <p className="text-xs text-amber-400 font-medium mb-3">💎 배우자 스펙</p>
                 <div className="grid grid-cols-2 gap-3">
                   {[
@@ -952,9 +939,9 @@ export default function ResultCard({ result, onReset }: Props) {
                     { label: "패션", value: analysis.bodySpec.fashion },
                     { label: "분위기", value: analysis.bodySpec.vibe },
                   ].map((s) => (
-                    <div key={s.label} className="bg-amber-50 rounded-xl p-3 border border-amber-100">
+                    <div key={s.label} className="bg-white/5 rounded-xl p-3 border border-white/8">
                       <div className="text-xs text-amber-500 mb-1">{s.label}</div>
-                      <div className="text-sm font-semibold text-amber-900">{s.value}</div>
+                      <div className="text-sm font-semibold text-white">{s.value}</div>
                     </div>
                   ))}
                 </div>
@@ -963,9 +950,9 @@ export default function ResultCard({ result, onReset }: Props) {
 
             {/* 궁합 점수 */}
             {analysis.compatibilityScores && (
-              <div className="bg-white rounded-2xl p-5 border border-amber-100 shadow-sm">
+              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
                 <p className="text-xs text-amber-400 font-medium mb-1">📊 궁합 점수</p>
-                <h4 className="text-base font-bold text-amber-900 mb-4">
+                <h4 className="text-base font-bold text-white mb-4">
                   평균 {Math.round(Object.values(analysis.compatibilityScores).reduce((a, b) => a + b, 0) / 5)}점의 높은 궁합
                 </h4>
                 <div className="space-y-3">
@@ -983,36 +970,36 @@ export default function ResultCard({ result, onReset }: Props) {
             {/* 성격 */}
             {analysis.personality && (
               <InfoSection icon="💭" label="성격" title={analysis.personalityTitle}>
-                <p className="text-gray-700 leading-relaxed text-sm">{analysis.personality}</p>
+                <p className="text-gray-300 leading-relaxed text-sm">{analysis.personality}</p>
               </InfoSection>
             )}
 
             {/* 배우자 심리 분석 */}
             {analysis.partnerPsychology && (
-              <div className="bg-gradient-to-br from-violet-50 to-indigo-50 rounded-2xl p-5 border border-violet-200 shadow-sm">
-                <p className="text-xs text-violet-500 font-medium mb-2">🧠 배우자 심리 분석</p>
-                <h4 className="text-sm font-bold text-violet-900 mb-3">이 사람의 마음을 여는 법</h4>
-                <p className="text-sm text-gray-700 leading-relaxed">{analysis.partnerPsychology}</p>
+              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+                <p className="text-xs text-violet-400 font-medium mb-2">🧠 배우자 심리 분석</p>
+                <h4 className="text-sm font-bold text-violet-300 mb-3">이 사람의 마음을 여는 법</h4>
+                <p className="text-sm text-gray-300 leading-relaxed">{analysis.partnerPsychology}</p>
               </div>
             )}
 
             {/* 연애 스타일 */}
             {analysis.loveStyle && (
               <InfoSection icon="💕" label="연애 스타일" title={analysis.loveStyleTitle}>
-                <p className="text-gray-700 leading-relaxed text-sm">{analysis.loveStyle}</p>
+                <p className="text-gray-300 leading-relaxed text-sm">{analysis.loveStyle}</p>
               </InfoSection>
             )}
 
             {/* 라이프스타일 */}
             {analysis.lifeStyle && (
               <InfoSection icon="🌿" label="라이프스타일" title={analysis.lifeStyleTitle}>
-                <p className="text-gray-700 leading-relaxed text-sm">{analysis.lifeStyle}</p>
+                <p className="text-gray-300 leading-relaxed text-sm">{analysis.lifeStyle}</p>
               </InfoSection>
             )}
 
             {/* 만남 시기 */}
             {analysis.meetTiming && (
-              <div className="bg-white rounded-2xl p-5 border border-amber-100 shadow-sm">
+              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
                 <p className="text-xs text-amber-400 font-medium mb-3">📅 만남 시기 예측</p>
                 <div className="grid grid-cols-3 gap-3 text-center">
                   {[
@@ -1020,10 +1007,10 @@ export default function ResultCard({ result, onReset }: Props) {
                     { label: "계절", value: analysis.meetTiming.season, icon: "🌸" },
                     { label: "상황", value: analysis.meetTiming.situation, icon: "📍" },
                   ].map((m) => (
-                    <div key={m.label} className="bg-pink-50 rounded-xl p-3 border border-pink-100">
+                    <div key={m.label} className="bg-white/5 rounded-xl p-3 border border-white/8">
                       <div className="text-lg mb-1">{m.icon}</div>
                       <div className="text-xs text-pink-400 mb-1">{m.label}</div>
-                      <div className="text-xs font-bold text-pink-800">{m.value}</div>
+                      <div className="text-xs font-bold text-white">{m.value}</div>
                     </div>
                   ))}
                 </div>
@@ -1032,21 +1019,21 @@ export default function ResultCard({ result, onReset }: Props) {
 
             {/* 첫 만남 시나리오 */}
             {analysis.firstMeet && (
-              <div className="bg-pink-50 rounded-2xl p-5 border border-pink-100">
+              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
                 <p className="text-xs text-pink-400 font-medium mb-1">🌸 첫 만남</p>
                 {analysis.firstMeetTitle && (
-                  <h4 className="text-base font-bold text-pink-800 mb-3">{analysis.firstMeetTitle}</h4>
+                  <h4 className="text-base font-bold text-pink-300 mb-3">{analysis.firstMeetTitle}</h4>
                 )}
-                <p className="text-gray-700 leading-relaxed text-sm">{analysis.firstMeet}</p>
+                <p className="text-gray-300 leading-relaxed text-sm">{analysis.firstMeet}</p>
               </div>
             )}
 
             {/* 연애·결혼 타임라인 */}
             {analysis.timeline && (
-              <div className="bg-white rounded-2xl p-5 border border-amber-100 shadow-sm">
+              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
                 <p className="text-xs text-amber-400 font-medium mb-4">💒 연애·결혼 타임라인</p>
                 <div className="relative">
-                  <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-amber-200" />
+                  <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-amber-400/30" />
                   {[
                     { icon: "👀", label: "첫 만남", value: analysis.timeline.meetAge },
                     { icon: "💑", label: "연애 기간", value: analysis.timeline.datingPeriod },
@@ -1059,7 +1046,7 @@ export default function ResultCard({ result, onReset }: Props) {
                       </div>
                       <div className="pt-0.5">
                         <div className="text-xs text-amber-500">{t.label}</div>
-                        <div className="text-sm font-semibold text-gray-800">{t.value}</div>
+                        <div className="text-sm font-semibold text-white">{t.value}</div>
                       </div>
                     </div>
                   ))}
@@ -1109,7 +1096,7 @@ export default function ResultCard({ result, onReset }: Props) {
 
             {/* 취향 카드 */}
             {analysis.favoriteThings && (
-              <div className="bg-white rounded-2xl p-5 border border-amber-100 shadow-sm">
+              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
                 <p className="text-xs text-amber-400 font-medium mb-3">🎭 배우자의 취향</p>
                 <div className="grid grid-cols-2 gap-3">
                   {[
@@ -1118,10 +1105,10 @@ export default function ResultCard({ result, onReset }: Props) {
                     { icon: "🎬", label: "즐겨 보는 장르", value: analysis.favoriteThings.movie },
                     { icon: "📍", label: "자주 가는 곳", value: analysis.favoriteThings.place },
                   ].map((t) => (
-                    <div key={t.label} className="bg-amber-50 rounded-xl p-3 border border-amber-100">
+                    <div key={t.label} className="bg-white/5 rounded-xl p-3 border border-white/8">
                       <div className="text-xl mb-1">{t.icon}</div>
                       <div className="text-[10px] text-amber-500 mb-0.5">{t.label}</div>
-                      <div className="text-xs font-semibold text-amber-900 leading-snug">{t.value}</div>
+                      <div className="text-xs font-semibold text-white leading-snug">{t.value}</div>
                     </div>
                   ))}
                 </div>
@@ -1130,38 +1117,38 @@ export default function ResultCard({ result, onReset }: Props) {
 
             {/* 첫 데이트 코스 */}
             {analysis.firstDate && (
-              <div className="bg-pink-50 rounded-2xl p-5 border border-pink-100">
+              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
                 <p className="text-xs text-pink-400 font-medium mb-2">🗺️ 첫 데이트 코스</p>
-                <h4 className="text-sm font-bold text-pink-800 mb-3">이 사람과 잘 맞는 첫 데이트</h4>
-                <p className="text-sm text-gray-700 leading-relaxed">{analysis.firstDate}</p>
+                <h4 className="text-sm font-bold text-pink-300 mb-3">이 사람과 잘 맞는 첫 데이트</h4>
+                <p className="text-sm text-gray-300 leading-relaxed">{analysis.firstDate}</p>
               </div>
             )}
 
             {/* 갈등 & 화해 패턴 */}
             {analysis.conflictAndMakeup && (
-              <div className="bg-white rounded-2xl p-5 border border-amber-100 shadow-sm">
+              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
                 <p className="text-xs text-amber-400 font-medium mb-2">⚡ 갈등 & 화해 패턴</p>
-                <h4 className="text-sm font-bold text-amber-900 mb-3">어떨 때 싸우고 어떻게 화해할까</h4>
-                <p className="text-sm text-gray-700 leading-relaxed">{analysis.conflictAndMakeup}</p>
+                <h4 className="text-sm font-bold text-amber-300 mb-3">어떨 때 싸우고 어떻게 화해할까</h4>
+                <p className="text-sm text-gray-300 leading-relaxed">{analysis.conflictAndMakeup}</p>
               </div>
             )}
 
             {/* 나의 매력포인트 (배우자 시점) */}
             {analysis.myCharm && (
-              <div className="bg-gradient-to-br from-violet-50 to-purple-50 rounded-2xl p-5 border border-violet-100">
-                <p className="text-xs text-violet-500 font-medium mb-2">💜 배우자 눈에 비친 나의 매력</p>
-                <h4 className="text-sm font-bold text-violet-800 mb-3">배우자가 당신에게 끌리는 이유</h4>
-                <div className="bg-white/80 rounded-xl px-4 py-3 border border-violet-100">
-                  <p className="text-sm text-gray-700 leading-relaxed italic">"{analysis.myCharm}"</p>
+              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+                <p className="text-xs text-violet-400 font-medium mb-2">💜 배우자 눈에 비친 나의 매력</p>
+                <h4 className="text-sm font-bold text-violet-300 mb-3">배우자가 당신에게 끌리는 이유</h4>
+                <div className="bg-white/5 rounded-xl px-4 py-3 border border-white/8">
+                  <p className="text-sm text-gray-300 leading-relaxed italic">"{analysis.myCharm}"</p>
                 </div>
               </div>
             )}
 
             {/* 월별 인연운 차트 */}
             {analysis.monthlyChance && analysis.monthlyChance.length === 12 && (
-              <div className="bg-white rounded-2xl p-5 border border-amber-100 shadow-sm">
+              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
                 <p className="text-xs text-amber-400 font-medium mb-1">📅 월별 인연운</p>
-                <h4 className="text-sm font-bold text-amber-900 mb-4">
+                <h4 className="text-sm font-bold text-amber-300 mb-4">
                   {(() => {
                     const max = Math.max(...analysis.monthlyChance);
                     const idx = analysis.monthlyChance.indexOf(max);
@@ -1176,7 +1163,7 @@ export default function ResultCard({ result, onReset }: Props) {
                     return (
                       <div key={i} className="flex-1 flex flex-col items-center gap-1">
                         <div
-                          className={`w-full rounded-t-sm transition-all ${isPeak ? "bg-amber-400" : "bg-amber-100"}`}
+                          className={`w-full rounded-t-sm transition-all ${isPeak ? "bg-amber-400" : "bg-white/10"}`}
                           style={{ height: `${heightPct}%` }}
                         />
                         <span className={`text-[9px] ${isPeak ? "font-bold text-amber-600" : "text-gray-400"}`}>
@@ -1191,41 +1178,41 @@ export default function ResultCard({ result, onReset }: Props) {
 
             {/* 인연 준비도 */}
             {analysis.readiness && (
-              <div className="bg-white rounded-2xl p-5 border border-amber-100 shadow-sm">
+              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
                 <p className="text-xs text-amber-400 font-medium mb-1">🌱 인연 준비도</p>
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-sm font-bold text-amber-900">지금 당신의 인연 준비 상태</h4>
-                  <span className="text-2xl font-black text-amber-500">{analysis.readiness.score}%</span>
+                  <h4 className="text-sm font-bold text-amber-300">지금 당신의 인연 준비 상태</h4>
+                  <span className="text-2xl font-black text-amber-400">{analysis.readiness.score}%</span>
                 </div>
-                <div className="w-full bg-gray-100 rounded-full h-3 mb-3 overflow-hidden">
+                <div className="w-full bg-white/8 rounded-full h-3 mb-3 overflow-hidden">
                   <div
                     className="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-400 transition-all duration-1000"
                     style={{ width: `${analysis.readiness.score}%` }}
                   />
                 </div>
-                <p className="text-xs text-gray-600 leading-relaxed">{analysis.readiness.comment}</p>
+                <p className="text-xs text-gray-400 leading-relaxed">{analysis.readiness.comment}</p>
               </div>
             )}
 
             {/* 악연 주의 유형 */}
             {analysis.warnType && (
-              <div className="bg-orange-50 rounded-2xl p-5 border border-orange-200">
-                <p className="text-xs text-orange-500 font-medium mb-1">🚨 악연 주의 유형</p>
-                <h4 className="text-sm font-bold text-orange-800 mb-3">이런 사람은 조심하세요</h4>
-                <p className="text-sm text-gray-700 leading-relaxed">{analysis.warnType}</p>
+              <div className="bg-orange-900/20 border border-orange-500/30 rounded-2xl p-5">
+                <p className="text-xs text-orange-400 font-medium mb-1">🚨 악연 주의 유형</p>
+                <h4 className="text-sm font-bold text-orange-300 mb-3">이런 사람은 조심하세요</h4>
+                <p className="text-sm text-gray-300 leading-relaxed">{analysis.warnType}</p>
               </div>
             )}
 
             {/* 주의사항 */}
             {analysis.caution?.length > 0 && (
-              <div className="bg-red-50 rounded-2xl p-5 border border-red-100">
+              <div className="bg-red-900/20 border border-red-500/30 rounded-2xl p-5">
                 <p className="text-xs text-red-400 font-medium mb-1">⚠️ 주의사항</p>
-                <h4 className="text-base font-bold text-red-800 mb-3">이 점은 조심하세요</h4>
+                <h4 className="text-base font-bold text-red-300 mb-3">이 점은 조심하세요</h4>
                 <div className="space-y-3">
                   {analysis.caution.map((c, i) => (
                     <div key={i} className="flex gap-3">
                       <span className="text-red-400 font-bold shrink-0">{i + 1}.</span>
-                      <p className="text-sm text-gray-700 leading-relaxed">{c}</p>
+                      <p className="text-sm text-gray-300 leading-relaxed">{c}</p>
                     </div>
                   ))}
                 </div>
@@ -1234,16 +1221,16 @@ export default function ResultCard({ result, onReset }: Props) {
 
             {/* 인연 조언 */}
             {analysis.advice?.length > 0 && (
-              <div className="bg-emerald-50 rounded-2xl p-5 border border-emerald-100">
-                <p className="text-xs text-emerald-500 font-medium mb-1">💡 인연을 당기는 조언</p>
-                <h4 className="text-base font-bold text-emerald-800 mb-3">지금 당장 실천하세요</h4>
+              <div className="bg-emerald-900/20 border border-emerald-500/30 rounded-2xl p-5">
+                <p className="text-xs text-emerald-400 font-medium mb-1">💡 인연을 당기는 조언</p>
+                <h4 className="text-base font-bold text-emerald-300 mb-3">지금 당장 실천하세요</h4>
                 <div className="space-y-2">
                   {analysis.advice.map((a, i) => (
-                    <div key={i} className="flex gap-3 items-start bg-white rounded-xl p-3 border border-emerald-100">
-                      <span className="w-6 h-6 rounded-full bg-emerald-400 text-white text-xs font-bold flex items-center justify-center shrink-0">
+                    <div key={i} className="flex gap-3 items-start bg-white/5 rounded-xl p-3 border border-white/8">
+                      <span className="w-6 h-6 rounded-full bg-emerald-500 text-white text-xs font-bold flex items-center justify-center shrink-0">
                         {i + 1}
                       </span>
-                      <p className="text-sm text-gray-700">{a}</p>
+                      <p className="text-sm text-gray-300">{a}</p>
                     </div>
                   ))}
                 </div>
@@ -1276,7 +1263,7 @@ export default function ResultCard({ result, onReset }: Props) {
             <button
               onClick={handleDownload}
               disabled={!imgLoaded || downloading}
-              className={`w-full py-3 rounded-xl border-2 border-amber-400 text-amber-700 font-semibold text-sm transition-all ${!imgLoaded || downloading ? "opacity-40 cursor-not-allowed" : "hover:bg-amber-50 active:scale-95"}`}
+              className={`w-full py-3 rounded-xl border border-amber-500/40 text-amber-400 font-semibold text-sm transition-all ${!imgLoaded || downloading ? "opacity-40 cursor-not-allowed" : "hover:bg-amber-500/10 active:scale-95"}`}
             >
               {downloading ? "⏳ 저장 중..." : "💾 이미지 저장"}
             </button>
@@ -1325,7 +1312,7 @@ export default function ResultCard({ result, onReset }: Props) {
           /* ── 비결제: 이미지 잠금 + 결제 유도 ── */
           <>
             {/* 블러 처리된 이미지 잠금 카드 */}
-            <div className="relative w-full aspect-square rounded-2xl overflow-hidden shadow-xl border-4 border-amber-200 bg-amber-50">
+            <div className="relative w-full aspect-square rounded-2xl overflow-hidden shadow-xl border border-white/10 bg-[#13131a]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={imageUrl}
@@ -1347,7 +1334,7 @@ export default function ResultCard({ result, onReset }: Props) {
                   onClick={() => setShowModal(true)}
                   className="px-8 py-3 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 text-white font-bold text-base shadow-2xl hover:from-amber-500 hover:to-orange-600 transition-all active:scale-95"
                 >
-                  ✨ 990원으로 공개
+                  ✨ 2,000원으로 공개
                 </button>
               </div>
             </div>
@@ -1364,12 +1351,12 @@ export default function ResultCard({ result, onReset }: Props) {
               ].map((item) => (
                 <div
                   key={item.label}
-                  className="relative bg-white rounded-xl px-4 py-3 border border-amber-100 overflow-hidden cursor-pointer"
+                  className="relative bg-[#13131a] border border-white/8 rounded-xl px-4 py-3 overflow-hidden cursor-pointer"
                   onClick={() => setShowModal(true)}
                 >
                   <div className="flex items-center gap-2 mb-1">
                     <span>{item.icon}</span>
-                    <span className="text-xs font-semibold text-amber-700">{item.label}</span>
+                    <span className="text-xs font-semibold text-amber-400">{item.label}</span>
                     <span className="ml-auto text-xs text-amber-400 font-bold">🔒</span>
                   </div>
                   <p className="text-sm text-gray-400 blur-sm select-none">{item.blur}</p>
@@ -1378,21 +1365,24 @@ export default function ResultCard({ result, onReset }: Props) {
             </div>
 
             {/* 결제 CTA */}
-            <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-3xl p-6 border-2 border-amber-300 text-center shadow-lg">
-              <div className="text-4xl mb-2">🔮</div>
-              <h3 className="text-lg font-bold text-amber-900 mb-1">몽타주 + 완전 분석 보고서</h3>
-              <div className="flex items-center justify-center gap-2 mb-4">
-                <span className="text-sm text-gray-400 line-through">3,900원</span>
-                <span className="text-2xl font-black text-amber-600">990원</span>
-                <span className="text-xs bg-red-100 text-red-600 font-bold px-2 py-0.5 rounded-full">74% 할인</span>
+            <div className="bg-[#13131a] border-2 border-amber-500/30 rounded-3xl p-6 text-center relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-amber-900/20 via-transparent to-rose-900/10 pointer-events-none" />
+              <div className="relative">
+                <div className="text-4xl mb-2">🔮</div>
+                <h3 className="text-lg font-bold text-white mb-1">몽타주 + 완전 분석 보고서</h3>
+                <div className="flex items-center justify-center gap-2 mb-4">
+                  <span className="text-sm text-gray-500 line-through">6,000원</span>
+                  <span className="text-2xl font-black text-amber-400">2,000원</span>
+                  <span className="text-xs bg-red-500/20 text-red-400 font-bold px-2 py-0.5 rounded-full border border-red-500/30">67% 할인</span>
+                </div>
+                <button
+                  onClick={() => setShowModal(true)}
+                  className="w-full py-4 rounded-2xl bg-yellow-400 text-gray-900 font-bold text-lg active:scale-95 transition-all"
+                >
+                  ✨ 2,000원으로 몽타주 + 전체 보기
+                </button>
+                <p className="text-xs text-gray-500 mt-3">커피 한 잔 값 · 단 한 번만 결제</p>
               </div>
-              <button
-                onClick={() => setShowModal(true)}
-                className="w-full py-4 rounded-2xl bg-yellow-400 text-gray-900 font-bold text-lg active:scale-95 transition-all"
-              >
-                ✨ 990원으로 몽타주 + 전체 보기
-              </button>
-              <p className="text-xs text-gray-400 mt-3">커피 한 잔 값 · 단 한 번만 결제</p>
             </div>
 
             <p className="text-xs text-center text-gray-400">

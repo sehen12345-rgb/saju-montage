@@ -134,7 +134,7 @@ export default function MyPage() {
                     ✅
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-white">프리미엄 분석 · 990원</p>
+                    <p className="text-sm font-semibold text-white">프리미엄 분석 · 2,000원</p>
                     <p className="text-xs text-gray-500 mt-0.5">
                       {new Date(r.paidAt).toLocaleDateString("ko-KR", {
                         year: "numeric", month: "long", day: "numeric",
@@ -166,7 +166,7 @@ export default function MyPage() {
               <span>버전</span><span className="text-gray-500">1.0.0</span>
             </div>
             <div className="flex justify-between">
-              <span>결제 금액</span><span className="text-gray-500">990원 (1회)</span>
+              <span>결제 금액</span><span className="text-gray-500">2,000원 개별 / 5,000원 묶음</span>
             </div>
             <div className="flex justify-between">
               <span>데이터 저장</span><span className="text-gray-500">이 기기에만 저장</span>

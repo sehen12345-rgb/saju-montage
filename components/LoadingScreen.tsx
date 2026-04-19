@@ -62,10 +62,10 @@ const SAJU_FACTS: Record<"spouse" | "guardian" | "enemy", string[]> = {
 
 export default function LoadingScreen({ step, productType = "spouse" }: {
   step: number;
-  productType?: "spouse" | "guardian" | "enemy"
+  productType?: "spouse" | "guardian" | "enemy" | "bundle"
 }) {
   const STEPS = productType === "guardian" ? GUARDIAN_STEPS : productType === "enemy" ? ENEMY_STEPS : SPOUSE_STEPS;
-  const facts = SAJU_FACTS[productType];
+  const facts = SAJU_FACTS[productType === "bundle" ? "spouse" : productType];
   const [factIdx, setFactIdx] = useState(0);
   const [visible, setVisible] = useState(true);
 
