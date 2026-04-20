@@ -35,6 +35,7 @@ export default function ResultPage() {
     try {
       const parsed = JSON.parse(stored);
       if (!parsed?.analysis) throw new Error("invalid");
+      parsed.paid = false; // ResultCard의 isPaidForSaju 검증 후에만 복원
       try { sessionStorage.setItem("sajuResult", JSON.stringify(parsed)); } catch { /* ignore */ }
       setResult(parsed);
     } catch {
