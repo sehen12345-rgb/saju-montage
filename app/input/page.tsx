@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import SajuInputForm from "@/components/SajuInputForm";
 import LoadingScreen from "@/components/LoadingScreen";
-import type { SajuInput, GenerateResult, ProductType, SajuAnalysis, GuardianAnalysis, EnemyAnalysis } from "@/lib/types";
+import type { SajuInput, GenerateResult, ProductType, SajuAnalysis, GuardianAnalysis, EnemyAnalysis, BundleResults } from "@/lib/types";
 import { getSajuSeed } from "@/lib/prompts";
 
 // ── API 실패 시 모의 분석 데이터 생성 ─────────────────────────
@@ -158,19 +158,99 @@ export default function InputPage() {
   const isEnemy = productType === "enemy";
   const meta = PRODUCT_META[productType];
 
+  function buildImageUrl(analysis: { sajuInfo?: { yearPillar: string; monthPillar: string; dayPillar: string; hourPillar: string }; imagePrompt?: string }, type: "spouse" | "guardian" | "enemy", gender: "male" | "female", seedOffset = 0) {
+    const sajuInfo = analysis.sajuInfo ?? { yearPillar: "갑자", monthPillar: "병인", dayPillar: "무오", hourPillar: "경신" };
+    const g = type === "spouse"
+      ? (gender === "male" ? "woman" : "man")
+      : type === "guardian"
+      ? (gender === "male" ? "man" : "woman")
+      : (gender === "male" ? "woman" : "man");
+    const seed = getSajuSeed(sajuInfo, g) + seedOffset;
+    const defaultPrompts = {
+      spouse: `beautiful ${g}, warm smile, photorealistic portrait`,
+      guardian: `wise trustworthy ${g}, photorealistic portrait`,
+      enemy: `charming deceptive ${g}, cold eyes, photorealistic portrait`,
+    };
+    const prompt = analysis.imagePrompt ?? defaultPrompts[type];
+    return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=768&height=768&model=flux&seed=${seed}&nologo=true&enhance=false`;
+  }
+
+  async function fetchAnalysis(apiPath: string, data: SajuInput): Promise<{ result: unknown; usedMock: boolean }> {
+    try {
+      const ctrl = new AbortController();
+      const timeout = setTimeout(() => ctrl.abort(), 25000);
+      const res = await fetch(apiPath, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...data, productType }),
+        signal: ctrl.signal,
+      });
+      clearTimeout(timeout);
+      if (res.ok) return { result: await res.json(), usedMock: false };
+      throw new Error("api_fail");
+    } catch {
+      return { result: null, usedMock: true };
+    }
+  }
+
   async function handleSubmit(data: SajuInput) {
     setLoading(true);
     setError(null);
     setLoadingStep(0);
 
     try {
-      // ── 1. API 호출 (실패 시 모의 데이터 폴백) ──
+      const isBundle = productType === "bundle";
+
+      if (isBundle) {
+        // ── 번들: 3개 분석 병렬 실행 ──
+        setLoadingStep(0);
+        const [spouseRes, guardianRes, enemyRes] = await Promise.all([
+          fetchAnalysis("/api/analyze-saju", data),
+          fetchAnalysis("/api/analyze-guardian", data),
+          fetchAnalysis("/api/analyze-enemy", data),
+        ]);
+
+        const usedMock = spouseRes.usedMock || guardianRes.usedMock || enemyRes.usedMock;
+
+        const spouseAnalysis = (spouseRes.result as SajuAnalysis) ?? buildMockSpouseAnalysis(data.name, data.birthYear, data.gender);
+        const guardianAnalysis = (guardianRes.result as GuardianAnalysis) ?? buildMockGuardianAnalysis(data.name, data.birthYear);
+        const enemyAnalysis = (enemyRes.result as EnemyAnalysis) ?? buildMockEnemyAnalysis(data.name, data.birthYear);
+
+        setLoadingStep(1);
+        await new Promise((r) => setTimeout(r, 600));
+        setLoadingStep(2);
+        await new Promise((r) => setTimeout(r, 400));
+
+        const bundleResults: BundleResults = {
+          spouse: { analysis: spouseAnalysis, imageUrl: buildImageUrl(spouseAnalysis, "spouse", data.gender) },
+          guardian: { analysis: guardianAnalysis, imageUrl: buildImageUrl(guardianAnalysis, "guardian", data.gender, 1111) },
+          enemy: { analysis: enemyAnalysis, imageUrl: buildImageUrl(enemyAnalysis, "enemy", data.gender, 9999) },
+        };
+
+        const result: GenerateResult = {
+          name: data.name,
+          analysis: spouseAnalysis,
+          imageUrl: bundleResults.spouse!.imageUrl,
+          gender: data.gender,
+          demo: usedMock,
+          paid: true,
+          productType: "bundle",
+          bundleResults,
+        };
+        const json = JSON.stringify(result);
+        try { sessionStorage.setItem("sajuResult", json); } catch { /* private mode */ }
+        try { localStorage.setItem("sajuResult_backup", json); } catch { /* storage full */ }
+        router.push("/result");
+        return;
+      }
+
+      // ── 단일 상품 분석 ──
       let analysis;
       let usedMock = false;
       try {
         const apiPath = isGuardian ? "/api/analyze-guardian" : isEnemy ? "/api/analyze-enemy" : "/api/analyze-saju";
         const ctrl = new AbortController();
-        const timeout = setTimeout(() => ctrl.abort(), 25000); // 25초 타임아웃
+        const timeout = setTimeout(() => ctrl.abort(), 25000);
         const analysisRes = await fetch(apiPath, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -199,36 +279,20 @@ export default function InputPage() {
       setLoadingStep(2);
       await new Promise((r) => setTimeout(r, 600));
 
-      // ── 2. 이미지 URL 생성 ──
-      const sajuInfo = analysis.sajuInfo ?? {
-        yearPillar: "갑자", monthPillar: "병인", dayPillar: "무오", hourPillar: "경신",
-      };
-      let imageUrl: string;
-      if (isGuardian) {
-        const g = data.gender === "male" ? "man" : "woman";
-        const seed = getSajuSeed(sajuInfo, g);
-        const prompt = analysis.imagePrompt ?? `wise trustworthy ${g}, photorealistic portrait`;
-        imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=768&height=768&model=flux&seed=${seed}&nologo=true&enhance=false`;
-      } else if (isEnemy) {
-        const g = data.gender === "male" ? "woman" : "man";
-        const seed = getSajuSeed(sajuInfo, g) + 9999;
-        const prompt = analysis.imagePrompt ?? `charming deceptive ${g}, photorealistic portrait`;
-        imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=768&height=768&model=flux&seed=${seed}&nologo=true&enhance=false`;
-      } else {
-        const g = data.gender === "male" ? "woman" : "man";
-        const seed = getSajuSeed(sajuInfo, g);
-        const prompt = analysis.imagePrompt ?? `beautiful ${g}, warm smile, photorealistic portrait`;
-        imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=768&height=768&model=flux&seed=${seed}&nologo=true&enhance=false`;
-      }
+      const imageUrl = buildImageUrl(
+        analysis,
+        isGuardian ? "guardian" : isEnemy ? "enemy" : "spouse",
+        data.gender,
+        isEnemy ? 9999 : 0,
+      );
 
-      // ── 3. 결과 저장 ──
       const result: GenerateResult = {
         name: data.name,
         analysis,
         imageUrl,
         gender: data.gender,
         demo: usedMock,
-        paid: true, // TODO: TossPayments 승인 후 삭제
+        paid: true,
         productType,
       };
       const json = JSON.stringify(result);
@@ -281,7 +345,7 @@ export default function InputPage() {
                       : "text-gray-500 hover:text-gray-300"
                   }`}
                 >
-                  {m.emoji} {id === "spouse" ? "내님" : id === "guardian" ? "내귀인" : "내웬수"}
+                  {m.emoji} {id === "spouse" ? "내님" : id === "guardian" ? "내귀인" : id === "enemy" ? "내웬수" : "묶음"}
                 </button>
               ))}
             </div>

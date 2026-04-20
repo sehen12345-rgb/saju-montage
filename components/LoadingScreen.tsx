@@ -3,22 +3,27 @@
 import { useState, useEffect } from "react";
 
 const SPOUSE_STEPS = [
-  { icon: "📐", text: "사주팔자 산출 중 (년·월·일·시주)" },
+  { icon: "📿", text: "사주팔자 산출 중 (년·월·일·시주)" },
   { icon: "⚖️", text: "오행 분석 및 관성·재성 파악" },
   { icon: "🔮", text: "AI 배우자 기운 분석" },
   { icon: "🎨", text: "AI 몽타주 생성 중" },
 ];
 const GUARDIAN_STEPS = [
-  { icon: "📐", text: "사주팔자 산출 중 (년·월·일·시주)" },
+  { icon: "📿", text: "사주팔자 산출 중 (년·월·일·시주)" },
   { icon: "⚖️", text: "오행 분석 및 인성·식상 파악" },
   { icon: "🌟", text: "AI 귀인 기운 분석" },
   { icon: "🎨", text: "AI 귀인 초상화 생성 중" },
 ];
 const ENEMY_STEPS = [
-  { icon: "📐", text: "사주팔자 산출 중 (년·월·일·시주)" },
+  { icon: "📿", text: "사주팔자 산출 중 (년·월·일·시주)" },
   { icon: "⚖️", text: "오행 분석 및 충·형·파 파악" },
   { icon: "😤", text: "AI 악연 기운 분석" },
   { icon: "🎨", text: "AI 웬수 초상화 생성 중" },
+];
+const BUNDLE_STEPS = [
+  { icon: "📿", text: "사주팔자 산출 중 (년·월·일·시주)" },
+  { icon: "🔮", text: "배우자 · 귀인 · 웬수 동시 분석" },
+  { icon: "🎨", text: "AI 몽타주 3종 생성 중" },
 ];
 
 const SAJU_FACTS: Record<"spouse" | "guardian" | "enemy", string[]> = {
@@ -60,14 +65,22 @@ const SAJU_FACTS: Record<"spouse" | "guardian" | "enemy", string[]> = {
   ],
 };
 
+// 산통(산가지) 에니메이션용 점괘 심볼
+const TRIGRAMS = ["☰", "☱", "☲", "☳", "☴", "☵", "☶", "☷"];
+
 export default function LoadingScreen({ step, productType = "spouse" }: {
   step: number;
   productType?: "spouse" | "guardian" | "enemy" | "bundle"
 }) {
-  const STEPS = productType === "guardian" ? GUARDIAN_STEPS : productType === "enemy" ? ENEMY_STEPS : SPOUSE_STEPS;
-  const facts = SAJU_FACTS[productType === "bundle" ? "spouse" : productType];
+  const isBundle = productType === "bundle";
+  const STEPS = isBundle ? BUNDLE_STEPS : productType === "guardian" ? GUARDIAN_STEPS : productType === "enemy" ? ENEMY_STEPS : SPOUSE_STEPS;
+  const factsKey = productType === "guardian" ? "guardian" : productType === "enemy" ? "enemy" : "spouse";
+  const facts = SAJU_FACTS[factsKey];
+
   const [factIdx, setFactIdx] = useState(0);
   const [visible, setVisible] = useState(true);
+  const [trigramIdx, setTrigramIdx] = useState(0);
+  const [sticks, setSticks] = useState<boolean[]>([false, false, false, false, false, false]);
 
   useEffect(() => {
     const t = setInterval(() => {
@@ -80,45 +93,90 @@ export default function LoadingScreen({ step, productType = "spouse" }: {
     return () => clearInterval(t);
   }, [facts.length]);
 
-  const accentRing =
-    productType === "enemy"
-      ? "border-slate-700 border-t-slate-300"
-      : productType === "guardian"
-      ? "border-yellow-900 border-t-yellow-400"
-      : "border-rose-900 border-t-rose-400";
+  // 점괘 심볼 순환
+  useEffect(() => {
+    const t = setInterval(() => setTrigramIdx((i) => (i + 1) % TRIGRAMS.length), 600);
+    return () => clearInterval(t);
+  }, []);
 
-  const accentText =
+  // 산가지 하나씩 꽂히는 애니메이션
+  useEffect(() => {
+    let i = 0;
+    setSticks([false, false, false, false, false, false]);
+    const t = setInterval(() => {
+      if (i < 6) {
+        const idx = i;
+        setSticks((s) => s.map((v, j) => j === idx ? true : v));
+        i++;
+      } else {
+        clearInterval(t);
+      }
+    }, 350);
+    return () => clearInterval(t);
+  }, [step]);
+
+  const accentColor =
     productType === "enemy" ? "text-slate-300" :
-    productType === "guardian" ? "text-yellow-400" :
+    productType === "guardian" ? "text-amber-400" :
+    isBundle ? "text-purple-400" :
     "text-rose-400";
+
+  const progressBarColor =
+    productType === "enemy" ? "bg-slate-400" :
+    productType === "guardian" ? "bg-amber-400" :
+    isBundle ? "bg-purple-400" :
+    "bg-rose-400";
+
+  const accentRing =
+    productType === "enemy" ? "border-slate-700 border-t-slate-300" :
+    productType === "guardian" ? "border-yellow-900 border-t-yellow-400" :
+    isBundle ? "border-purple-900 border-t-purple-400" :
+    "border-rose-900 border-t-rose-400";
 
   const completedStepCount = step + 1;
   const progressPct = Math.round((completedStepCount / STEPS.length) * 100);
 
   return (
     <div className="flex flex-col items-center justify-center py-10 space-y-6">
-      {/* 회전 심볼 */}
-      <div className="relative w-24 h-24">
-        <div className={`absolute inset-0 rounded-full border-4 animate-spin ${accentRing}`} />
-        <div className="absolute inset-[-8px] rounded-full border-2 border-dashed border-white/8 animate-[spin_3s_linear_infinite_reverse]" />
-        <div className="absolute inset-0 flex items-center justify-center text-4xl">
-          {STEPS[Math.min(step, STEPS.length - 1)].icon}
+
+      {/* 점괘 심볼 + 산가지 애니메이션 */}
+      <div className="relative flex flex-col items-center gap-3">
+        {/* 팔괘 회전 심볼 */}
+        <div className="relative w-24 h-24">
+          <div className={`absolute inset-0 rounded-full border-4 animate-spin ${accentRing}`} />
+          <div className="absolute inset-[-8px] rounded-full border border-dashed border-white/8 animate-[spin_4s_linear_infinite_reverse]" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className={`text-4xl font-black transition-all duration-300 ${accentColor}`}
+              style={{ textShadow: `0 0 20px currentColor` }}>
+              {TRIGRAMS[trigramIdx]}
+            </span>
+          </div>
         </div>
+
+        {/* 산가지 6개 */}
+        <div className="flex gap-1.5 items-end h-8">
+          {sticks.map((active, i) => (
+            <div
+              key={i}
+              className={`w-1 rounded-full transition-all duration-300 ${active ? `${progressBarColor} h-8` : "bg-white/10 h-3"}`}
+              style={{ transitionDelay: `${i * 60}ms` }}
+            />
+          ))}
+        </div>
+        <p className={`text-[10px] font-bold uppercase tracking-widest ${accentColor}`}>
+          {isBundle ? "삼합 분석" : productType === "guardian" ? "귀인 기운" : productType === "enemy" ? "악연 기운" : "연분 기운"} 산출 중
+        </p>
       </div>
 
       {/* 진행 바 */}
       <div className="w-full max-w-xs">
         <div className="flex justify-between items-center mb-1.5">
           <span className="text-[10px] text-gray-500 font-medium">분석 진행</span>
-          <span className={`text-[10px] font-bold ${accentText}`}>{progressPct}%</span>
+          <span className={`text-[10px] font-bold ${accentColor}`}>{progressPct}%</span>
         </div>
         <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
           <div
-            className={`h-full rounded-full transition-all duration-700 ${
-              productType === "enemy" ? "bg-slate-400" :
-              productType === "guardian" ? "bg-yellow-400" :
-              "bg-rose-400"
-            }`}
+            className={`h-full rounded-full transition-all duration-700 ${progressBarColor}`}
             style={{ width: `${progressPct}%` }}
           />
         </div>
@@ -148,11 +206,7 @@ export default function LoadingScreen({ step, productType = "spouse" }: {
                 {[0, 1, 2].map((j) => (
                   <span
                     key={j}
-                    className={`w-1.5 h-1.5 rounded-full animate-bounce ${
-                      productType === "enemy" ? "bg-slate-400" :
-                      productType === "guardian" ? "bg-yellow-400" :
-                      "bg-rose-400"
-                    }`}
+                    className={`w-1.5 h-1.5 rounded-full animate-bounce ${progressBarColor}`}
                     style={{ animationDelay: `${j * 150}ms` }}
                   />
                 ))}
@@ -164,7 +218,7 @@ export default function LoadingScreen({ step, productType = "spouse" }: {
 
       {/* 사주 팩트 */}
       <div className="w-full max-w-xs bg-white/4 border border-white/8 rounded-2xl px-4 py-3.5 min-h-[68px] flex flex-col justify-center">
-        <p className={`text-[10px] font-bold mb-1.5 uppercase tracking-wider ${accentText}`}>
+        <p className={`text-[10px] font-bold mb-1.5 uppercase tracking-wider ${accentColor}`}>
           ☯ 사주 상식
         </p>
         <p
@@ -177,7 +231,8 @@ export default function LoadingScreen({ step, productType = "spouse" }: {
 
       <p className="text-gray-600 text-xs animate-pulse text-center">
         {step >= STEPS.length - 1
-          ? productType === "guardian" ? "✨ 귀인 초상화를 완성하는 중이에요..."
+          ? isBundle ? "✨ 3종 몽타주를 모두 완성하는 중이에요..."
+          : productType === "guardian" ? "✨ 귀인 초상화를 완성하는 중이에요..."
           : productType === "enemy" ? "✨ 웬수 초상화를 완성하는 중이에요..."
           : "✨ AI 몽타주를 완성하는 중이에요..."
           : "정밀 사주 분석 중입니다. 잠시만 기다려 주세요"}

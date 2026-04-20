@@ -113,6 +113,12 @@ export interface SajuInfo {
   hourPillar: string;
 }
 
+export interface BundleResults {
+  spouse?: { analysis: SajuAnalysis; imageUrl: string };
+  guardian?: { analysis: GuardianAnalysis; imageUrl: string };
+  enemy?: { analysis: EnemyAnalysis; imageUrl: string };
+}
+
 export interface GenerateResult {
   name: string;
   analysis: SajuAnalysis | GuardianAnalysis | EnemyAnalysis;
@@ -121,6 +127,7 @@ export interface GenerateResult {
   demo?: boolean;
   paid?: boolean;
   productType?: ProductType;
+  bundleResults?: BundleResults;
 }
 
 export interface EnemyAnalysis {

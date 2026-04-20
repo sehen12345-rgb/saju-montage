@@ -1,14 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import type { SajuInput } from "@/lib/types";
+import { calculateSaju } from "@/lib/saju";
 
 interface Props {
   onSubmit: (data: SajuInput) => void;
   loading: boolean;
 }
 
-// 1시간 단위 → 시주 매핑
 const HOUR_TO_SHI: Record<number, { shi: string; han: string }> = {
   23: { shi: "야자시", han: "夜子時" },
   0:  { shi: "자시",   han: "子時" },
@@ -36,7 +36,6 @@ const HOUR_TO_SHI: Record<number, { shi: string; han: string }> = {
   22: { shi: "해시",   han: "亥時" },
 };
 
-// 시주가 같은 시간끼리 같은 색상 그룹
 const SHI_COLORS: Record<string, string> = {
   "야자시": "border-purple-500/40 bg-purple-500/8",
   "자시":   "border-blue-500/40 bg-blue-500/8",
@@ -52,6 +51,85 @@ const SHI_COLORS: Record<string, string> = {
   "술시":   "border-pink-500/40 bg-pink-500/8",
   "해시":   "border-indigo-500/40 bg-indigo-500/8",
 };
+
+// 4기둥 한자
+const PILLAR_HAN: Record<number, string> = { 0: "年", 1: "月", 2: "日", 3: "時" };
+const PILLAR_KO:  Record<number, string> = { 0: "년주", 1: "월주", 2: "일주★", 3: "시주" };
+const PILLAR_DESC: Record<number, string> = {
+  0: "조상·초년",
+  1: "부모·청년",
+  2: "배우자 자리",
+  3: "자녀·말년",
+};
+
+// 천간·지지 오행 색상
+const GAN_COLOR: Record<string, string> = {
+  갑: "text-green-400", 을: "text-green-300",
+  병: "text-red-400",   정: "text-red-300",
+  무: "text-yellow-500",기: "text-yellow-400",
+  경: "text-gray-300",  신: "text-gray-200",
+  임: "text-blue-400",  계: "text-blue-300",
+};
+const JI_COLOR: Record<string, string> = {
+  자: "text-blue-400", 축: "text-yellow-500",
+  인: "text-green-400",묘: "text-green-300",
+  진: "text-yellow-400",사: "text-red-400",
+  오: "text-red-300",  미: "text-yellow-400",
+  신: "text-gray-300", 유: "text-gray-200",
+  술: "text-yellow-500",해: "text-blue-300",
+};
+
+function PillarCard({ pillar, index, highlight }: { pillar: string; index: number; highlight?: boolean }) {
+  const gan = pillar[0];
+  const ji  = pillar[1];
+  return (
+    <div className={`flex flex-col items-center gap-1 rounded-xl py-2.5 px-2 border transition-all ${
+      highlight
+        ? "bg-yellow-400/10 border-yellow-400/40"
+        : "bg-white/3 border-white/10"
+    }`}>
+      <span className="text-[10px] text-gray-500">{PILLAR_HAN[index]}</span>
+      <span className={`text-xl font-black ${GAN_COLOR[gan] ?? "text-white"}`}>{gan}</span>
+      <span className={`text-xl font-black ${JI_COLOR[ji] ?? "text-white"}`}>{ji}</span>
+      <span className={`text-[9px] font-bold ${highlight ? "text-yellow-400" : "text-gray-600"}`}>{PILLAR_KO[index]}</span>
+      {highlight && <span className="text-[8px] text-yellow-500/80">{PILLAR_DESC[index]}</span>}
+    </div>
+  );
+}
+
+function SajuPreview({ year, month, day, hour }: { year: number; month: number; day: number; hour: number }) {
+  const saju = useMemo(
+    () => calculateSaju(year, month, day, hour >= 0 ? hour : 12),
+    [year, month, day, hour]
+  );
+  const pillars = [saju.yearPillar, saju.monthPillar, saju.dayPillar, saju.hourPillar === "미상" ? "??" : saju.hourPillar];
+
+  return (
+    <div className="rounded-2xl border border-yellow-400/20 bg-yellow-400/5 p-3">
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-[11px] font-bold text-yellow-400 uppercase tracking-wider">☯ 사주팔자 미리보기</p>
+        {hour < 0 && <span className="text-[9px] text-gray-600">시주는 시간 선택 후 확정</span>}
+      </div>
+      <div className="grid grid-cols-4 gap-1.5">
+        {pillars.map((p, i) => (
+          p === "??" ? (
+            <div key={i} className="flex flex-col items-center gap-1 rounded-xl py-2.5 px-2 border border-dashed border-white/10">
+              <span className="text-[10px] text-gray-500">{PILLAR_HAN[i]}</span>
+              <span className="text-xl font-black text-gray-700">?</span>
+              <span className="text-xl font-black text-gray-700">?</span>
+              <span className="text-[9px] text-gray-700">{PILLAR_KO[i]}</span>
+            </div>
+          ) : (
+            <PillarCard key={i} pillar={p} index={i} highlight={i === 2} />
+          )
+        ))}
+      </div>
+      <p className="text-[10px] text-gray-600 mt-2 text-center">
+        일주 <span className="text-yellow-400 font-bold">{saju.dayPillar}</span>의 지지가 배우자 자리입니다
+      </p>
+    </div>
+  );
+}
 
 function getHourLabel(hour: number): string {
   return `${String(hour).padStart(2, "0")}:00`;
@@ -72,7 +150,7 @@ const STEP_HINTS = [
   },
   {
     icon: "📅",
-    text: "생년은 년주(年柱), 생월은 월주(月柱), 생일은 일주(日柱)를 결정합니다. 일주는 배우자 자리가 담긴 가장 중요한 기둥입니다.",
+    text: "반드시 양력(陽曆·태양력) 생년월일을 입력해 주세요. 음력 생일은 양력으로 변환 후 입력해야 정확한 사주가 나옵니다.",
   },
   {
     icon: "⏰",
@@ -90,6 +168,7 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
     gender: "male",
   });
   const [step, setStep] = useState(0);
+  const [calType, setCalType] = useState<"solar" | "lunar">("solar");
 
   function set<K extends keyof SajuInput>(k: K, v: SajuInput[K]) {
     setForm((p) => ({ ...p, [k]: v }));
@@ -131,7 +210,11 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
       </div>
 
       {/* 사주 힌트 박스 */}
-      <div className="flex items-start gap-2.5 bg-yellow-500/5 border border-yellow-500/15 rounded-2xl px-3.5 py-3">
+      <div className={`flex items-start gap-2.5 rounded-2xl px-3.5 py-3 ${
+        step === 1
+          ? "bg-amber-500/10 border border-amber-500/25"
+          : "bg-yellow-500/5 border border-yellow-500/15"
+      }`}>
         <span className="text-yellow-400 text-base shrink-0 mt-0.5">{STEP_HINTS[step].icon}</span>
         <p className="text-[11px] text-yellow-200/70 leading-relaxed">{STEP_HINTS[step].text}</p>
       </div>
@@ -192,6 +275,60 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
           <button type="button" onClick={() => setStep(0)} className="text-sm text-gray-500 flex items-center gap-1 hover:text-gray-300">
             ← 이전
           </button>
+
+          {/* 양력/음력 선택 */}
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <label className="text-sm font-bold text-gray-300">생일 기준</label>
+              <span className="text-[10px] text-red-400 font-bold bg-red-500/10 px-2 py-0.5 rounded-full">중요</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2 mb-1">
+              <button
+                type="button"
+                onClick={() => setCalType("solar")}
+                className={`py-3 rounded-xl border-2 font-bold text-sm transition-all ${
+                  calType === "solar"
+                    ? "border-yellow-400 bg-yellow-400/10 text-yellow-400"
+                    : "border-white/10 bg-white/5 text-gray-400"
+                }`}
+              >
+                🌞 양력 (태양력)
+              </button>
+              <button
+                type="button"
+                onClick={() => setCalType("lunar")}
+                className={`py-3 rounded-xl border-2 font-bold text-sm transition-all ${
+                  calType === "lunar"
+                    ? "border-amber-400 bg-amber-400/10 text-amber-400"
+                    : "border-white/10 bg-white/5 text-gray-400"
+                }`}
+              >
+                🌙 음력 (음력 생일)
+              </button>
+            </div>
+            {calType === "lunar" && (
+              <div className="bg-amber-500/10 border border-amber-500/25 rounded-xl p-3 text-xs text-amber-300 space-y-1">
+                <p className="font-bold">⚠️ 음력 생일이신가요?</p>
+                <p className="text-amber-300/80 leading-relaxed">
+                  사주 계산은 <span className="font-bold text-amber-200">양력 날짜</span>로 해야 합니다.
+                  음력 생일을 양력으로 변환 후 다시 양력을 선택해 주세요.
+                </p>
+                <a
+                  href="https://search.naver.com/search.naver?query=음력+양력+변환"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-yellow-400 font-bold hover:text-yellow-300 mt-1"
+                >
+                  🔍 음력→양력 변환하기 →
+                </a>
+              </div>
+            )}
+            {calType === "solar" && (
+              <p className="text-[10px] text-gray-600 px-1">
+                주민등록증·출생증명서에 적힌 날짜 기준입니다
+              </p>
+            )}
+          </div>
 
           <div>
             <label className="block text-sm font-bold text-gray-300 mb-2">
@@ -273,13 +410,21 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
             </div>
           </div>
 
+          {/* 실시간 사주 미리보기 */}
+          <SajuPreview
+            year={form.birthYear}
+            month={form.birthMonth}
+            day={form.birthDay}
+            hour={-1}
+          />
+
           <button
             type="button"
             disabled={!isStep1Valid}
             onClick={() => setStep(2)}
             className="w-full py-4 rounded-xl bg-white text-gray-900 font-black text-base disabled:opacity-20 active:scale-95 transition-all"
           >
-            다음 →
+            다음 → (태어난 시간 입력)
           </button>
         </div>
       )}
@@ -297,7 +442,6 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
             </label>
             <p className="text-xs text-gray-600 mb-3">1시간 단위로 선택하면 시주가 더 정밀해집니다</p>
 
-            {/* 모름 버튼 */}
             <button
               type="button"
               onClick={() => set("birthHour", -1)}
@@ -310,7 +454,6 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
               ❓ 모름 — 시간을 모를 경우 (분석 가능)
             </button>
 
-            {/* 1시간 단위 그리드 */}
             <div className="grid grid-cols-4 gap-1.5">
               {Array.from({ length: 24 }, (_, i) => i).map((h) => {
                 const shi = HOUR_TO_SHI[h];
@@ -338,7 +481,6 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
               })}
             </div>
 
-            {/* 선택된 시주 표시 */}
             {form.birthHour >= 0 && (
               <div className="mt-3 flex items-center gap-2 bg-yellow-500/5 border border-yellow-500/20 rounded-xl px-3 py-2">
                 <span className="text-yellow-400 text-xs font-bold">시주(時柱)</span>
@@ -349,13 +491,21 @@ export default function SajuInputForm({ onSubmit, loading }: Props) {
             )}
           </div>
 
+          {/* 완성된 사주팔자 미리보기 */}
+          <SajuPreview
+            year={form.birthYear}
+            month={form.birthMonth}
+            day={form.birthDay}
+            hour={form.birthHour}
+          />
+
           {/* 입력 확인 */}
           <div className="bg-white/5 border border-white/10 rounded-2xl p-4 text-sm space-y-1.5">
-            <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">사주 입력 확인</p>
+            <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">입력 확인</p>
             {[
               { label: "이름", value: form.name },
               { label: "성별", value: form.gender === "male" ? "남성 (재성 분석)" : "여성 (관성 분석)" },
-              { label: "생년월일", value: `${form.birthYear}년 ${form.birthMonth}월 ${form.birthDay}일` },
+              { label: "생년월일", value: `${form.birthYear}년 ${form.birthMonth}월 ${form.birthDay}일 (양력)` },
               { label: "태어난 시", value: getHourSummary(form.birthHour) },
             ].map(({ label, value }) => (
               <div key={label} className="flex justify-between">

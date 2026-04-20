@@ -3,6 +3,7 @@ import Script from "next/script";
 import "./globals.css";
 import AuthProvider from "@/components/AuthProvider";
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://saju-montage.vercel.app"),
@@ -48,6 +49,7 @@ export default function RootLayout({
         <AuthProvider>
           <Header />
           <main className="min-h-screen">{children}</main>
+          <Footer />
         </AuthProvider>
       </body>
     </html>

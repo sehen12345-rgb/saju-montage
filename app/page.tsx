@@ -319,12 +319,26 @@ export default function Home() {
           </div>
         ))}
 
-        {/* ── 번들 안내 ── */}
-        <div className="bg-gradient-to-r from-purple-900/40 to-indigo-900/40 border border-purple-500/20 rounded-2xl p-4 text-center">
+        {/* ── 번들 ── */}
+        <button
+          onClick={() => {
+            sessionStorage.setItem("selectedProduct", "bundle");
+            router.push("/input");
+          }}
+          className="w-full bg-gradient-to-r from-purple-900/50 to-indigo-900/50 border border-purple-500/30 rounded-2xl p-4 text-center active:scale-95 transition-all hover:border-purple-400/50 group"
+        >
           <p className="text-xs text-purple-300 mb-1">💡 셋 다 궁금하다면?</p>
-          <p className="text-white text-sm font-bold">배우자 + 귀인 + 웬수 각각 분석</p>
-          <p className="text-gray-500 text-xs mt-1">각 2,000원 개별 결제 또는 <span className="text-purple-300 font-bold">3개 묶음 5,000원</span></p>
-        </div>
+          <p className="text-white text-sm font-bold">배우자 + 귀인 + 웬수 전부 분석</p>
+          <p className="text-gray-500 text-xs mt-1">
+            <span className="line-through text-gray-700">6,000원</span>
+            {" → "}
+            <span className="text-purple-300 font-black text-sm">5,000원</span>
+            <span className="ml-1 text-[10px] bg-purple-500/20 text-purple-300 px-1.5 py-0.5 rounded-full">17% 할인</span>
+          </p>
+          <div className="mt-2 text-xs text-purple-400 font-bold group-hover:text-purple-300 transition-colors">
+            🔮 3종 묶음 바로 분석하기 →
+          </div>
+        </button>
 
         {/* ── 리뷰 ── */}
         <div>
