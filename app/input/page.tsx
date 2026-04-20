@@ -233,7 +233,7 @@ export default function InputPage() {
           imageUrl: bundleResults.spouse!.imageUrl,
           gender: data.gender,
           demo: usedMock,
-          paid: true,
+          paid: false,
           productType: "bundle",
           bundleResults,
         };
@@ -292,7 +292,7 @@ export default function InputPage() {
         imageUrl,
         gender: data.gender,
         demo: usedMock,
-        paid: true,
+        paid: false,
         productType,
       };
       const json = JSON.stringify(result);

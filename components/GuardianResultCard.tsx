@@ -100,9 +100,29 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: () => void }
   async function handlePay(type: "individual" | "bundle" | "card") {
     if (paying) return;
     setPaying(type);
-    await new Promise((r) => setTimeout(r, 900));
-    setPaying(null);
-    onPay();
+
+    const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY;
+    if (!clientKey) {
+      await new Promise((r) => setTimeout(r, 900));
+      setPaying(null);
+      onPay();
+      return;
+    }
+
+    try {
+      const { loadPaymentWidget, ANONYMOUS } = await import("@tosspayments/payment-widget-sdk");
+      const widget = await loadPaymentWidget(clientKey, ANONYMOUS);
+      const isBundle = type === "bundle";
+      const orderId = `saju_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+      await widget.requestPayment({
+        orderId,
+        orderName: isBundle ? "사주몽타주 3종 묶음" : "사주몽타주 귀인",
+        successUrl: `${window.location.origin}/payment/success`,
+        failUrl: `${window.location.origin}/payment/fail`,
+      });
+    } catch {
+      setPaying(null);
+    }
   }
 
   const ITEMS = ["🌟 귀인 AI 프로필 이미지", "💬 귀인 첫 카카오톡", "💼 도움받을 영역 분석", "🗺️ 귀인 만나는 방법", "🌙 전생 인연 이야기", "📅 귀인 만남 시기", "💪 나의 강점 분석", "📊 월별 귀인운 차트", "✨ 귀인 알아보는 법", "🚀 귀인 실천 가이드", "🎯 주의사항 3가지", "🌱 귀인 준비도 체크"];
@@ -235,8 +255,7 @@ export default function GuardianResultCard({ result, onReset }: Props) {
   const [imgError, setImgError] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [copied, setCopied] = useState(false);
-  // TODO: TossPayments PG 승인 후 아래를 (result.paid ?? false) 로 변경
-  const [paid, setPaid] = useState(true);
+  const [paid, setPaid] = useState(result.paid ?? false);
   const [showModal, setShowModal] = useState(false);
   const [justUnlocked, setJustUnlocked] = useState(false);
   const [showStickyBtn, setShowStickyBtn] = useState(false);
