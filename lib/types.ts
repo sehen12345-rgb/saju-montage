@@ -1,4 +1,4 @@
-export type ProductType = "spouse" | "guardian" | "enemy";
+export type ProductType = "spouse" | "guardian" | "enemy" | "bundle";
 
 export interface SajuInput {
   name: string;
