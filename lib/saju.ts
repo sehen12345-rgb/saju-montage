@@ -226,21 +226,21 @@ export function calculateSaju(year: number, month: number, day: number, hour: nu
 // ─────────────────────────────────────────────────────────────
 
 /** 천간 → 오행 */
-const GAN_ELEMENT: Record<string, string> = {
+export const GAN_ELEMENT: Record<string, string> = {
   갑: "木(양)", 을: "木(음)", 병: "火(양)", 정: "火(음)",
   무: "土(양)", 기: "土(음)", 경: "金(양)", 신: "金(음)",
   임: "水(양)", 계: "水(음)",
 };
 
 /** 지지 → 오행 */
-const JI_ELEMENT: Record<string, string> = {
+export const JI_ELEMENT: Record<string, string> = {
   자: "水", 축: "土", 인: "木", 묘: "木",
   진: "土", 사: "火", 오: "火", 미: "土",
   신: "金", 유: "金", 술: "土", 해: "水",
 };
 
 /** 일간별 핵심 성격 특성 (명리학 기반) */
-const DAY_MASTER_TRAITS: Record<string, { element: string; personality: string; strength: string; weakness: string; relationStyle: string }> = {
+export const DAY_MASTER_TRAITS: Record<string, { element: string; personality: string; strength: string; weakness: string; relationStyle: string }> = {
   갑: { element: "木(양·양목)", personality: "리더십 강하고 직선적, 원칙주의자, 추진력 넘침", strength: "결단력·개척 정신·정직함", weakness: "고집스럽고 타협 어려움, 유연성 부족", relationStyle: "주도적으로 이끌려 하며 관계에서 책임감 강함" },
   을: { element: "木(음·음목)", personality: "유연하고 적응력 뛰어남, 감성적이며 눈치 빠름", strength: "사교성·공감 능력·섬세함", weakness: "우유부단하고 타인 눈치를 지나치게 봄", relationStyle: "상대에게 맞춰주려 하며 배려심이 깊음" },
   병: { element: "火(양·양화)", personality: "열정적이고 외향적, 존재감 강하며 카리스마 있음", strength: "에너지·긍정성·표현력·영향력", weakness: "감정 기복 크고 과시 욕구, 지속력 약함", relationStyle: "열정적이고 드라마틱한 사랑 표현, 주목받길 원함" },
