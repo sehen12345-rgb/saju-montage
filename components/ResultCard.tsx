@@ -373,29 +373,9 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: () => void }
   async function handlePay(type: "individual" | "bundle" | "card") {
     if (paying) return;
     setPaying(type);
-
-    const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY;
-    if (!clientKey) {
-      await new Promise((r) => setTimeout(r, 900));
-      setPaying(null);
-      onPay();
-      return;
-    }
-
-    try {
-      const { loadPaymentWidget, ANONYMOUS } = await import("@tosspayments/payment-widget-sdk");
-      const widget = await loadPaymentWidget(clientKey, ANONYMOUS);
-      const isBundle = type === "bundle";
-      const orderId = `saju_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
-      await widget.requestPayment({
-        orderId,
-        orderName: isBundle ? "사주몽타주 3종 묶음" : "사주몽타주",
-        successUrl: `${window.location.origin}/payment/success`,
-        failUrl: `${window.location.origin}/payment/fail`,
-      });
-    } catch {
-      setPaying(null);
-    }
+    await new Promise((r) => setTimeout(r, 900));
+    setPaying(null);
+    onPay();
   }
 
   const ITEMS = ["🎨 AI 배우자 몽타주", "✨ 이름 첫 글자 힌트", "💬 카카오톡 첫 메시지", "🌙 전생 인연 이야기", "💑 케미 타입 분석", "📊 5가지 궁합 점수", "💝 배우자 사랑 언어", "🧠 심리 분석", "📅 월별 인연운 차트", "🌟 닮은꼴 분위기", "🚀 인연 실천 가이드", "💡 인연 조언 3가지"];

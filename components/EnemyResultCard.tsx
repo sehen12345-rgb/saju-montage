@@ -97,29 +97,9 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: () => void }
   async function handlePay(type: "individual" | "bundle" | "card") {
     if (paying) return;
     setPaying(type);
-
-    const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY;
-    if (!clientKey) {
-      await new Promise((r) => setTimeout(r, 900));
-      setPaying(null);
-      onPay();
-      return;
-    }
-
-    try {
-      const { loadPaymentWidget, ANONYMOUS } = await import("@tosspayments/payment-widget-sdk");
-      const widget = await loadPaymentWidget(clientKey, ANONYMOUS);
-      const isBundle = type === "bundle";
-      const orderId = `saju_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
-      await widget.requestPayment({
-        orderId,
-        orderName: isBundle ? "사주몽타주 3종 묶음" : "사주몽타주 웬수",
-        successUrl: `${window.location.origin}/payment/success`,
-        failUrl: `${window.location.origin}/payment/fail`,
-      });
-    } catch {
-      setPaying(null);
-    }
+    await new Promise((r) => setTimeout(r, 900));
+    setPaying(null);
+    onPay();
   }
 
   const ITEMS = ["😤 웬수 AI 프로필 이미지", "💬 웬수 접근 메시지 패턴", "⚠️ 피해를 주는 영역", "🛡️ 웬수 피하는 방법", "🌙 전생 악연 이야기", "📅 웬수 출현 시기", "😰 나의 약점 분석", "📊 월별 위험도 차트", "🔍 웬수 알아보는 법", "🚀 자기보호 실천 가이드", "🎯 주의사항 3가지", "🌱 악연 방어력 체크"];
