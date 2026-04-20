@@ -223,6 +223,7 @@ async function createStoryBlob(imageUrl: string, analysis: SajuAnalysis): Promis
 interface Props {
   result: GenerateResult;
   onReset: () => void;
+  onPaid?: () => void;
 }
 
 // ── 오행 색상 매핑 ──────────────────────────────────────────
@@ -480,7 +481,7 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: () => void }
 
 // ── 메인 컴포넌트 ──────────────────────────────────────────
 
-export default function ResultCard({ result, onReset }: Props) {
+export default function ResultCard({ result, onReset, onPaid }: Props) {
   const analysis = result.analysis as SajuAnalysis;
   const { data: session } = useSession();
   const [currentImageUrl, setCurrentImageUrl] = useState(result.imageUrl);
@@ -546,6 +547,7 @@ export default function ResultCard({ result, onReset }: Props) {
     } catch { /* ignore */ }
     // localStorage에도 저장 (데모 결제 시)
     if (productHash) savePaidRecord(productHash, `demo_${Date.now()}`);
+    onPaid?.();
   }
 
   function handleRegenerateImage() {

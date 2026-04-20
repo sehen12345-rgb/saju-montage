@@ -7,6 +7,7 @@ import GuardianResultCard from "@/components/GuardianResultCard";
 import EnemyResultCard from "@/components/EnemyResultCard";
 import type { GenerateResult, SajuAnalysis, GuardianAnalysis, EnemyAnalysis } from "@/lib/types";
 import SajuSummaryCard from "@/components/SajuSummaryCard";
+import { makeSajuHash, isBundlePaid, saveBundlePaidRecord } from "@/lib/paymentStorage";
 
 const PRODUCT_LABEL: Record<string, { emoji: string; name: string; color: string }> = {
   spouse:   { emoji: "💑", name: "내님은누구",   color: "text-rose-400" },
@@ -24,6 +25,7 @@ export default function ResultPage() {
   const router = useRouter();
   const [result, setResult] = useState<GenerateResult | null>(null);
   const [bundleTab, setBundleTab] = useState<"spouse" | "guardian" | "enemy">("spouse");
+  const [bundlePaid, setBundlePaid] = useState(false);
 
   useEffect(() => {
     let stored: string | null = null;
@@ -44,6 +46,24 @@ export default function ResultPage() {
       router.replace("/input");
     }
   }, [router]);
+
+  // 번들 결제 상태 복원 (브라우저 재방문 시)
+  useEffect(() => {
+    if (!result || result.productType !== "bundle") return;
+    const sajuInfo = (result.analysis as SajuAnalysis)?.sajuInfo;
+    if (!sajuInfo) return;
+    const hash = makeSajuHash(sajuInfo.yearPillar, sajuInfo.monthPillar, sajuInfo.dayPillar, sajuInfo.hourPillar, result.gender ?? "male");
+    if (isBundlePaid(hash)) setBundlePaid(true);
+  }, [result]);
+
+  function handleBundlePaid() {
+    setBundlePaid(true);
+    const sajuInfo = (result?.analysis as SajuAnalysis)?.sajuInfo;
+    if (sajuInfo) {
+      const hash = makeSajuHash(sajuInfo.yearPillar, sajuInfo.monthPillar, sajuInfo.dayPillar, sajuInfo.hourPillar, result?.gender ?? "male");
+      saveBundlePaidRecord(hash, `demo_${Date.now()}`);
+    }
+  }
 
   function handleReset() {
     sessionStorage.removeItem("sajuResult");
@@ -69,7 +89,7 @@ export default function ResultPage() {
     if (!result?.bundleResults) return null;
     const br = result.bundleResults[bundleTab];
     if (!br) return null;
-    return { ...result, analysis: br.analysis, imageUrl: br.imageUrl, productType: bundleTab };
+    return { ...result, analysis: br.analysis, imageUrl: br.imageUrl, productType: bundleTab, paid: bundlePaid };
   }
 
   return (
@@ -126,13 +146,13 @@ export default function ResultPage() {
                 </button>
               ))}
             </div>
-            {bundleTab === "guardian" ? (
-              <GuardianResultCard result={getBundleResult()!} onReset={handleReset} />
-            ) : bundleTab === "enemy" ? (
-              <EnemyResultCard result={getBundleResult()!} onReset={handleReset} />
-            ) : (
-              <ResultCard result={getBundleResult()!} onReset={handleReset} />
-            )}
+            {(() => {
+              const br = getBundleResult();
+              if (!br) return <p className="text-center text-gray-600 py-8">분석 데이터를 불러올 수 없습니다.</p>;
+              if (bundleTab === "guardian") return <GuardianResultCard key="guardian" result={br} onReset={handleReset} onPaid={handleBundlePaid} />;
+              if (bundleTab === "enemy")    return <EnemyResultCard    key="enemy"    result={br} onReset={handleReset} onPaid={handleBundlePaid} />;
+              return <ResultCard key="spouse" result={br} onReset={handleReset} onPaid={handleBundlePaid} />;
+            })()}
           </>
         ) : isGuardian ? (
           <GuardianResultCard result={result} onReset={handleReset} />

@@ -175,14 +175,14 @@ export default function InputPage() {
     return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=768&height=768&model=flux&seed=${seed}&nologo=true&enhance=false`;
   }
 
-  async function fetchAnalysis(apiPath: string, data: SajuInput): Promise<{ result: unknown; usedMock: boolean }> {
+  async function fetchAnalysis(apiPath: string, data: SajuInput, overrideType?: ProductType): Promise<{ result: unknown; usedMock: boolean }> {
     try {
       const ctrl = new AbortController();
       const timeout = setTimeout(() => ctrl.abort(), 25000);
       const res = await fetch(apiPath, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, productType }),
+        body: JSON.stringify({ ...data, productType: overrideType ?? productType }),
         signal: ctrl.signal,
       });
       clearTimeout(timeout);
@@ -205,9 +205,9 @@ export default function InputPage() {
         // ── 번들: 3개 분석 병렬 실행 ──
         setLoadingStep(0);
         const [spouseRes, guardianRes, enemyRes] = await Promise.all([
-          fetchAnalysis("/api/analyze-saju", data),
-          fetchAnalysis("/api/analyze-guardian", data),
-          fetchAnalysis("/api/analyze-enemy", data),
+          fetchAnalysis("/api/analyze-saju", data, "spouse"),
+          fetchAnalysis("/api/analyze-guardian", data, "guardian"),
+          fetchAnalysis("/api/analyze-enemy", data, "enemy"),
         ]);
 
         const usedMock = spouseRes.usedMock || guardianRes.usedMock || enemyRes.usedMock;

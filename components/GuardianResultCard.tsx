@@ -227,9 +227,10 @@ function ScoreBar({ label, score, delay = 0 }: { label: string; score: number; d
 interface Props {
   result: GenerateResult;
   onReset: () => void;
+  onPaid?: () => void;
 }
 
-export default function GuardianResultCard({ result, onReset }: Props) {
+export default function GuardianResultCard({ result, onReset, onPaid }: Props) {
   const analysis = result.analysis as GuardianAnalysis;
   const [imgLoaded, setImgLoaded] = useState(false);
   const [imgError, setImgError] = useState(false);
@@ -286,6 +287,7 @@ export default function GuardianResultCard({ result, onReset }: Props) {
       }
     } catch { /* ignore */ }
     if (productHash) savePaidRecord(productHash, `demo_${Date.now()}`);
+    onPaid?.();
   }
 
   async function handleDownload() {

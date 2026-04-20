@@ -220,9 +220,10 @@ function ScoreBar({ label, score, delay = 0, danger = false }: { label: string; 
 interface Props {
   result: GenerateResult;
   onReset: () => void;
+  onPaid?: () => void;
 }
 
-export default function EnemyResultCard({ result, onReset }: Props) {
+export default function EnemyResultCard({ result, onReset, onPaid }: Props) {
   const analysis = result.analysis as EnemyAnalysis;
   const [imgLoaded, setImgLoaded] = useState(false);
   const [imgError, setImgError] = useState(false);
@@ -279,6 +280,7 @@ export default function EnemyResultCard({ result, onReset }: Props) {
       }
     } catch { /* ignore */ }
     if (productHash) savePaidRecord(productHash, `demo_${Date.now()}`);
+    onPaid?.();
   }
 
   async function handleDownload() {
