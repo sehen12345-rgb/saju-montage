@@ -212,6 +212,40 @@ function getHourPillar(hour: number, dayGanIdx: number): string {
 // ─────────────────────────────────────────────────────────────
 // 공개 API
 // ─────────────────────────────────────────────────────────────
+
+/**
+ * 생일(KST) 기준으로 가장 가까운 12절기까지의 거리를 일수로 반환.
+ * 대운 시작 나이 계산용 (만세력 표준: |절기-생일| 일수 ÷ 3).
+ * - direction="forward": 생일 직후의 다음 절기까지 (양일수)
+ * - direction="backward": 생일 직전의 절기까지 (양일수)
+ */
+export function daysToNearestJeol(
+  year: number, month: number, day: number, hour: number,
+  direction: "forward" | "backward",
+): number {
+  const bJD = birthJDKST(year, month, day, hour >= 0 ? hour : 12);
+
+  // 전년·당년·내년의 12절을 모두 모아 정렬
+  const all: { jd: number }[] = [];
+  for (const y of [year - 1, year, year + 1]) {
+    for (let idx = 0; idx < 12; idx++) {
+      all.push({ jd: termJDKST(y, idx) });
+    }
+  }
+  all.sort((a, b) => a.jd - b.jd);
+
+  if (direction === "forward") {
+    for (const t of all) {
+      if (t.jd > bJD) return Math.max(0, t.jd - bJD);
+    }
+  } else {
+    for (let i = all.length - 1; i >= 0; i--) {
+      if (all[i].jd < bJD) return Math.max(0, bJD - all[i].jd);
+    }
+  }
+  return 0;
+}
+
 export function calculateSaju(year: number, month: number, day: number, hour: number): SajuInfo {
   const yearPillar  = getYearPillar(year, month, day, hour);
   const monthPillar = getMonthPillar(year, month, day, hour);

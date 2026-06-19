@@ -1,18 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
-import { calculateSaju, buildSajuContext } from "@/lib/saju";
+import { buildSajuContext } from "@/lib/saju";
+import { buildManseryeokData } from "@/lib/manseryeok";
+import {
+  buildSpouseAnalysisBase,
+  buildManseryeokPromptContext,
+} from "@/lib/sajuAnalyzer";
 import { getSajuSeed } from "@/lib/prompts";
 import { buildFullDeterministicAnalysis } from "@/lib/deterministic";
-import type { SajuInput, SajuAnalysis, SajuInfo } from "@/lib/types";
+import type { SajuInput, SajuAnalysis } from "@/lib/types";
 import Anthropic from "@anthropic-ai/sdk";
 
-async function analyzeWithClaude(
+/**
+ * 만세력으로 도출한 base 위에 AI는 서술 텍스트만 생성.
+ * 점수/타임라인/월별 인연운/궁합점수/MBTI/직업 등은 모두 base(만세력)에서 결정됨.
+ */
+async function generateNarrativeWithClaude(
   name: string,
   birthYear: number,
   birthMonth: number,
   birthDay: number,
   birthHour: number,
   gender: "male" | "female",
-  sajuInfo: SajuInfo,
+  base: ReturnType<typeof buildSpouseAnalysisBase>,
+  manseryeokContext: string,
+  sajuContext: string,
 ): Promise<Partial<SajuAnalysis> | null> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey || apiKey === "your_anthropic_api_key_here") return null;
@@ -23,53 +34,37 @@ async function analyzeWithClaude(
     const genderLabel = gender === "male" ? "남성" : "여성";
     const hourStr = birthHour >= 0 ? `${birthHour}시` : "시간 모름";
 
-    const sajuContext = buildSajuContext(sajuInfo);
-    const prompt = `당신은 사주명리학 전문가이자 운명 분석가입니다. 아래 사주를 깊이 분석하여 ${spouseLabel}의 완전한 운명 보고서를 생성해주세요.
+    const prompt = `당신은 사주명리학 전문가이자 운명 분석가입니다.
+아래 만세력 분석 데이터를 근거로 ${spouseLabel}의 서술 텍스트만 작성하세요.
+점수·시기·MBTI·직업 등 수치/구조 필드는 이미 만세력에서 도출되었으므로 작성하지 마세요.
 
-사주 정보:
+[기본 정보]
 - 이름: ${name}
 - 생년월일시: ${birthYear}년 ${birthMonth}월 ${birthDay}일 ${hourStr}
 - 성별: ${genderLabel}
-- 사주팔자: 년주 ${sajuInfo.yearPillar} / 월주 ${sajuInfo.monthPillar} / 일주 ${sajuInfo.dayPillar} / 시주 ${sajuInfo.hourPillar}
+- 사주팔자: 년주 ${base.sajuInfo.yearPillar} / 월주 ${base.sajuInfo.monthPillar} / 일주 ${base.sajuInfo.dayPillar} / 시주 ${base.sajuInfo.hourPillar}
 
 ${sajuContext}
 
-위 사주 해석을 반드시 모든 항목에 반영하여 이 사람만의 고유한 ${spouseLabel} 분석을 생성하세요. 다른 사람과 겹치는 내용이 있으면 안 됩니다.
+${manseryeokContext}
+
+[만세력에서 이미 결정된 핵심 결과]
+- MBTI: ${base.mbti}
+- 한 줄 궁합: ${base.compatibility}
+- 만남 시기: ${base.meetTiming.ageRange}, ${base.meetTiming.season}, ${base.meetTiming.situation}
+- 결혼 타임라인: ${base.timeline.meetAge} 만남 → ${base.timeline.datingPeriod} 연애 → ${base.timeline.marriageAge} 결혼
+- 케미 타입: ${base.chemistryType?.name ?? ""} ${base.chemistryType?.emoji ?? ""}
+- 인연 준비도: ${base.readiness?.score ?? 0}점
+- 사랑 언어: 주 ${base.loveLanguage?.primary} / 보조 ${base.loveLanguage?.secondary}
+
+위 만세력 결정 결과와 모순되지 않는 범위에서만 서술 텍스트를 작성하세요.
 순수 JSON만 응답하세요 (마크다운 코드블록 없이):
 {
-  "description": "배우자 외모 설명 2-3문장 (구체적 이목구비·분위기·피부톤 등, 사주 오행 특성 반영)",
-  "characteristics": ["핵심특징1", "핵심특징2", "핵심특징3"],
-  "mbti": "MBTI 유형",
-  "job": "예상 직업군 (구체적 직종명)",
-  "compatibility": "한 줄 궁합 한마디 (20자 이내, 임팩트 있게)",
-  "bodySpec": {
-    "height": "예상 키 범위 (예: 165~170cm)",
-    "figure": "체형 특징",
-    "fashion": "패션 스타일 (구체적으로)",
-    "vibe": "전반적 분위기 한 줄"
-  },
-  "personality": "성격 설명 3-4문장 (구체적 일상 행동·말투 포함)",
-  "loveStyle": "연애 스타일 2-3문장 (어떻게 사랑을 표현하는지 구체적으로)",
-  "firstMeet": "첫 만남 시나리오 2-3문장 (구체적 장소·상황·분위기)",
+  "description": "배우자 외모 설명 2-3문장 (구체적 이목구비·분위기·피부톤, 일간 오행 특성 반영)",
+  "personality": "성격 설명 3-4문장 (구체적 일상 행동·말투, 만세력 일간/십신 특성 반영)",
+  "loveStyle": "연애 스타일 2-3문장 (만세력 사랑언어와 일치하는 표현 방식)",
+  "firstMeet": "첫 만남 시나리오 2-3문장 (만세력에서 도출된 시기/상황과 일치)",
   "lifeStyle": "라이프스타일 2-3문장 (일상 루틴, 취미, 소비 패턴)",
-  "meetTiming": {
-    "ageRange": "만남 예상 나이대 (예: 27~30세)",
-    "season": "주요 계절 (예: 봄 또는 가을)",
-    "situation": "만남 상황 (예: 직장 동료 소개)"
-  },
-  "timeline": {
-    "meetAge": "첫 만남 나이 (예: 29세 전후)",
-    "datingPeriod": "연애 기간 (예: 약 1년 6개월)",
-    "marriageAge": "결혼 예상 나이 (예: 31~32세)",
-    "children": "자녀 수 (예: 1~2명)"
-  },
-  "compatibilityScores": {
-    "personality": 사주 기반 성격 궁합 점수(0~100),
-    "values": 가치관 궁합 점수(0~100),
-    "lifestyle": 생활 패턴 궁합 점수(0~100),
-    "communication": 소통 궁합 점수(0~100),
-    "finance": 재정 관념 궁합 점수(0~100)
-  },
   "nameHint": "이름 첫 글자 힌트 1문장 (구체적 초성/계열 언급)",
   "pastLife": "전생 인연 이야기 3-4문장 (구체적 시대·장소·상황, 감성적으로)",
   "kakaoFirstMessage": "배우자가 처음 보낼 카카오톡 메시지 (성격에 맞는 자연스러운 말투, 1-2문장)",
@@ -78,36 +73,12 @@ ${sajuContext}
   "myCharm": "배우자 눈에 비친 나의 매력 2-3문장 (배우자 시점에서 구체적으로)",
   "warnType": "조심해야 할 악연 유형 2-3문장 (구체적 성격·행동 패턴)",
   "celebrityVibe": "닮은꼴 연예인 분위기 1-2문장 (한국 연예인 언급 가능)",
-  "favoriteThings": {
-    "food": "좋아하는 음식 스타일 (구체적 예시)",
-    "music": "즐겨 듣는 음악 장르·분위기",
-    "movie": "즐겨 보는 콘텐츠 장르",
-    "place": "자주 가는 장소 유형"
-  },
-  "chemistryType": {
-    "name": "케미 타입 이름 (예: 운명적 소울메이트, 불꽃 케미, 포근한 안식처 케미)",
-    "emoji": "대표 이모지 1개",
-    "desc": "케미 설명 2문장 (이 관계의 특별한 에너지)"
-  },
-  "caution": ["주의사항1 (1-2문장, 구체적 상황)", "주의사항2", "주의사항3"],
-  "advice": ["인연 조언1 (지금 당장 할 수 있는 구체적 행동)", "인연 조언2", "인연 조언3"],
-  "monthlyChance": [1월~12월 인연운 각각 0~100 숫자 12개, 사주 오행·계절 특성 반영해 각 달마다 다르게],
-  "readiness": {
-    "score": 인연 준비도 0~100(사주 기반),
-    "comment": "인연 준비도 코멘트 2문장 (현재 상태와 개선 방향)"
-  },
-  "loveLanguage": {
-    "primary": "주요 사랑 언어 (인정하는 말, 봉사, 선물, 함께하는 시간, 스킨십 중 하나)",
-    "secondary": "보조 사랑 언어",
-    "desc": "배우자의 사랑 표현 방식 2문장 (구체적인 행동 예시 포함)"
-  },
-  "partnerPsychology": "배우자 심리 분석 2-3문장 (어떤 사람에게 마음이 열리고, 어떤 순간에 사랑에 빠지는지 구체적으로)",
-  "actionGuide": ["지금 당장 실천할 인연 행동1 (매우 구체적인 행동)", "실천 행동2", "실천 행동3"]
+  "partnerPsychology": "배우자 심리 분석 2-3문장 (어떤 사람에게 마음이 열리고, 어떤 순간에 사랑에 빠지는지 구체적으로)"
 }`;
 
     const response = await client.messages.create({
       model: "claude-sonnet-4-6",
-      max_tokens: 6000,
+      max_tokens: 4000,
       messages: [{ role: "user", content: prompt }],
     });
 
@@ -117,7 +88,7 @@ ${sajuContext}
 
     return JSON.parse(match[0]) as Partial<SajuAnalysis>;
   } catch (err) {
-    console.error("Claude API error:", err);
+    console.error("Claude narrative API error:", err);
     return null;
   }
 }
@@ -131,59 +102,64 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "필수 항목이 누락되었습니다." }, { status: 400 });
     }
 
-    const sajuInfo = calculateSaju(birthYear, birthMonth, birthDay, birthHour ?? -1);
+    // 1) 만세력 종합 데이터
+    const manseryeok = buildManseryeokData(
+      birthYear, birthMonth, birthDay, birthHour ?? -1, gender,
+    );
+    const { sajuInfo } = manseryeok;
+
+    // 2) 만세력 기반 base — 점수·타임라인·월별 인연운·궁합·MBTI·직업 모두 여기서 결정
+    const base = buildSpouseAnalysisBase(manseryeok);
+
+    // 3) 외모/이미지 프롬프트는 결정론적 demo 룩업에서 가져옴 (얼굴 묘사는 demo가 자세함)
     const spouseGender = gender === "male" ? "woman" : "man";
     const seed = getSajuSeed(sajuInfo, spouseGender);
+    const det = buildFullDeterministicAnalysis(name, birthYear, sajuInfo, gender, seed);
 
-    // Base: deterministic analysis (always works, no API key needed)
-    const base = buildFullDeterministicAnalysis(name, birthYear, sajuInfo, gender, seed);
-
-    // Enhance: Claude API for all fields (text + structured data)
-    const claudeResult = await analyzeWithClaude(
-      name, birthYear, birthMonth, birthDay, birthHour ?? -1, gender, sajuInfo
+    // 4) 서술 텍스트만 AI로 생성
+    const sajuContext = buildSajuContext(sajuInfo);
+    const manseryeokContext = buildManseryeokPromptContext(manseryeok);
+    const narrative = await generateNarrativeWithClaude(
+      name, birthYear, birthMonth, birthDay, birthHour ?? -1, gender,
+      base, manseryeokContext, sajuContext,
     );
 
-    if (claudeResult) {
-      const analysis: SajuAnalysis = {
-        ...base,
-        // Claude가 생성한 텍스트 필드
-        description:        claudeResult.description        ?? base.description,
-        characteristics:    claudeResult.characteristics    ?? base.characteristics,
-        mbti:               claudeResult.mbti               ?? base.mbti,
-        job:                claudeResult.job                ?? base.job,
-        compatibility:      claudeResult.compatibility      ?? base.compatibility,
-        personality:        claudeResult.personality        ?? base.personality,
-        loveStyle:          claudeResult.loveStyle          ?? base.loveStyle,
-        firstMeet:          claudeResult.firstMeet          ?? base.firstMeet,
-        lifeStyle:          claudeResult.lifeStyle          ?? base.lifeStyle,
-        nameHint:           claudeResult.nameHint           ?? base.nameHint,
-        pastLife:           claudeResult.pastLife           ?? base.pastLife,
-        kakaoFirstMessage:  claudeResult.kakaoFirstMessage  ?? base.kakaoFirstMessage,
-        firstDate:          claudeResult.firstDate          ?? base.firstDate,
-        conflictAndMakeup:  claudeResult.conflictAndMakeup  ?? base.conflictAndMakeup,
-        myCharm:            claudeResult.myCharm            ?? base.myCharm,
-        warnType:           claudeResult.warnType           ?? base.warnType,
-        celebrityVibe:      claudeResult.celebrityVibe      ?? base.celebrityVibe,
-        // Claude가 생성한 구조화 데이터 (기존엔 deterministic이 담당했던 필드들)
-        bodySpec:              claudeResult.bodySpec              ?? base.bodySpec,
-        compatibilityScores:   claudeResult.compatibilityScores   ?? base.compatibilityScores,
-        meetTiming:            claudeResult.meetTiming            ?? base.meetTiming,
-        timeline:              claudeResult.timeline              ?? base.timeline,
-        favoriteThings:        claudeResult.favoriteThings        ?? base.favoriteThings,
-        chemistryType:         claudeResult.chemistryType         ?? base.chemistryType,
-        caution:               claudeResult.caution               ?? base.caution,
-        advice:                claudeResult.advice                ?? base.advice,
-        monthlyChance:         claudeResult.monthlyChance         ?? base.monthlyChance,
-        readiness:             claudeResult.readiness             ?? base.readiness,
-        // 신규 프리미엄 필드
-        loveLanguage:          claudeResult.loveLanguage,
-        partnerPsychology:     claudeResult.partnerPsychology,
-        actionGuide:           claudeResult.actionGuide,
-      };
-      return NextResponse.json(analysis);
-    }
+    // 5) 합성: base(만세력) ← demo 외모 ← AI 서술
+    const analysis: SajuAnalysis = {
+      // 외모/이미지(데모)
+      description: narrative?.description ?? det.description,
+      imagePrompt: det.imagePrompt,
 
-    return NextResponse.json(base);
+      // 만세력 결정 필드
+      ...base,
+
+      // AI 서술 (없으면 데모 서술 fallback)
+      personality:        narrative?.personality        ?? det.personality,
+      loveStyle:          narrative?.loveStyle          ?? det.loveStyle,
+      firstMeet:          narrative?.firstMeet          ?? det.firstMeet,
+      lifeStyle:          narrative?.lifeStyle          ?? det.lifeStyle,
+      nameHint:           narrative?.nameHint           ?? det.nameHint,
+      pastLife:           narrative?.pastLife           ?? det.pastLife,
+      kakaoFirstMessage:  narrative?.kakaoFirstMessage  ?? det.kakaoFirstMessage,
+      firstDate:          narrative?.firstDate          ?? det.firstDate,
+      conflictAndMakeup:  narrative?.conflictAndMakeup  ?? det.conflictAndMakeup,
+      myCharm:            narrative?.myCharm            ?? det.myCharm,
+      warnType:           narrative?.warnType           ?? det.warnType,
+      celebrityVibe:      narrative?.celebrityVibe      ?? det.celebrityVibe,
+      partnerPsychology:  narrative?.partnerPsychology,
+
+      // 데모에만 있는 보조 필드
+      descTitle:          det.descTitle,
+      personalityTitle:   det.personalityTitle,
+      loveStyleTitle:     det.loveStyleTitle,
+      lifeStyleTitle:     det.lifeStyleTitle,
+      firstMeetTitle:     det.firstMeetTitle,
+
+      // actionGuide 는 만세력 기반 advice로 대체
+      actionGuide: base.advice,
+    };
+
+    return NextResponse.json(analysis);
   } catch (err) {
     console.error("analyze-saju error:", err);
     return NextResponse.json({ error: "사주 분석 중 오류가 발생했습니다." }, { status: 500 });
