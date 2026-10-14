@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 
 const SAJU_PRINCIPLES = [
@@ -113,8 +113,11 @@ export default function Home() {
   const router = useRouter();
   const [reviewIdx, setReviewIdx] = useState(0);
   const [count, setCount] = useState(41204);
-  const [timeLeft, setTimeLeft] = useState({ h: 2, m: 47, s: 33 });
+  const [timeLeft, setTimeLeft] = useState({ h: 0, m: 0, s: 0 });
   const [openPrinciple, setOpenPrinciple] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState<"spouse" | "guardian" | "enemy">("spouse");
+  const [tabVisible, setTabVisible] = useState(true);
+  const productsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const t = setInterval(() => setReviewIdx((i) => (i + 1) % REVIEWS.length), 4500);
@@ -126,19 +129,25 @@ export default function Home() {
     return () => clearInterval(t);
   }, []);
 
+  // 실제 자정까지 카운트다운
   useEffect(() => {
-    const t = setInterval(() => {
-      setTimeLeft((prev) => {
-        let { h, m, s } = prev;
-        s--;
-        if (s < 0) { s = 59; m--; }
-        if (m < 0) { m = 59; h--; }
-        if (h < 0) { h = 2; m = 47; s = 33; }
-        return { h, m, s };
-      });
-    }, 1000);
+    function getMidnightCountdown() {
+      const now = new Date();
+      const midnight = new Date(now);
+      midnight.setHours(24, 0, 0, 0);
+      const diff = Math.max(0, Math.floor((midnight.getTime() - now.getTime()) / 1000));
+      return { h: Math.floor(diff / 3600), m: Math.floor((diff % 3600) / 60), s: diff % 60 };
+    }
+    setTimeLeft(getMidnightCountdown());
+    const t = setInterval(() => setTimeLeft(getMidnightCountdown()), 1000);
     return () => clearInterval(t);
   }, []);
+
+  function switchTab(tab: "spouse" | "guardian" | "enemy") {
+    if (tab === activeTab) return;
+    setTabVisible(false);
+    setTimeout(() => { setActiveTab(tab); setTabVisible(true); }, 180);
+  }
 
   function handleSelect(product: "spouse" | "guardian" | "enemy") {
     sessionStorage.setItem("selectedProduct", product);
@@ -193,7 +202,7 @@ export default function Home() {
             </div>
 
             {/* 통계 */}
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-2 mb-5">
               {STATS.map((s) => (
                 <div key={s.label} className="bg-white/5 rounded-2xl py-3 border border-white/5">
                   <div className="text-base font-black text-yellow-400">{s.value}</div>
@@ -201,6 +210,14 @@ export default function Home() {
                 </div>
               ))}
             </div>
+
+            {/* 히어로 CTA */}
+            <button
+              onClick={() => productsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+              className="w-full py-4 rounded-2xl bg-gradient-to-r from-yellow-400 via-rose-400 to-purple-400 text-gray-900 font-black text-base active:scale-95 transition-all shadow-lg shadow-purple-500/20"
+            >
+              🔮 지금 바로 알아보기
+            </button>
           </div>
         </div>
 
@@ -233,17 +250,58 @@ export default function Home() {
           <p className="text-[10px] text-gray-600 text-center mt-2">탭하면 원리 설명을 볼 수 있어요</p>
         </div>
 
-        {/* ── 섹션 레이블 ── */}
-        <div className="flex items-center gap-3">
-          <div className="flex-1 h-px bg-white/10" />
-          <p className="text-[11px] font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap">분석 선택</p>
-          <div className="flex-1 h-px bg-white/10" />
+        {/* ── 섹션 레이블 + 번들 CTA ── */}
+        <div ref={productsRef} className="space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="flex-1 h-px bg-white/10" />
+            <p className="text-[11px] font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap">분석 선택</p>
+            <div className="flex-1 h-px bg-white/10" />
+          </div>
+
+          {/* ── 번들 (최상단 강조) ── */}
+          <button
+            onClick={() => {
+              sessionStorage.setItem("selectedProduct", "bundle");
+              router.push("/input");
+            }}
+            className="w-full bg-gradient-to-r from-purple-900/60 to-indigo-900/60 border-2 border-purple-500/40 rounded-2xl p-4 text-center active:scale-95 transition-all hover:border-purple-400/60 group"
+          >
+            <div className="flex items-center justify-center gap-2 mb-1">
+              <span className="text-[9px] bg-purple-500 text-white font-black px-2 py-0.5 rounded-full">BEST VALUE</span>
+              <p className="text-xs text-purple-300 font-bold">셋 다 궁금하다면?</p>
+            </div>
+            <p className="text-white text-sm font-black">🔮 배우자 + 귀인 + 웬수 전부 분석</p>
+            <p className="text-gray-400 text-xs mt-1">
+              <span className="line-through text-gray-600">6,000원</span>
+              {" → "}
+              <span className="text-purple-300 font-black text-base">5,000원</span>
+              <span className="ml-1.5 text-[10px] bg-purple-500/20 text-purple-300 px-1.5 py-0.5 rounded-full">17% 할인</span>
+            </p>
+          </button>
         </div>
 
-        {/* ── 상품 카드 ── */}
-        {PRODUCTS.map((p) => (
+        {/* ── 탭 선택 ── */}
+        <div className="bg-[#13131a] border border-white/10 rounded-2xl p-1.5 flex gap-1.5">
+          {PRODUCTS.map((p) => (
+            <button
+              key={p.id}
+              onClick={() => switchTab(p.id)}
+              className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                activeTab === p.id
+                  ? `bg-gradient-to-r ${p.btnGradient} text-white shadow-md`
+                  : "text-gray-500 hover:text-gray-300"
+              }`}
+            >
+              {p.emoji} {p.id === "spouse" ? "배우자" : p.id === "guardian" ? "귀인" : "웬수"}
+            </button>
+          ))}
+        </div>
+
+        {/* ── 상품 카드 (탭 선택된 것만 표시) ── */}
+        {PRODUCTS.filter((p) => p.id === activeTab).map((p) => (
           <div
             key={p.id}
+            style={{ opacity: tabVisible ? 1 : 0, transform: tabVisible ? "translateY(0)" : "translateY(6px)", transition: "opacity 0.18s ease, transform 0.18s ease" }}
             className={`relative rounded-3xl overflow-hidden bg-[#13131a] border ${p.borderColor} shadow-xl ${p.glowColor}`}
           >
             {/* 헤더 그라디언트 라인 */}
@@ -271,7 +329,6 @@ export default function Home() {
 
               {/* 무료 공개 / 잠금 분리 */}
               <div className="space-y-2 mb-4">
-                {/* 무료 항목 */}
                 <div>
                   <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">무료 공개</p>
                   <div className="space-y-1">
@@ -284,7 +341,6 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* 잠금 항목 */}
                 <div className={`rounded-2xl border ${p.borderColor} p-3 bg-white/2`}>
                   <div className="flex items-center gap-1.5 mb-2">
                     <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">2,000원으로 공개</span>
@@ -318,27 +374,6 @@ export default function Home() {
             </button>
           </div>
         ))}
-
-        {/* ── 번들 ── */}
-        <button
-          onClick={() => {
-            sessionStorage.setItem("selectedProduct", "bundle");
-            router.push("/input");
-          }}
-          className="w-full bg-gradient-to-r from-purple-900/50 to-indigo-900/50 border border-purple-500/30 rounded-2xl p-4 text-center active:scale-95 transition-all hover:border-purple-400/50 group"
-        >
-          <p className="text-xs text-purple-300 mb-1">💡 셋 다 궁금하다면?</p>
-          <p className="text-white text-sm font-bold">배우자 + 귀인 + 웬수 전부 분석</p>
-          <p className="text-gray-500 text-xs mt-1">
-            <span className="line-through text-gray-700">6,000원</span>
-            {" → "}
-            <span className="text-purple-300 font-black text-sm">5,000원</span>
-            <span className="ml-1 text-[10px] bg-purple-500/20 text-purple-300 px-1.5 py-0.5 rounded-full">17% 할인</span>
-          </p>
-          <div className="mt-2 text-xs text-purple-400 font-bold group-hover:text-purple-300 transition-colors">
-            🔮 3종 묶음 바로 분석하기 →
-          </div>
-        </button>
 
         {/* ── 리뷰 ── */}
         <div>

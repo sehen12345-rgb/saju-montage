@@ -22,8 +22,10 @@ const ENEMY_STEPS = [
 ];
 const BUNDLE_STEPS = [
   { icon: "📿", text: "사주팔자 산출 중 (년·월·일·시주)" },
-  { icon: "🔮", text: "배우자 · 귀인 · 웬수 동시 분석" },
+  { icon: "🔮", text: "배우자 기운 분석 (관성·재성)" },
+  { icon: "🌟", text: "귀인 · 악연 기운 분석 (충·형·파)" },
   { icon: "🎨", text: "AI 몽타주 3종 생성 중" },
+  { icon: "✨", text: "결과 정리 완료" },
 ];
 
 const SAJU_FACTS: Record<"spouse" | "guardian" | "enemy", string[]> = {
@@ -133,7 +135,8 @@ export default function LoadingScreen({ step, productType = "spouse" }: {
     isBundle ? "border-purple-900 border-t-purple-400" :
     "border-rose-900 border-t-rose-400";
 
-  const completedStepCount = step + 1;
+  const clampedStep = Math.min(step, STEPS.length - 1);
+  const completedStepCount = clampedStep + 1;
   const progressPct = Math.round((completedStepCount / STEPS.length) * 100);
 
   return (
@@ -188,20 +191,20 @@ export default function LoadingScreen({ step, productType = "spouse" }: {
           <div
             key={i}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all border ${
-              i === step
+              i === clampedStep
                 ? "bg-white/8 border-white/15 font-semibold"
-                : i < step
+                : i < clampedStep
                 ? "bg-white/3 border-white/5 text-gray-600"
                 : "bg-transparent border-transparent text-gray-700"
             }`}
           >
             <span className="text-base shrink-0">
-              {i < step ? "✅" : s.icon}
+              {i < clampedStep ? "✅" : s.icon}
             </span>
-            <span className={`text-xs flex-1 ${i === step ? "text-white" : i < step ? "text-gray-600" : "text-gray-700"}`}>
+            <span className={`text-xs flex-1 ${i === clampedStep ? "text-white" : i < clampedStep ? "text-gray-600" : "text-gray-700"}`}>
               {s.text}
             </span>
-            {i === step && (
+            {i === clampedStep && (
               <span className="flex gap-0.5">
                 {[0, 1, 2].map((j) => (
                   <span
@@ -230,7 +233,7 @@ export default function LoadingScreen({ step, productType = "spouse" }: {
       </div>
 
       <p className="text-gray-600 text-xs animate-pulse text-center">
-        {step >= STEPS.length - 1
+        {clampedStep >= STEPS.length - 1
           ? isBundle ? "✨ 3종 몽타주를 모두 완성하는 중이에요..."
           : productType === "guardian" ? "✨ 귀인 초상화를 완성하는 중이에요..."
           : productType === "enemy" ? "✨ 웬수 초상화를 완성하는 중이에요..."

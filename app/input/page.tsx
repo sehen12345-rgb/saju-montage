@@ -204,11 +204,15 @@ export default function InputPage() {
       if (isBundle) {
         // ── 번들: 3개 분석 병렬 실행 ──
         setLoadingStep(0);
+        const step1Timer = setTimeout(() => setLoadingStep(1), 4000);
+        const step2Timer = setTimeout(() => setLoadingStep(2), 10000);
         const [spouseRes, guardianRes, enemyRes] = await Promise.all([
           fetchAnalysis("/api/analyze-saju", data, "spouse"),
           fetchAnalysis("/api/analyze-guardian", data, "guardian"),
           fetchAnalysis("/api/analyze-enemy", data, "enemy"),
         ]);
+        clearTimeout(step1Timer);
+        clearTimeout(step2Timer);
 
         const usedMock = spouseRes.usedMock || guardianRes.usedMock || enemyRes.usedMock;
 
@@ -216,9 +220,9 @@ export default function InputPage() {
         const guardianAnalysis = (guardianRes.result as GuardianAnalysis) ?? buildMockGuardianAnalysis(data.name, data.birthYear);
         const enemyAnalysis = (enemyRes.result as EnemyAnalysis) ?? buildMockEnemyAnalysis(data.name, data.birthYear);
 
-        setLoadingStep(1);
+        setLoadingStep(3);
         await new Promise((r) => setTimeout(r, 600));
-        setLoadingStep(2);
+        setLoadingStep(4);
         await new Promise((r) => setTimeout(r, 400));
 
         const bundleResults: BundleResults = {
@@ -247,6 +251,8 @@ export default function InputPage() {
       // ── 단일 상품 분석 ──
       let analysis;
       let usedMock = false;
+      const autoStep1 = setTimeout(() => setLoadingStep(1), 5000);
+      const autoStep2 = setTimeout(() => setLoadingStep(2), 12000);
       try {
         const apiPath = isGuardian ? "/api/analyze-guardian" : isEnemy ? "/api/analyze-enemy" : "/api/analyze-saju";
         const ctrl = new AbortController();
@@ -273,10 +279,12 @@ export default function InputPage() {
           analysis = buildMockSpouseAnalysis(data.name, data.birthYear, data.gender);
         }
       }
+      clearTimeout(autoStep1);
+      clearTimeout(autoStep2);
 
-      setLoadingStep(1);
+      setLoadingStep(3);
       await new Promise((r) => setTimeout(r, 800));
-      setLoadingStep(2);
+      setLoadingStep(4); // LoadingScreen은 step이 STEPS.length-1을 넘어가도 마지막 단계로 표시
       await new Promise((r) => setTimeout(r, 600));
 
       const imageUrl = buildImageUrl(
@@ -319,35 +327,23 @@ export default function InputPage() {
           <>
             {/* 헤더 카드 */}
             <div className="bg-[#13131a] border border-white/10 rounded-3xl p-5 mb-4">
-              <div className="flex items-center gap-3">
-                <div className={`w-11 h-11 rounded-2xl bg-gradient-to-br ${meta.color} flex items-center justify-center text-xl shadow-lg`}>
-                  {meta.emoji}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={`w-11 h-11 rounded-2xl bg-gradient-to-br ${meta.color} flex items-center justify-center text-xl shadow-lg`}>
+                    {meta.emoji}
+                  </div>
+                  <div>
+                    <p className="font-black text-white text-sm">{meta.name}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">{meta.sub}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-black text-white text-sm">{meta.name}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{meta.sub}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* 상품 전환 탭 */}
-            <div className="bg-[#13131a] border border-white/10 rounded-2xl p-2 mb-4 flex gap-1.5">
-              {(Object.entries(PRODUCT_META) as [ProductType, typeof PRODUCT_META[keyof typeof PRODUCT_META]][]).map(([id, m]) => (
                 <button
-                  key={id}
-                  onClick={() => {
-                    setProductType(id);
-                    sessionStorage.setItem("selectedProduct", id);
-                  }}
-                  className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                    productType === id
-                      ? `bg-gradient-to-r ${m.color} text-white shadow-md`
-                      : "text-gray-500 hover:text-gray-300"
-                  }`}
+                  onClick={() => router.push("/")}
+                  className="text-xs text-gray-600 hover:text-gray-400 transition-colors px-3 py-1.5 rounded-full bg-white/5 border border-white/10"
                 >
-                  {m.emoji} {id === "spouse" ? "내님" : id === "guardian" ? "내귀인" : id === "enemy" ? "내웬수" : "묶음"}
+                  ← 다시 선택
                 </button>
-              ))}
+              </div>
             </div>
 
             {error && (
