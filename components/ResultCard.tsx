@@ -531,6 +531,31 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
     }
   }, [productHash, paid]);
 
+  // 로그인 유저의 결과를 localStorage에 영구 저장
+  function saveResultForUser(userId: string) {
+    try {
+      const key = `naenim_results_${userId}`;
+      const existing = JSON.parse(localStorage.getItem(key) ?? "[]") as object[];
+      const newEntry = {
+        savedAt: Date.now(),
+        productType: result.productType ?? "spouse",
+        name: result.name,
+        gender: result.gender,
+        imageUrl: currentImageUrl,
+        analysis: result.analysis,
+        bundleResults: result.bundleResults ?? null,
+        paid: true,
+      };
+      // 같은 사주 중복 제거 후 최신 추가
+      const filtered = existing.filter((r: object) => {
+        const rr = r as { name?: string; productType?: string };
+        return !(rr.name === result.name && rr.productType === result.productType);
+      });
+      filtered.unshift(newEntry);
+      localStorage.setItem(key, JSON.stringify(filtered.slice(0, 10)));
+    } catch { /* ignore */ }
+  }
+
   function handlePaySuccess() {
     setShowModal(false);
     setPaid(true);
@@ -547,6 +572,8 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
     } catch { /* ignore */ }
     // localStorage에도 저장 (데모 결제 시)
     if (productHash) savePaidRecord(productHash, `demo_${Date.now()}`);
+    // 로그인 유저라면 결과 영구 저장
+    if (session?.user?.id) saveResultForUser(session.user.id);
     onPaid?.();
   }
 
