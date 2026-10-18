@@ -9,6 +9,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     Kakao({
       clientId: process.env.KAKAO_CLIENT_ID ?? "",
       clientSecret: process.env.KAKAO_CLIENT_SECRET ?? "",
+      authorization: {
+        params: {
+          scope: "profile_nickname profile_image account_email",
+        },
+      },
     }),
     Naver({
       clientId: process.env.NAVER_CLIENT_ID ?? "",
