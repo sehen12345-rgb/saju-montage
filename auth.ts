@@ -6,6 +6,18 @@ import Credentials from "next-auth/providers/credentials";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
+  debug: true,
+  logger: {
+    error(error: Error) {
+      console.error("[AUTH_ERROR]", error.name, error.message, JSON.stringify((error as any).cause ?? {}));
+    },
+    warn(code: string) {
+      console.warn("[AUTH_WARN]", code);
+    },
+    debug(code: string, metadata: unknown) {
+      console.log("[AUTH_DEBUG]", code, JSON.stringify(metadata));
+    },
+  },
   providers: [
     Kakao({
       clientId: process.env.KAKAO_CLIENT_ID ?? "",
