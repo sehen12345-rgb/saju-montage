@@ -38,6 +38,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       clientId: process.env.KAKAO_CLIENT_ID ?? "",
       clientSecret: "none",
       authorization: {
+        url: "https://kauth.kakao.com/oauth/authorize",
         params: {
           scope: "profile_nickname profile_image account_email",
         },
