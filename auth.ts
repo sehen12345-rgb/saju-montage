@@ -21,14 +21,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
     Kakao({
       clientId: process.env.KAKAO_CLIENT_ID ?? "",
-      clientSecret: process.env.KAKAO_CLIENT_SECRET || "none",
+      clientSecret: "none",
       authorization: {
         params: {
           scope: "profile_nickname profile_image account_email",
         },
       },
       client: {
-        token_endpoint_auth_method: "client_secret_post",
+        token_endpoint_auth_method: "none",
       },
       profile(profile: Record<string, unknown>) {
         const account = profile.kakao_account as Record<string, unknown> | undefined;
