@@ -5,30 +5,22 @@ import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  debug: true,
+  logger: {
+    error(error) {
+      console.error("[AUTH ERROR]", error);
+    },
+    warn(code) {
+      console.warn("[AUTH WARN]", code);
+    },
+  },
   providers: [
     Kakao({
       clientId: process.env.KAKAO_CLIENT_ID ?? "",
-      clientSecret: process.env.KAKAO_CLIENT_SECRET ?? "unused",
+      clientSecret: process.env.KAKAO_CLIENT_SECRET ?? "",
       authorization: {
         params: {
           scope: "profile_nickname profile_image account_email",
-        },
-      },
-      token: {
-        url: "https://kauth.kakao.com/oauth/token",
-        async request({ params, provider, checks }) {
-          const response = await fetch("https://kauth.kakao.com/oauth/token", {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({
-              grant_type: "authorization_code",
-              client_id: provider.clientId!,
-              redirect_uri: params.redirect_uri!,
-              code: params.code!,
-            }),
-          });
-          const tokens = await response.json();
-          return { tokens };
         },
       },
     }),
