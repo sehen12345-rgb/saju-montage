@@ -83,16 +83,26 @@ function SajuPillarCard({ sajuInfo }: { sajuInfo: import("@/lib/types").SajuInfo
 
 // ── 결제 모달 ──────────────────────────────────────────────
 
-function PayModal({ onClose, onPay }: { onClose: () => void; onPay: () => void }) {
+const PROMO_TIMER_KEY = "naenim_promo_first_ts";
+const PROMO_DURATION = 600;
+function getPromoTimeLeft(): number {
+  if (typeof window === "undefined") return PROMO_DURATION;
+  const stored = localStorage.getItem(PROMO_TIMER_KEY);
+  if (!stored) { localStorage.setItem(PROMO_TIMER_KEY, String(Date.now())); return PROMO_DURATION; }
+  return Math.max(0, PROMO_DURATION - Math.floor((Date.now() - Number(stored)) / 1000));
+}
+
+function PayModal({ onClose, onPay }: { onClose: () => void; onPay: (type: "individual" | "bundle") => void }) {
   const [paying, setPaying] = useState<string | null>(null);
-  const [timeLeft, setTimeLeft] = useState(599);
+  const [timeLeft, setTimeLeft] = useState(() => getPromoTimeLeft());
 
   useEffect(() => {
+    if (timeLeft <= 0) return;
     const t = setInterval(() => {
       setTimeLeft((s) => { if (s <= 1) { clearInterval(t); return 0; } return s - 1; });
     }, 1000);
     return () => clearInterval(t);
-  }, []);
+  }, [timeLeft <= 0]);
 
   const mm = String(Math.floor(timeLeft / 60)).padStart(2, "0");
   const ss = String(timeLeft % 60).padStart(2, "0");
@@ -102,7 +112,7 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: () => void }
     setPaying(type);
     await new Promise((r) => setTimeout(r, 900));
     setPaying(null);
-    onPay();
+    onPay(type === "bundle" ? "bundle" : "individual");
   }
 
   const ITEMS = ["🌟 귀인 AI 프로필 이미지", "💬 귀인 첫 카카오톡", "💼 도움받을 영역 분석", "🗺️ 귀인 만나는 방법", "🌙 전생 인연 이야기", "📅 귀인 만남 시기", "💪 나의 강점 분석", "📊 월별 귀인운 차트", "✨ 귀인 알아보는 법", "🚀 귀인 실천 가이드", "🎯 주의사항 3가지", "🌱 귀인 준비도 체크"];
@@ -273,7 +283,7 @@ export default function GuardianResultCard({ result, onReset, onPaid }: Props) {
     }
   }, [productHash, paid]);
 
-  function handlePaySuccess() {
+  function handlePaySuccess(_type?: "individual" | "bundle") {
     setShowModal(false);
     setPaid(true);
     setJustUnlocked(true);
@@ -386,14 +396,29 @@ export default function GuardianResultCard({ result, onReset, onPaid }: Props) {
           ))}
         </div>
 
-        {/* 외모 힌트 (무료, 부분 블러) */}
-        <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5 relative overflow-hidden">
+        {/* 외모 힌트 (무료, 전체 공개) */}
+        <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
           <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">🔍 귀인 첫인상 힌트</p>
-          <p className="text-gray-300 leading-relaxed text-sm">{analysis.description.slice(0, 40)}...</p>
-          <div className="mt-2 blur-sm select-none pointer-events-none">
-            <p className="text-gray-500 text-sm leading-relaxed">{analysis.description.slice(40)}</p>
-          </div>
+          <p className="text-gray-300 leading-relaxed text-sm">{analysis.description}</p>
         </div>
+
+        {/* 귀인 타입 · 관계 유형 힌트 (무료) */}
+        {(analysis.guardianType || analysis.relationship) && (
+          <div className="grid grid-cols-2 gap-3">
+            {analysis.guardianType && (
+              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-4 text-center">
+                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1.5">🌟 귀인 유형</p>
+                <p className="text-sm font-black text-amber-400">{analysis.guardianTypeEmoji} {analysis.guardianType}</p>
+              </div>
+            )}
+            {analysis.relationship && (
+              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-4 text-center">
+                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1.5">🤝 만남 유형</p>
+                <p className="text-sm font-bold text-white leading-snug">{analysis.relationship}</p>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* 잠금 오버레이 / 유료 섹션 */}
         {!paid ? (

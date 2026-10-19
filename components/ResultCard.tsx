@@ -357,16 +357,34 @@ function BlurredSection({ label }: { label: string }) {
 
 // ── 결제 모달 ──────────────────────────────────────────────
 
-function PayModal({ onClose, onPay }: { onClose: () => void; onPay: () => void }) {
+const PROMO_TIMER_KEY = "naenim_promo_first_ts";
+const PROMO_DURATION = 600; // 10분
+
+function getPromoTimeLeft(): number {
+  if (typeof window === "undefined") return PROMO_DURATION;
+  const stored = localStorage.getItem(PROMO_TIMER_KEY);
+  if (!stored) {
+    localStorage.setItem(PROMO_TIMER_KEY, String(Date.now()));
+    return PROMO_DURATION;
+  }
+  const elapsed = Math.floor((Date.now() - Number(stored)) / 1000);
+  return Math.max(0, PROMO_DURATION - elapsed);
+}
+
+function PayModal({ onClose, onPay }: { onClose: () => void; onPay: (type: "individual" | "bundle") => void }) {
   const [paying, setPaying] = useState<string | null>(null);
-  const [timeLeft, setTimeLeft] = useState(599);
+  const [timeLeft, setTimeLeft] = useState(() => getPromoTimeLeft());
 
   useEffect(() => {
+    if (timeLeft <= 0) return;
     const t = setInterval(() => {
-      setTimeLeft((s) => { if (s <= 1) { clearInterval(t); return 0; } return s - 1; });
+      setTimeLeft((s) => {
+        if (s <= 1) { clearInterval(t); return 0; }
+        return s - 1;
+      });
     }, 1000);
     return () => clearInterval(t);
-  }, []);
+  }, [timeLeft <= 0]);
 
   const mm = String(Math.floor(timeLeft / 60)).padStart(2, "0");
   const ss = String(timeLeft % 60).padStart(2, "0");
@@ -376,7 +394,7 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: () => void }
     setPaying(type);
     await new Promise((r) => setTimeout(r, 900));
     setPaying(null);
-    onPay();
+    onPay(type === "bundle" ? "bundle" : "individual");
   }
 
   const ITEMS = ["🎨 AI 배우자 몽타주", "✨ 이름 첫 글자 힌트", "💬 카카오톡 첫 메시지", "🌙 전생 인연 이야기", "💑 케미 타입 분석", "📊 5가지 궁합 점수", "💝 배우자 사랑 언어", "🧠 심리 분석", "📅 월별 인연운 차트", "🌟 닮은꼴 분위기", "🚀 인연 실천 가이드", "💡 인연 조언 3가지"];
@@ -496,6 +514,7 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
   const [showModal, setShowModal] = useState(false);
   const [justUnlocked, setJustUnlocked] = useState(false);
   const [showStickyBtn, setShowStickyBtn] = useState(false);
+  const [showBundleUpsell, setShowBundleUpsell] = useState(false);
 
   const imageUrl = currentImageUrl;
 
@@ -556,11 +575,15 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
     } catch { /* ignore */ }
   }
 
-  function handlePaySuccess() {
+  function handlePaySuccess(payType: "individual" | "bundle") {
     setShowModal(false);
     setPaid(true);
     setJustUnlocked(true);
     setTimeout(() => setJustUnlocked(false), 4000);
+    // 개별 결제 시, 번들 업셀 배너 표시
+    if (payType === "individual" && result.productType !== "bundle") {
+      setTimeout(() => setShowBundleUpsell(true), 3000);
+    }
     // sessionStorage 업데이트
     try {
       const stored = sessionStorage.getItem("sajuResult");
@@ -718,6 +741,25 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
     <>
       {showModal && <PayModal onClose={() => setShowModal(false)} onPay={handlePaySuccess} />}
 
+      {/* ── 번들 업셀 배너 (개별 결제 완료 후) ── */}
+      {showBundleUpsell && (
+        <div className="fixed bottom-0 left-0 right-0 z-40 p-3 animate-slideUp">
+          <div className="max-w-md mx-auto bg-gradient-to-r from-purple-900/95 to-indigo-900/95 border border-purple-500/40 rounded-2xl p-4 shadow-2xl backdrop-blur-sm">
+            <button onClick={() => setShowBundleUpsell(false)} className="absolute top-3 right-3 text-white/40 hover:text-white text-lg">✕</button>
+            <p className="text-xs text-purple-300 font-bold mb-1">💜 귀인·악연도 궁금하지 않으세요?</p>
+            <p className="text-white font-black text-sm mb-2">3종 전부 보기 — 추가 3,000원</p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => { setShowBundleUpsell(false); sessionStorage.setItem("selectedProduct", "bundle"); window.location.href = "/input"; }}
+                className="flex-1 py-2.5 rounded-xl bg-purple-500 text-white font-bold text-sm active:scale-95 transition-all"
+              >
+                귀인 + 악연 추가 분석하기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── 스티키 결제 버튼 (비결제 + 스크롤 시) ── */}
       {!paid && showStickyBtn && (
         <div className="fixed bottom-0 left-0 right-0 z-40 p-3 animate-slideUp">
@@ -756,6 +798,26 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
         <InfoSection icon="✨" label="외모 힌트" title={analysis.descTitle}>
           <p className="text-gray-300 leading-relaxed text-sm">{analysis.description}</p>
         </InfoSection>
+
+        {/* ── MBTI · 직업군 힌트 (무료) ── */}
+        {(analysis.mbti || analysis.job) && (
+          <div className="grid grid-cols-2 gap-3">
+            {analysis.mbti && (
+              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-4 text-center">
+                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1.5">🧠 MBTI</p>
+                <p className="text-xl font-black text-white">{analysis.mbti}</p>
+                <p className="text-[10px] text-gray-500 mt-1">성격 유형</p>
+              </div>
+            )}
+            {analysis.job && (
+              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-4 text-center">
+                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1.5">💼 직업군</p>
+                <p className="text-sm font-bold text-white leading-snug">{analysis.job}</p>
+                <p className="text-[10px] text-gray-500 mt-1">종사 분야</p>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* ════════════════════════════════
             몽타주 이미지 (유료)
@@ -1337,30 +1399,32 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
             </div>
           </>
         ) : (
-          /* ── 비결제: 이미지 잠금 + 결제 유도 ── */
+          /* ── 비결제: 실루엣 선공개 + 결제 유도 ── */
           <>
-            {/* 블러 처리된 이미지 잠금 카드 */}
+            {/* 흑백 실루엣 이미지 잠금 카드 */}
             <div className="relative w-full aspect-square rounded-2xl overflow-hidden shadow-xl border border-white/10 bg-[#13131a]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={imageUrl}
                 alt=""
                 aria-hidden="true"
-                className="w-full h-full object-cover blur-xl scale-110 opacity-60"
+                className="w-full h-full object-cover scale-105"
+                style={{ filter: "grayscale(100%) brightness(0.45) blur(1.5px)" }}
                 onLoad={() => setImgLoaded(true)}
                 onError={() => setImgError(true)}
               />
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-black/30 backdrop-blur-sm">
-                <div className="w-20 h-20 rounded-full bg-white/20 border-4 border-white/60 flex items-center justify-center text-4xl shadow-xl">
-                  🔒
-                </div>
-                <div className="text-center px-6">
-                  <p className="text-white font-bold text-lg drop-shadow">AI가 그린 배우자 몽타주</p>
-                  <p className="text-white/80 text-sm mt-1 drop-shadow">결제 후 실제 얼굴을 확인하세요</p>
+              {/* 하단 그라디언트 */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
+              {/* 중앙 잠금 오버레이 */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+                <div className="bg-black/50 backdrop-blur-sm border border-white/20 rounded-2xl px-6 py-4 text-center mx-6">
+                  <p className="text-white/50 text-[10px] font-bold uppercase tracking-widest mb-1">실루엣만 공개됨</p>
+                  <p className="text-white font-bold text-base">AI가 그린 배우자 몽타주</p>
+                  <p className="text-white/60 text-xs mt-0.5">컬러·선명 이미지는 결제 후 공개</p>
                 </div>
                 <button
                   onClick={() => setShowModal(true)}
-                  className="px-8 py-3 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 text-white font-bold text-base shadow-2xl hover:from-amber-500 hover:to-orange-600 transition-all active:scale-95"
+                  className="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 text-white font-bold text-base shadow-2xl hover:from-amber-500 hover:to-orange-600 transition-all active:scale-95"
                 >
                   ✨ 1,900원으로 공개
                 </button>

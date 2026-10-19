@@ -292,7 +292,8 @@ export default function Home() {
                   : "text-gray-500 hover:text-gray-300"
               }`}
             >
-              {p.emoji} {p.id === "spouse" ? "배우자" : p.id === "guardian" ? "귀인" : "웬수"}
+              <span>{p.emoji}</span>
+              <span>{p.id === "spouse" ? "배우자" : p.id === "guardian" ? "귀인" : "웬수"}</span>
             </button>
           ))}
         </div>
@@ -319,6 +320,8 @@ export default function Home() {
                     <span className={`text-[9px] ${p.badgeCls} text-white font-bold px-2 py-0.5 rounded-full shrink-0`}>{p.badge}</span>
                   </div>
                   <p className="text-xs text-gray-500">{p.sub}</p>
+                  {p.id === "guardian" && <p className="text-[10px] text-amber-500/70 mt-0.5">귀인(貴人) — 내 인생을 도와주는 사람</p>}
+                  {p.id === "enemy" && <p className="text-[10px] text-red-400/70 mt-0.5">웬수(怨讐) — 에너지를 빼앗는 악연</p>}
                 </div>
               </div>
 

@@ -80,16 +80,26 @@ function SajuPillarCard({ sajuInfo }: { sajuInfo: import("@/lib/types").SajuInfo
   );
 }
 
-function PayModal({ onClose, onPay }: { onClose: () => void; onPay: () => void }) {
+const PROMO_TIMER_KEY_E = "naenim_promo_first_ts";
+const PROMO_DURATION_E = 600;
+function getPromoTimeLeftE(): number {
+  if (typeof window === "undefined") return PROMO_DURATION_E;
+  const stored = localStorage.getItem(PROMO_TIMER_KEY_E);
+  if (!stored) { localStorage.setItem(PROMO_TIMER_KEY_E, String(Date.now())); return PROMO_DURATION_E; }
+  return Math.max(0, PROMO_DURATION_E - Math.floor((Date.now() - Number(stored)) / 1000));
+}
+
+function PayModal({ onClose, onPay }: { onClose: () => void; onPay: (type: "individual" | "bundle") => void }) {
   const [paying, setPaying] = useState<string | null>(null);
-  const [timeLeft, setTimeLeft] = useState(599);
+  const [timeLeft, setTimeLeft] = useState(() => getPromoTimeLeftE());
 
   useEffect(() => {
+    if (timeLeft <= 0) return;
     const t = setInterval(() => {
       setTimeLeft((s) => { if (s <= 1) { clearInterval(t); return 0; } return s - 1; });
     }, 1000);
     return () => clearInterval(t);
-  }, []);
+  }, [timeLeft <= 0]);
 
   const mm = String(Math.floor(timeLeft / 60)).padStart(2, "0");
   const ss = String(timeLeft % 60).padStart(2, "0");
@@ -99,7 +109,7 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: () => void }
     setPaying(type);
     await new Promise((r) => setTimeout(r, 900));
     setPaying(null);
-    onPay();
+    onPay(type === "bundle" ? "bundle" : "individual");
   }
 
   const ITEMS = ["😤 웬수 AI 프로필 이미지", "💬 웬수 접근 메시지 패턴", "⚠️ 피해를 주는 영역", "🛡️ 웬수 피하는 방법", "🌙 전생 악연 이야기", "📅 웬수 출현 시기", "😰 나의 약점 분석", "📊 월별 위험도 차트", "🔍 웬수 알아보는 법", "🚀 자기보호 실천 가이드", "🎯 주의사항 3가지", "🌱 악연 방어력 체크"];
@@ -266,7 +276,7 @@ export default function EnemyResultCard({ result, onReset, onPaid }: Props) {
     }
   }, [productHash, paid]);
 
-  function handlePaySuccess() {
+  function handlePaySuccess(_type?: "individual" | "bundle") {
     setShowModal(false);
     setPaid(true);
     setJustUnlocked(true);
@@ -376,14 +386,29 @@ export default function EnemyResultCard({ result, onReset, onPaid }: Props) {
           ))}
         </div>
 
-        {/* 외모 힌트 (부분 블러) */}
-        <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5 relative overflow-hidden">
+        {/* 외모 힌트 (무료, 전체 공개) */}
+        <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
           <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">🔍 웬수 첫인상 힌트</p>
-          <p className="text-gray-300 leading-relaxed text-sm">{analysis.description.slice(0, 40)}...</p>
-          <div className="mt-2 blur-sm select-none pointer-events-none">
-            <p className="text-gray-500 text-sm leading-relaxed">{analysis.description.slice(40)}</p>
-          </div>
+          <p className="text-gray-300 leading-relaxed text-sm">{analysis.description}</p>
         </div>
+
+        {/* 악연 타입 · 관계 유형 힌트 (무료) */}
+        {(analysis.enemyType || analysis.relationship) && (
+          <div className="grid grid-cols-2 gap-3">
+            {analysis.enemyType && (
+              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-4 text-center">
+                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1.5">😤 악연 유형</p>
+                <p className="text-sm font-black text-red-400">{analysis.enemyTypeEmoji} {analysis.enemyType}</p>
+              </div>
+            )}
+            {analysis.relationship && (
+              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-4 text-center">
+                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1.5">🔗 관계 유형</p>
+                <p className="text-sm font-bold text-white leading-snug">{analysis.relationship}</p>
+              </div>
+            )}
+          </div>
+        )}
 
         {!paid ? (
           <div className="relative rounded-3xl overflow-hidden border border-white/10 shadow-lg">
