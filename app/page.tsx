@@ -274,7 +274,7 @@ export default function Home() {
             <p className="text-gray-400 text-xs mt-1">
               <span className="line-through text-gray-600">6,000원</span>
               {" → "}
-              <span className="text-purple-300 font-black text-base">5,000원</span>
+              <span className="text-purple-300 font-black text-base">4,900원</span>
               <span className="ml-1.5 text-[10px] bg-purple-500/20 text-purple-300 px-1.5 py-0.5 rounded-full">17% 할인</span>
             </p>
           </button>
@@ -343,7 +343,7 @@ export default function Home() {
 
                 <div className={`rounded-2xl border ${p.borderColor} p-3 bg-white/2`}>
                   <div className="flex items-center gap-1.5 mb-2">
-                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">2,000원으로 공개</span>
+                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">1,900원으로 공개</span>
                     <span className="text-[9px] text-red-400 bg-red-500/10 px-1.5 py-0.5 rounded-full font-bold">67% 할인</span>
                   </div>
                   <div className="grid grid-cols-2 gap-1">
@@ -360,7 +360,7 @@ export default function Home() {
               {/* 가격 */}
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-sm text-gray-600 line-through">6,000원</span>
-                <span className="text-2xl font-black text-white">2,000원</span>
+                <span className="text-2xl font-black text-white">1,900원</span>
                 <span className="text-xs text-gray-500">· 1회 결제</span>
               </div>
             </div>

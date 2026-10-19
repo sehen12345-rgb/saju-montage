@@ -49,10 +49,10 @@ export default function TermsPage() {
               <div>
                 <p className="font-semibold text-white mb-1">상품 및 가격</p>
                 <div className="text-gray-400 space-y-1">
-                  <p>· 내님은누구 (배우자 분석): 2,000원</p>
-                  <p>· 내귀인은누구 (귀인 분석): 2,000원</p>
-                  <p>· 내웬수는누구 (악연 분석): 2,000원</p>
-                  <p>· 3종 묶음 (배우자+귀인+웬수): 5,000원</p>
+                  <p>· 내님은누구 (배우자 분석): 1,900원</p>
+                  <p>· 내귀인은누구 (귀인 분석): 1,900원</p>
+                  <p>· 내웬수는누구 (악연 분석): 1,900원</p>
+                  <p>· 3종 묶음 (배우자+귀인+웬수): 4,900원</p>
                 </div>
               </div>
               <div className="border-t border-white/5 pt-3">
