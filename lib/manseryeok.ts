@@ -10,7 +10,8 @@
  * 모든 출력값은 결정론적(난수 없음). AI 호출은 서술 텍스트에만 사용.
  */
 import type { SajuInfo } from "./types";
-import { GAN_ELEMENT, JI_ELEMENT, calculateSaju, daysToNearestJeol } from "./saju";
+import { GAN_ELEMENT, JI_ELEMENT, daysToNearestJeol } from "./saju";
+import { calculateFourPillars } from "manseryeok";
 
 // ─────────────────────────────────────────────────────────────
 // 기본 상수
@@ -503,7 +504,20 @@ export function buildManseryeokData(
   gender: "male" | "female",
   todayYear?: number,
 ): ManseryeokData {
-  const sajuInfo = calculateSaju(birthYear, birthMonth, birthDay, birthHour);
+  // 만세력 npm 패키지로 4기둥 계산 (birthHour < 0이면 정오 기준으로 계산 후 시주만 "미상" 처리)
+  const effectiveHour = birthHour >= 0 ? birthHour : 12;
+  const fp = calculateFourPillars({
+    year: birthYear, month: birthMonth, day: birthDay,
+    hour: effectiveHour, minute: 0,
+  });
+  const sajuInfo: SajuInfo = {
+    yearPillar: fp.year.heavenlyStem + fp.year.earthlyBranch,
+    monthPillar: fp.month.heavenlyStem + fp.month.earthlyBranch,
+    dayPillar: fp.day.heavenlyStem + fp.day.earthlyBranch,
+    hourPillar: birthHour >= 0
+      ? fp.hour.heavenlyStem + fp.hour.earthlyBranch
+      : "미상",
+  };
   const currentYear = todayYear ?? new Date().getFullYear();
   const currentAge = currentYear - birthYear;
 

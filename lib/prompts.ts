@@ -726,3 +726,86 @@ export function buildDeterministicFields(
 
   return { nameHint, pastLife, kakaoFirstMessage, hobbies };
 }
+
+// ─────────────────────────────────────────────────────────────
+// 4기둥 전체 기반 고유 이미지 프롬프트 생성
+// 년지(피부톤) × 월간(헤어) × 월지(계절감) × 일간(얼굴형/눈/코/입) ×
+// 일지(인상포인트) × 시지(특별포인트) = 10×10×12×12×12×12 조합
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * 사주 4기둥 8글자를 모두 활용하여 인물 이미지 프롬프트를 생성.
+ * 같은 일간이라도 나머지 기둥이 다르면 완전히 다른 묘사가 나옴.
+ */
+export function buildFacialImagePrompt(
+  sajuInfo: SajuInfo,
+  spouseGender: "man" | "woman",
+  birthYear: number,
+  gender: "male" | "female",
+  seed: number,
+): string {
+  const dayGan  = getPillarChar(sajuInfo.dayPillar, 0);
+  const dayJi   = getPillarChar(sajuInfo.dayPillar, 1);
+  const yearJi  = getPillarChar(sajuInfo.yearPillar, 1);
+  const monthGan = getPillarChar(sajuInfo.monthPillar, 0);
+  const monthJi = getPillarChar(sajuInfo.monthPillar, 1);
+  const hourJi  = getHourJiji(sajuInfo.hourPillar);
+
+  const dayV   = CHEONGAN_VISUAL[dayGan]   ?? CHEONGAN_VISUAL["무"];
+  const monthV = CHEONGAN_VISUAL[monthGan] ?? CHEONGAN_VISUAL["기"];
+
+  const impression = JIJI_IMPRESSION[dayJi]     ?? "balanced harmonious features";
+  const skinTone   = YEAR_JIJI_TONE[yearJi]     ?? "natural healthy skin";
+  const seasonVibe = MONTH_SEASON_VIBE[monthJi] ?? "balanced seasonal presence";
+  const special    = HOUR_SPECIAL[hourJi]        ?? HOUR_SPECIAL["미상"];
+
+  // 씨드 기반 조명·샷 변화 (4기둥이 같아도 성별이 다르면 달라짐)
+  const LIGHTING = [
+    "soft natural window light, clean white background",
+    "warm golden hour sunlight, outdoor bokeh background",
+    "soft studio lighting, neutral gray background",
+    "cool morning light, minimalist indoor setting",
+    "gentle diffused light, warm beige background",
+    "bright airy daylight, soft cream background",
+  ];
+  const SHOTS = [
+    "close-up portrait, face fills frame, sharp focus on eyes",
+    "head and shoulders portrait, slight angle, sharp focus on face",
+    "close-up face, straight on, intense eye contact with camera",
+    "three-quarter face angle, sharp facial details",
+  ];
+  const lighting = LIGHTING[seed % LIGHTING.length];
+  const shot     = SHOTS[(seed >> 2) % SHOTS.length];
+
+  // 나이대
+  const currentYear = 2026;
+  const userAge = currentYear - birthYear + 1;
+  const ageOffset = gender === "male" ? -1 : 1;
+  const spouseAge = userAge + ageOffset;
+  const ageEN = spouseAge < 24 ? "early 20s"
+    : spouseAge < 27 ? "mid-20s"
+    : spouseAge < 30 ? "late 20s"
+    : spouseAge < 33 ? "early 30s"
+    : "mid-30s";
+
+  const genderPrefix = spouseGender === "woman"
+    ? `photorealistic portrait of a young East Asian woman in her ${ageEN}`
+    : `photorealistic portrait of a young East Asian man in his ${ageEN}`;
+
+  // 얼굴 묘사: 일간(기본 얼굴) + 일지(인상) + 년지(피부) + 월간(헤어) + 월지(계절감) + 시지(특별)
+  const facialParts = [
+    dayV.faceShape,
+    dayV.eyes,
+    dayV.nose,
+    dayV.lips,
+    dayV.jaw,
+    impression,
+    skinTone,
+    monthV.hair,
+    seasonVibe,
+    special,
+    dayV.vibe,
+  ].filter(Boolean).join(", ");
+
+  return `${genderPrefix}, ${facialParts}, ${shot}, ${lighting}, natural skin pores and texture, real human face, 85mm lens, 8k resolution`;
+}

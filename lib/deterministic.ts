@@ -1,31 +1,6 @@
 import type { SajuAnalysis, SajuInfo } from "./types";
 import { getDemoData } from "./demo";
-import { buildDeterministicFields } from "./prompts";
-
-const LIGHTING_STYLES = [
-  "soft natural window light, clean white background",
-  "warm golden hour sunlight, outdoor bokeh background",
-  "soft studio lighting, neutral gray background",
-  "cool morning light, minimalist indoor setting",
-  "gentle diffused light, warm beige background",
-  "bright airy daylight, soft cream background",
-];
-
-const SHOT_STYLES = [
-  "close-up portrait, face fills frame, sharp focus on eyes",
-  "head and shoulders portrait, slight angle, sharp focus on face",
-  "close-up face, straight on, intense eye contact with camera",
-  "three-quarter face angle, sharp facial details",
-];
-
-function buildPollinationsPrompt(spouseGender: string, facialPrompt: string, seed: number): string {
-  const genderPrefix = spouseGender === "woman"
-    ? "photorealistic portrait of a young East Asian woman"
-    : "photorealistic portrait of a young East Asian man";
-  const lighting = LIGHTING_STYLES[seed % LIGHTING_STYLES.length];
-  const shot = SHOT_STYLES[seed % SHOT_STYLES.length];
-  return `${genderPrefix}, ${facialPrompt}, ${shot}, ${lighting}, natural skin pores and texture, real human face, 85mm lens, 8k resolution`;
-}
+import { buildDeterministicFields, buildFacialImagePrompt } from "./prompts";
 
 function varyScore(base: number, seed: number, offset: number): number {
   return Math.min(99, Math.max(55, base + ((seed >> offset) % 15) - 7));
@@ -33,7 +8,7 @@ function varyScore(base: number, seed: number, offset: number): number {
 
 export function buildFullDeterministicAnalysis(
   _name: string,
-  _birthYear: number,
+  birthYear: number,
   sajuInfo: SajuInfo,
   gender: "male" | "female",
   seed: number
@@ -45,8 +20,9 @@ export function buildFullDeterministicAnalysis(
   const base = getDemoData(dayGan, isWoman);
   const det = buildDeterministicFields(sajuInfo, gender, seed);
 
-  // Build full Pollinations-ready image prompt
-  const imagePrompt = buildPollinationsPrompt(spouseGender, base.imagePrompt, seed);
+  // 4기둥 8글자를 전부 반영한 고유 이미지 프롬프트 생성
+  // (년지×월간×월지×일간×일지×시지 조합 → 수십만 가지 고유 묘사)
+  const imagePrompt = buildFacialImagePrompt(sajuInfo, spouseGender, birthYear, gender, seed);
 
   // Vary compatibility scores with seed
   const cs = base.compatibilityScores;
