@@ -50,5 +50,5 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return token;
     },
   },
-  pages: { signIn: "/login" },
+  pages: { signIn: "/login", error: "/auth-debug" },
 });
