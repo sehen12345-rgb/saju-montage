@@ -5,15 +5,7 @@ import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  debug: true,
-  logger: {
-    error(error) {
-      console.error("[AUTH ERROR]", error);
-    },
-    warn(code) {
-      console.warn("[AUTH WARN]", code);
-    },
-  },
+  trustHost: true,
   providers: [
     Kakao({
       clientId: process.env.KAKAO_CLIENT_ID ?? "",
