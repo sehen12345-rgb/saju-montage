@@ -27,6 +27,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           scope: "profile_nickname profile_image account_email",
         },
       },
+      profile(profile: Record<string, unknown>) {
+        console.log("[KAKAO_PROFILE_RAW]", JSON.stringify(profile));
+        const account = profile.kakao_account as Record<string, unknown> | undefined;
+        const kakaoProfile = account?.profile as Record<string, unknown> | undefined;
+        return {
+          id: String(profile.id ?? "unknown"),
+          name: (kakaoProfile?.nickname as string) ?? null,
+          email: (account?.email as string) ?? null,
+          image: (kakaoProfile?.profile_image_url as string) ?? null,
+        };
+      },
     }),
     Naver({
       clientId: process.env.NAVER_CLIENT_ID ?? "",
