@@ -378,6 +378,79 @@ export default function Home() {
           </div>
         ))}
 
+        {/* ── 내 사주 분석 (별도 상품) ── */}
+        <div>
+          <div className="flex items-center gap-3 mb-3">
+            <div className="flex-1 h-px bg-white/10" />
+            <p className="text-[11px] font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap">나를 먼저 알기</p>
+            <div className="flex-1 h-px bg-white/10" />
+          </div>
+
+          <div className="relative rounded-3xl overflow-hidden bg-[#13131a] border border-indigo-500/30 shadow-xl shadow-indigo-500/10">
+            <div className="h-1 bg-gradient-to-r from-indigo-500 to-violet-500" />
+            <div className="p-5">
+              <div className="flex items-start gap-3 mb-3">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-2xl shadow-lg shrink-0">
+                  🎯
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <h2 className="text-lg font-black text-white">내 사주 분석</h2>
+                    <span className="text-[9px] bg-indigo-500 text-white font-bold px-2 py-0.5 rounded-full shrink-0">🆕 NEW</span>
+                  </div>
+                  <p className="text-xs text-gray-500">타고난 기질 · 운명 · 올해 운세</p>
+                </div>
+              </div>
+
+              <div className="text-xs font-bold text-indigo-400 mb-3 px-3 py-2 rounded-xl bg-white/5 border border-white/5">
+                ✦ 인연을 만나기 전, 나부터 정확히 알아야 합니다
+              </div>
+
+              <div className="space-y-2 mb-4">
+                <div>
+                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">무료 공개</p>
+                  <div className="space-y-1">
+                    {["사주팔자 · 오행 분포", "신강/신약 · MBTI 분석", "성격 키워드 3가지"].map(item => (
+                      <div key={item} className="flex items-center gap-2 text-xs text-gray-400">
+                        <span className="text-green-400">✓</span><span>{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="rounded-2xl border border-indigo-500/30 p-3 bg-white/2">
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">990원으로 공개</span>
+                    <span className="text-[9px] text-red-400 bg-red-500/10 px-1.5 py-0.5 rounded-full font-bold">83% 할인</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-1">
+                    {["🧠 타고난 기질 분석", "💼 직업 적성 방향", "💰 재물운 흐름", "💑 연애/결혼 스타일", "🏥 건강 주의 사항", "🌟 올해 운세", "📅 현재 대운 해석", "📊 월별 운세 차트"].map(item => (
+                      <div key={item} className="flex items-center gap-1.5 text-[10px] text-gray-400">
+                        <span className="text-[10px] text-indigo-400">🔒</span><span>{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-sm text-gray-600 line-through">5,900원</span>
+                <span className="text-2xl font-black text-white">990원</span>
+                <span className="text-xs text-gray-500">· 1회 결제</span>
+              </div>
+            </div>
+
+            <button
+              onClick={() => {
+                sessionStorage.setItem("selectedProduct", "self");
+                router.push("/input");
+              }}
+              className="w-full py-4 bg-gradient-to-r from-indigo-500 to-violet-500 text-white font-black text-sm active:scale-95 transition-all tracking-wide"
+            >
+              🎯 내 사주 분석하기
+            </button>
+          </div>
+        </div>
+
         {/* ── 리뷰 ── */}
         <div>
           <div className="flex items-center gap-3 mb-3">

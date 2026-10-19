@@ -1,4 +1,4 @@
-export type ProductType = "spouse" | "guardian" | "enemy" | "bundle";
+export type ProductType = "spouse" | "guardian" | "enemy" | "bundle" | "self";
 
 export interface SajuInput {
   name: string;
@@ -121,7 +121,7 @@ export interface BundleResults {
 
 export interface GenerateResult {
   name: string;
-  analysis: SajuAnalysis | GuardianAnalysis | EnemyAnalysis;
+  analysis: SajuAnalysis | GuardianAnalysis | EnemyAnalysis | SelfSajuAnalysis;
   imageUrl: string;
   gender?: "male" | "female";
   demo?: boolean;
@@ -172,4 +172,33 @@ export interface GuardianAnalysis {
   actionGuide: string[];
   monthlyLuck?: number[];
   readiness?: { score: number; comment: string };
+}
+
+export interface SelfSajuAnalysis {
+  sajuInfo: SajuInfo;
+
+  // ── 무료 공개 ──────────────────────────────────────────
+  elementCounts: Record<string, number>;   // 木/火/土/金/水 개수
+  dayMasterElement: string;               // 일간 오행 (木/火/土/金/水)
+  dayMasterStem: string;                  // 일간 천간 (갑/을/병/정/무/기/경/신/임/계)
+  isSinGang: boolean;                     // 신강(身强) 여부
+  mbti: string;                           // 사주 기반 MBTI
+  characteristics: string[];             // 성격 키워드 3가지
+  oneLineSummary: string;                 // 한 줄 사주 요약
+
+  // ── 유료 콘텐츠 (990원) ────────────────────────────────
+  personality: string;                    // 타고난 기질 (AI)
+  strengths: string[];                    // 강점 3가지
+  weaknesses: string[];                   // 주의사항 3가지
+  career: string;                         // 직업 적성 (AI)
+  wealthFortune: string;                  // 재물운 (AI)
+  loveStyle: string;                      // 연애/결혼 스타일 (AI)
+  healthCaution: string;                  // 건강 주의 (AI)
+  thisYearFortune: string;               // 올해 운세 (AI)
+  currentDaeun: string;                   // 현재 대운 간지
+  currentDaeunAge: string;               // 현재 대운 나이대 (예: "35~44세")
+  monthlyFortune: number[];              // 월별 운세 0~100 (12개)
+  lifePhases: { age: string; theme: string; rating: number }[];  // 대운 흐름 4개
+  luckyElements: string[];               // 행운 키워드 3가지
+  actionNow: string[];                   // 지금 해야 할 행동 3가지
 }

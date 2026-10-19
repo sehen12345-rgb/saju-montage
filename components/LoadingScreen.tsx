@@ -72,7 +72,7 @@ const TRIGRAMS = ["☰", "☱", "☲", "☳", "☴", "☵", "☶", "☷"];
 
 export default function LoadingScreen({ step, productType = "spouse" }: {
   step: number;
-  productType?: "spouse" | "guardian" | "enemy" | "bundle"
+  productType?: "spouse" | "guardian" | "enemy" | "bundle" | "self"
 }) {
   const isBundle = productType === "bundle";
   const STEPS = isBundle ? BUNDLE_STEPS : productType === "guardian" ? GUARDIAN_STEPS : productType === "enemy" ? ENEMY_STEPS : SPOUSE_STEPS;

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import SajuInputForm from "@/components/SajuInputForm";
 import LoadingScreen from "@/components/LoadingScreen";
-import type { SajuInput, GenerateResult, ProductType, SajuAnalysis, GuardianAnalysis, EnemyAnalysis, BundleResults } from "@/lib/types";
+import type { SajuInput, GenerateResult, ProductType, SajuAnalysis, GuardianAnalysis, EnemyAnalysis, BundleResults, SelfSajuAnalysis } from "@/lib/types";
 import { getSajuSeed } from "@/lib/prompts";
 
 // ── API 실패 시 모의 분석 데이터 생성 ─────────────────────────
@@ -131,11 +131,53 @@ function buildMockEnemyAnalysis(name: string, birthYear: number): EnemyAnalysis 
   };
 }
 
+function buildMockSelfAnalysis(name: string, birthYear: number, gender: "male" | "female"): SelfSajuAnalysis {
+  const seed = makeSeed(name, birthYear);
+  const pillars = ["갑자", "을축", "병인", "정묘", "무진", "기사", "경오", "신미", "임신", "계유"];
+  const stems = ["갑", "을", "병", "정", "무", "기", "경", "신", "임", "계"];
+  const elements = ["木", "火", "土", "金", "水"];
+  const mbtis = ["ENFJ", "INFP", "ENFP", "ISFJ", "ENTJ", "INTJ", "ESFP", "INFJ"];
+  const dayPillar = pillars[(seed + 7) % 10];
+  const dayStem = stems[(seed + 7) % 10];
+  const dayElement = elements[Math.floor(((seed + 7) % 10) / 2)];
+  const isSinGang = seed % 2 === 0;
+  return {
+    sajuInfo: { yearPillar: pillars[seed % 10], monthPillar: pillars[(seed+3)%10], dayPillar, hourPillar: pillars[(seed+5)%10] },
+    elementCounts: { 木: 1 + (seed % 3), 火: 1 + ((seed+1) % 3), 土: 1 + ((seed+2) % 3), 金: 1 + ((seed+3) % 3), 水: 1 + ((seed+4) % 3) },
+    dayMasterElement: dayElement,
+    dayMasterStem: dayStem,
+    isSinGang,
+    mbti: mbtis[seed % mbtis.length],
+    characteristics: ["성실하고 꾸준한 노력파", "감수성이 풍부한 직관형", "책임감이 강한 리더형"].slice(0, 3),
+    oneLineSummary: `${dayStem} 일간의 기운을 타고난 ${name}님은 타고난 성실함과 독특한 감성으로 자신만의 길을 걸어가는 사람입니다.`,
+    personality: `${name}님은 ${dayElement} 기운이 강한 사주를 타고났습니다. ${isSinGang ? "신강한 일간으로 자기 주도적이며 추진력이 뛰어납니다." : "신약한 일간으로 섬세하고 협력을 통해 빛을 발합니다."} 겉으로는 조용해 보이지만 내면에는 강한 신념과 열정이 있습니다.`,
+    strengths: ["꾸준한 노력과 성실함", "깊은 통찰력과 직관력", "타인에 대한 진심 어린 배려"],
+    weaknesses: ["지나친 완벽주의로 스트레스", "감정 표현이 서툴 수 있음", "결정이 느릴 수 있음"],
+    career: `${name}님은 창의성과 전문성을 발휘할 수 있는 분야에서 두각을 나타냅니다. ${isSinGang ? "리더십이 필요한 직군이나 독립적으로 일할 수 있는 환경이 적합합니다." : "팀워크와 협업이 중심이 되는 환경에서 진가가 발휘됩니다."}`,
+    wealthFortune: `꾸준히 노력하면 재물이 따라오는 사주입니다. 충동적인 투자보다는 안정적이고 장기적인 방식이 더 유리하며, ${30 + (seed % 10)}대에 재정적인 안정을 이룰 가능성이 높습니다.`,
+    loveStyle: `${dayElement} 기운의 연애 스타일로 진심을 중요하게 여깁니다. 처음엔 다가가는 것이 어렵지만 한번 마음을 열면 깊고 오래 가는 관계를 만들어갑니다.`,
+    healthCaution: `${dayElement === "木" ? "간·담 기능" : dayElement === "火" ? "심장·혈압" : dayElement === "土" ? "소화기계" : dayElement === "金" ? "폐·호흡기" : "신장·방광"}에 주의하세요. 규칙적인 운동과 충분한 수면이 건강 유지의 핵심입니다.`,
+    thisYearFortune: `올해는 변화와 성장이 함께하는 한 해입니다. ${isSinGang ? "적극적으로 도전하면 좋은 결과를 얻을 수 있습니다." : "주변의 도움을 잘 활용하면 기대 이상의 성과를 낼 수 있습니다."} 하반기로 갈수록 운이 상승합니다.`,
+    currentDaeun: pillars[(seed + 2) % 10],
+    currentDaeunAge: `${30 + (seed % 10)}~${40 + (seed % 10)}세`,
+    monthlyFortune: [65, 70, 80, 75, 60, 85, 90, 72, 68, 78, 83, 71].map((v, i) => Math.min(100, v + ((seed + i) % 10) - 5)),
+    lifePhases: [
+      { age: "20~29세", theme: pillars[(seed) % 10], rating: 65 + (seed % 20) },
+      { age: "30~39세", theme: pillars[(seed+2) % 10], rating: 72 + (seed % 18) },
+      { age: "40~49세", theme: pillars[(seed+4) % 10], rating: 80 + (seed % 15) },
+      { age: "50~59세", theme: pillars[(seed+6) % 10], rating: 75 + (seed % 18) },
+    ],
+    luckyElements: ["초록·파랑 컬러 아이템", "동쪽·동남쪽 방향", "목요일·봄 시즌"].slice(0, 3),
+    actionNow: ["자신의 강점을 살릴 수 있는 새로운 도전을 시작해보세요.", "가까운 사람들과의 관계에 더 많은 시간을 투자하세요.", "규칙적인 루틴을 만들어 에너지 관리를 시작해보세요."],
+  };
+}
+
 const PRODUCT_META = {
   spouse:  { emoji: "💑", name: "내님은누구",   sub: "운명의 배우자 분석",  color: "from-rose-500 to-pink-600" },
   guardian:{ emoji: "🌟", name: "내귀인은누구", sub: "인생 귀인 분석",      color: "from-amber-400 to-yellow-500" },
   enemy:   { emoji: "😤", name: "내웬수는누구", sub: "악연·조심 인물 분석", color: "from-slate-500 to-slate-600" },
   bundle:  { emoji: "🔮", name: "3개 묶음",      sub: "배우자+귀인+웬수 분석", color: "from-purple-500 to-violet-600" },
+  self:    { emoji: "🎯", name: "내 사주 분석",  sub: "타고난 기질·운명 분석", color: "from-indigo-500 to-violet-600" },
 };
 
 export default function InputPage() {
@@ -147,7 +189,7 @@ export default function InputPage() {
 
   useEffect(() => {
     const stored = sessionStorage.getItem("selectedProduct") as ProductType | null;
-    if (stored === "spouse" || stored === "guardian" || stored === "enemy") {
+    if (stored === "spouse" || stored === "guardian" || stored === "enemy" || stored === "bundle" || stored === "self") {
       setProductType(stored);
     } else {
       setProductType("spouse");
@@ -156,7 +198,8 @@ export default function InputPage() {
 
   const isGuardian = productType === "guardian";
   const isEnemy = productType === "enemy";
-  const meta = PRODUCT_META[productType];
+  const isSelf = productType === "self";
+  const meta = PRODUCT_META[productType] ?? PRODUCT_META.spouse;
 
   function buildImageUrl(analysis: { sajuInfo?: { yearPillar: string; monthPillar: string; dayPillar: string; hourPillar: string }; imagePrompt?: string }, type: "spouse" | "guardian" | "enemy", gender: "male" | "female", seedOffset = 0) {
     const sajuInfo = analysis.sajuInfo ?? { yearPillar: "갑자", monthPillar: "병인", dayPillar: "무오", hourPillar: "경신" };
@@ -240,6 +283,55 @@ export default function InputPage() {
           paid: false,
           productType: "bundle",
           bundleResults,
+        };
+        const json = JSON.stringify(result);
+        try { sessionStorage.setItem("sajuResult", json); } catch { /* private mode */ }
+        try { localStorage.setItem("sajuResult_backup", json); } catch { /* storage full */ }
+        router.push("/result");
+        return;
+      }
+
+      // ── 내 사주 분석 ──
+      if (isSelf) {
+        setLoadingStep(0);
+        const autoStep1 = setTimeout(() => setLoadingStep(1), 4000);
+        const autoStep2 = setTimeout(() => setLoadingStep(2), 10000);
+        let selfAnalysis: SelfSajuAnalysis;
+        let usedMock = false;
+        try {
+          const ctrl = new AbortController();
+          const timeout = setTimeout(() => ctrl.abort(), 25000);
+          const res = await fetch("/api/analyze-self", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+            signal: ctrl.signal,
+          });
+          clearTimeout(timeout);
+          if (res.ok) {
+            selfAnalysis = await res.json();
+          } else {
+            throw new Error("api_fail");
+          }
+        } catch {
+          usedMock = true;
+          selfAnalysis = buildMockSelfAnalysis(data.name, data.birthYear, data.gender);
+        }
+        clearTimeout(autoStep1);
+        clearTimeout(autoStep2);
+        setLoadingStep(3);
+        await new Promise((r) => setTimeout(r, 800));
+        setLoadingStep(4);
+        await new Promise((r) => setTimeout(r, 600));
+
+        const result: GenerateResult = {
+          name: data.name,
+          analysis: selfAnalysis,
+          imageUrl: "",
+          gender: data.gender,
+          demo: usedMock,
+          paid: false,
+          productType: "self",
         };
         const json = JSON.stringify(result);
         try { sessionStorage.setItem("sajuResult", json); } catch { /* private mode */ }

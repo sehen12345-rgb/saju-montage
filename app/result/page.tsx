@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import ResultCard from "@/components/ResultCard";
 import GuardianResultCard from "@/components/GuardianResultCard";
 import EnemyResultCard from "@/components/EnemyResultCard";
-import type { GenerateResult, SajuAnalysis, GuardianAnalysis, EnemyAnalysis } from "@/lib/types";
+import SelfResultCard from "@/components/SelfResultCard";
+import type { GenerateResult, SajuAnalysis, GuardianAnalysis, EnemyAnalysis, SelfSajuAnalysis } from "@/lib/types";
 import SajuSummaryCard from "@/components/SajuSummaryCard";
 import { makeSajuHash, isBundlePaid, saveBundlePaidRecord } from "@/lib/paymentStorage";
 
@@ -13,6 +14,7 @@ const PRODUCT_LABEL: Record<string, { emoji: string; name: string; color: string
   spouse:   { emoji: "💑", name: "내님은누구",   color: "text-rose-400" },
   guardian: { emoji: "🌟", name: "내귀인은누구", color: "text-yellow-400" },
   enemy:    { emoji: "😤", name: "내웬수는누구", color: "text-slate-400" },
+  self:     { emoji: "🎯", name: "내 사주 분석", color: "text-indigo-400" },
 };
 
 const BUNDLE_TABS = [
@@ -81,6 +83,7 @@ export default function ResultPage() {
   const isBundle = result.productType === "bundle";
   const isGuardian = result.productType === "guardian";
   const isEnemy = result.productType === "enemy";
+  const isSelf = result.productType === "self";
   const analysis = result.analysis as { sajuInfo: { yearPillar: string; monthPillar: string; dayPillar: string; hourPillar: string } };
   const productMeta = PRODUCT_LABEL[isBundle ? "spouse" : (result.productType ?? "spouse")];
 
@@ -158,6 +161,12 @@ export default function ResultPage() {
           <GuardianResultCard result={result} onReset={handleReset} />
         ) : isEnemy ? (
           <EnemyResultCard result={result} onReset={handleReset} />
+        ) : isSelf ? (
+          <SelfResultCard
+            analysis={result.analysis as SelfSajuAnalysis}
+            name={result.name}
+            gender={result.gender ?? "male"}
+          />
         ) : (
           <ResultCard result={result} onReset={handleReset} />
         )}
