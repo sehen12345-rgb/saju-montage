@@ -9,13 +9,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   debug: true,
   logger: {
     error(error: Error) {
-      console.error("[AUTH_ERROR]", error.name, error.message, JSON.stringify((error as any).cause ?? {}));
+      console.error("[AUTH_ERROR]", error.name, error.message, JSON.stringify((error as unknown as Record<string, unknown>).cause ?? {}));
     },
     warn(code: string) {
       console.warn("[AUTH_WARN]", code);
-    },
-    debug(code: string, metadata: unknown) {
-      console.log("[AUTH_DEBUG]", code, JSON.stringify(metadata));
     },
   },
   providers: [
