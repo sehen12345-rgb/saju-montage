@@ -36,7 +36,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
     Kakao({
       clientId: process.env.KAKAO_CLIENT_ID ?? "",
-      clientSecret: "none",
+      clientSecret: process.env.KAKAO_CLIENT_SECRET ?? "",
       authorization: {
         url: "https://kauth.kakao.com/oauth/authorize",
         params: {
@@ -44,7 +44,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         },
       },
       client: {
-        token_endpoint_auth_method: "none",
+        token_endpoint_auth_method: "client_secret_post",
       },
       profile(profile: Record<string, unknown>) {
         const account = profile.kakao_account as Record<string, unknown> | undefined;
