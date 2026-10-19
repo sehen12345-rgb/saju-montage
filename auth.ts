@@ -4,15 +4,33 @@ import Naver from "next-auth/providers/naver";
 import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
 
+// Intercept Kakao fetch calls to log raw request/response
+const _origFetch = globalThis.fetch;
+globalThis.fetch = async function (...args: Parameters<typeof fetch>) {
+  const url =
+    typeof args[0] === "string"
+      ? args[0]
+      : args[0] instanceof URL
+      ? args[0].href
+      : (args[0] as Request).url;
+  if (url?.includes("kakao")) {
+    const body = (args[1] as RequestInit | undefined)?.body;
+    console.log("[KAKAO_REQ]", url, typeof body === "string" ? body : String(body ?? ""));
+    const res = await _origFetch(...args);
+    const clone = res.clone();
+    const text = await clone.text();
+    console.log("[KAKAO_RES]", res.status, text.slice(0, 800));
+    return res;
+  }
+  return _origFetch(...args);
+} as typeof fetch;
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
-  debug: true,
   logger: {
     error(error: Error) {
-      console.error("[AUTH_ERROR]", error.name, error.message, JSON.stringify((error as unknown as Record<string, unknown>).cause ?? {}));
-    },
-    warn(code: string) {
-      console.warn("[AUTH_WARN]", code);
+      const cause = (error as unknown as Record<string, unknown>).cause;
+      console.error("[AUTH_ERROR]", error.name, ":", error.message, "| cause:", JSON.stringify(cause ?? null));
     },
   },
   providers: [
