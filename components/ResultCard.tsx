@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import type { GenerateResult, SajuAnalysis, SelfSajuAnalysis } from "@/lib/types";
 import SelfSajuSection from "./SelfSajuSection";
-import { isPaidForSaju, savePaidRecord, makeProductHash } from "@/lib/paymentStorage";
+import { isPaidForSaju, savePaidRecord, makeProductHash, PRICE_INDIVIDUAL, PRICE_BUNDLE } from "@/lib/paymentStorage";
+import { requestTossPayment } from "@/lib/tossPayments";
 
 // ── 인스타그램 스토리 이미지 생성 (9:16 Canvas) ────────────
 
@@ -393,9 +394,17 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: (type: "indi
   async function handlePay(type: "individual" | "bundle" | "card") {
     if (paying) return;
     setPaying(type);
-    await new Promise((r) => setTimeout(r, 900));
-    setPaying(null);
-    onPay(type === "bundle" ? "bundle" : "individual");
+    try {
+      if (type === "bundle") {
+        await requestTossPayment({ method: "KAKAOPAY", amount: PRICE_BUNDLE, orderName: "3개 묶음 특가 (배우자+귀인+웬수)", isBundle: true });
+      } else if (type === "card") {
+        await requestTossPayment({ method: "CARD", amount: PRICE_INDIVIDUAL, orderName: "배우자 몽타주 + 완전분석" });
+      } else {
+        await requestTossPayment({ method: "KAKAOPAY", amount: PRICE_INDIVIDUAL, orderName: "배우자 몽타주 + 완전분석" });
+      }
+    } catch {
+      setPaying(null);
+    }
   }
 
   const ITEMS = ["🎨 AI 배우자 몽타주", "✨ 이름 첫 글자 힌트", "💬 카카오톡 첫 메시지", "🌙 전생 인연 이야기", "💑 케미 타입 분석", "📊 5가지 궁합 점수", "💝 배우자 사랑 언어", "🧠 심리 분석", "📅 월별 인연운 차트", "🌟 닮은꼴 분위기", "🚀 인연 실천 가이드", "💡 인연 조언 3가지"];

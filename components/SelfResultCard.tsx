@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import type { SelfSajuAnalysis, SajuInfo } from "@/lib/types";
-import { isPaidForSaju, savePaidRecord, makeProductHash } from "@/lib/paymentStorage";
+import { isPaidForSaju, savePaidRecord, makeProductHash, PRICE_SELF } from "@/lib/paymentStorage";
+import { requestTossPayment } from "@/lib/tossPayments";
 
 // ── 오행 색상 매핑 ──────────────────────────────────────────
 const STEM_ELEMENT: Record<string, string> = {
@@ -177,9 +178,15 @@ function SelfPayModal({ onClose, onPay }: { onClose: () => void; onPay: () => vo
   async function handlePay(method: string) {
     if (paying) return;
     setPaying(method);
-    await new Promise((r) => setTimeout(r, 900));
-    setPaying(null);
-    onPay();
+    try {
+      if (method === "card") {
+        await requestTossPayment({ method: "CARD", amount: PRICE_SELF, orderName: "내 사주 완전 분석" });
+      } else {
+        await requestTossPayment({ method: "KAKAOPAY", amount: PRICE_SELF, orderName: "내 사주 완전 분석" });
+      }
+    } catch {
+      setPaying(null);
+    }
   }
 
   return (

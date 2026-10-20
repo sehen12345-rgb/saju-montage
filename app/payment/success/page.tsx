@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { savePaidRecord, makeProductHash } from "@/lib/paymentStorage";
+import { savePaidRecord, saveBundlePaidRecord, makeProductHash, makeSajuHash } from "@/lib/paymentStorage";
 
 function PaymentSuccessContent() {
   const router = useRouter();
@@ -14,6 +14,7 @@ function PaymentSuccessContent() {
     const paymentKey = searchParams.get("paymentKey");
     const orderId = searchParams.get("orderId");
     const amount = searchParams.get("amount");
+    const isBundle = searchParams.get("bundle") === "1";
 
     if (!paymentKey || !orderId || !amount) {
       setErrorMsg("결제 정보가 올바르지 않습니다.");
@@ -40,12 +41,21 @@ function PaymentSuccessContent() {
               parsed.paid = true;
               sessionStorage.setItem("sajuResult", JSON.stringify(parsed));
               localStorage.removeItem("sajuResult_backup");
-              if (parsed.analysis?.sajuInfo) {
+              if (parsed.analysis?.sajuInfo && orderId) {
                 const { yearPillar, monthPillar, dayPillar, hourPillar } = parsed.analysis.sajuInfo;
                 const gender = parsed.gender ?? "male";
-                const productType = parsed.productType ?? "spouse";
-                const hash = makeProductHash(yearPillar, monthPillar, dayPillar, hourPillar, gender, productType);
-                if (orderId) savePaidRecord(hash, orderId);
+                if (isBundle) {
+                  for (const pt of ["spouse", "guardian", "enemy"]) {
+                    const hash = makeProductHash(yearPillar, monthPillar, dayPillar, hourPillar, gender, pt);
+                    savePaidRecord(hash, orderId);
+                  }
+                  const baseHash = makeSajuHash(yearPillar, monthPillar, dayPillar, hourPillar, gender);
+                  saveBundlePaidRecord(baseHash, orderId);
+                } else {
+                  const productType = parsed.productType ?? "spouse";
+                  const hash = makeProductHash(yearPillar, monthPillar, dayPillar, hourPillar, gender, productType);
+                  savePaidRecord(hash, orderId);
+                }
               }
             }
           } catch (e) {

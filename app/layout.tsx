@@ -33,6 +33,7 @@ export default function RootLayout({
     <html lang="ko">
       <head>
         <Script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js" strategy="afterInteractive" />
+        <Script src="https://js.tosspayments.com/v2/standard" strategy="afterInteractive" />
       </head>
       <body className="min-h-screen bg-[#0d0d12]">
         {/* 구버전 캐시 강제 초기화 */}
