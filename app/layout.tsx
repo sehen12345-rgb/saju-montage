@@ -39,10 +39,10 @@ export default function RootLayout({
         <Script id="cache-bust" strategy="beforeInteractive">{`
           (function(){
             var v = localStorage.getItem('app_version');
-            if(v !== '20260414') {
+            if(v !== '20261020') {
               sessionStorage.clear();
               localStorage.removeItem('sajuResult_backup');
-              localStorage.setItem('app_version','20260414');
+              localStorage.setItem('app_version','20261020');
             }
           })();
         `}</Script>
