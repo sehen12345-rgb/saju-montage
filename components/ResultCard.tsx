@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import type { GenerateResult, SajuAnalysis } from "@/lib/types";
+import type { GenerateResult, SajuAnalysis, SelfSajuAnalysis } from "@/lib/types";
+import SelfSajuSection from "./SelfSajuSection";
 import { isPaidForSaju, savePaidRecord, makeProductHash } from "@/lib/paymentStorage";
 
 // ── 인스타그램 스토리 이미지 생성 (9:16 Canvas) ────────────
@@ -343,7 +344,7 @@ function BlurredSection({ label }: { label: string }) {
         <p className="text-xs text-gray-500 font-bold uppercase mb-1">🔒 {label}</p>
         <p className="text-base font-bold text-white mb-3">결제 후 확인하세요</p>
         <p className="text-sm text-gray-500 leading-relaxed">
-          이 내용은 결제 후 확인하실 수 있습니다. 지금 바로 1,900원으로 배우자의 모든 정보를 확인해보세요.
+          이 내용은 결제 후 확인하실 수 있습니다. 지금 바로 2,900원으로 배우자의 모든 정보를 확인해보세요.
         </p>
       </div>
       <div className="absolute inset-0 bg-gradient-to-b from-[#13131a]/20 to-[#13131a]/80 flex items-center justify-center">
@@ -457,7 +458,7 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: (type: "indi
                 <span className="text-xs text-gray-500 line-through">6,000원</span>
                 <span className="text-xs bg-rose-500/20 text-rose-400 font-bold px-2 py-0.5 rounded-full">67% 할인</span>
               </div>
-              <p className="text-2xl font-black text-white">1,900<span className="text-base font-bold">원</span></p>
+              <p className="text-2xl font-black text-white">2,900<span className="text-base font-bold">원</span></p>
               <p className="text-xs text-gray-500 mt-0.5">1회 결제 · 회원가입 불필요</p>
             </div>
 
@@ -470,7 +471,7 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: (type: "indi
               {paying === "individual" ? <span className="w-5 h-5 border-2 border-gray-400/40 border-t-gray-700 rounded-full animate-spin" /> : (
                 <>
                   <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current shrink-0"><path d="M12 3C6.48 3 2 6.48 2 10.8c0 2.72 1.6 5.12 4.04 6.56l-1.02 3.76 4.38-2.88c.84.12 1.72.18 2.6.18 5.52 0 10-3.48 10-7.8S17.52 3 12 3z"/></svg>
-                  카카오페이 1,900원
+                  카카오페이 2,900원
                 </>
               )}
             </button>
@@ -480,7 +481,7 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: (type: "indi
               disabled={!!paying}
               className="w-full py-3.5 rounded-2xl border border-white/15 text-gray-300 font-semibold text-sm active:scale-95 disabled:opacity-60 transition-all flex items-center justify-center gap-2"
             >
-              {paying === "card" ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : "💳 신용·체크카드 1,900원"}
+              {paying === "card" ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : "💳 신용·체크카드 2,900원"}
             </button>
 
             <button onClick={onClose} className="w-full py-2.5 text-gray-600 text-sm hover:text-gray-400 transition-colors">
@@ -769,7 +770,7 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
             style={{ display: "flex" }}
           >
             <span className="text-lg">✨ 몽타주 + 전체 보기</span>
-            <span className="bg-gray-900/20 rounded-xl px-3 py-1 text-sm font-black">1,900원</span>
+            <span className="bg-gray-900/20 rounded-xl px-3 py-1 text-sm font-black">2,900원</span>
           </button>
         </div>
       )}
@@ -817,6 +818,11 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
               </div>
             )}
           </div>
+        )}
+
+        {/* ── 내 사주 분석 섹션 ── */}
+        {result.selfSaju && (
+          <SelfSajuSection selfSaju={result.selfSaju} name={result.name} isPaid={paid} />
         )}
 
         {/* ════════════════════════════════
@@ -1426,7 +1432,7 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
                   onClick={() => setShowModal(true)}
                   className="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 text-white font-bold text-base shadow-2xl hover:from-amber-500 hover:to-orange-600 transition-all active:scale-95"
                 >
-                  ✨ 1,900원으로 공개
+                  ✨ 2,900원으로 공개
                 </button>
               </div>
             </div>
@@ -1464,14 +1470,14 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
                 <h3 className="text-lg font-bold text-white mb-1">몽타주 + 완전 분석 보고서</h3>
                 <div className="flex items-center justify-center gap-2 mb-4">
                   <span className="text-sm text-gray-500 line-through">6,000원</span>
-                  <span className="text-2xl font-black text-amber-400">1,900원</span>
+                  <span className="text-2xl font-black text-amber-400">2,900원</span>
                   <span className="text-xs bg-red-500/20 text-red-400 font-bold px-2 py-0.5 rounded-full border border-red-500/30">67% 할인</span>
                 </div>
                 <button
                   onClick={() => setShowModal(true)}
                   className="w-full py-4 rounded-2xl bg-yellow-400 text-gray-900 font-bold text-lg active:scale-95 transition-all"
                 >
-                  ✨ 1,900원으로 몽타주 + 전체 보기
+                  ✨ 2,900원으로 몽타주 + 전체 보기
                 </button>
                 <p className="text-xs text-gray-500 mt-3">커피 한 잔 값 · 단 한 번만 결제</p>
               </div>

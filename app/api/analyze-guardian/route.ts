@@ -5,6 +5,7 @@ import {
   buildGuardianAnalysisBase,
   buildManseryeokPromptContext,
 } from "@/lib/sajuAnalyzer";
+import { buildSelfBase } from "@/lib/selfAnalyzer";
 import Anthropic from "@anthropic-ai/sdk";
 import type { GuardianAnalysis } from "@/lib/types";
 
@@ -128,7 +129,8 @@ export async function POST(req: NextRequest) {
       imagePrompt: narrative?.imagePrompt ?? fallbackImagePrompt,
     };
 
-    return NextResponse.json(analysis);
+    const selfBase = buildSelfBase(manseryeok, name);
+    return NextResponse.json({ ...analysis, selfSaju: selfBase });
   } catch (err) {
     console.error("analyze-guardian error:", err);
     return NextResponse.json({ error: "귀인 분석 중 오류가 발생했습니다." }, { status: 500 });

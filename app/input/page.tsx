@@ -259,7 +259,10 @@ export default function InputPage() {
 
         const usedMock = spouseRes.usedMock || guardianRes.usedMock || enemyRes.usedMock;
 
-        const spouseAnalysis = (spouseRes.result as SajuAnalysis) ?? buildMockSpouseAnalysis(data.name, data.birthYear, data.gender);
+        const spouseRaw = (spouseRes.result ?? buildMockSpouseAnalysis(data.name, data.birthYear, data.gender)) as Record<string, unknown>;
+        const bundleSelfSaju = spouseRaw.selfSaju as SelfSajuAnalysis | undefined;
+        if (bundleSelfSaju) delete spouseRaw.selfSaju;
+        const spouseAnalysis = spouseRaw as unknown as SajuAnalysis;
         const guardianAnalysis = (guardianRes.result as GuardianAnalysis) ?? buildMockGuardianAnalysis(data.name, data.birthYear);
         const enemyAnalysis = (enemyRes.result as EnemyAnalysis) ?? buildMockEnemyAnalysis(data.name, data.birthYear);
 
@@ -283,6 +286,7 @@ export default function InputPage() {
           paid: false,
           productType: "bundle",
           bundleResults,
+          selfSaju: bundleSelfSaju,
         };
         const json = JSON.stringify(result);
         try { sessionStorage.setItem("sajuResult", json); } catch { /* private mode */ }
@@ -374,6 +378,12 @@ export default function InputPage() {
       clearTimeout(autoStep1);
       clearTimeout(autoStep2);
 
+      // Extract selfSaju from analysis response (API attaches it as extra field)
+      const selfSaju = (analysis as Record<string, unknown>).selfSaju as SelfSajuAnalysis | undefined;
+      if (selfSaju) {
+        delete (analysis as Record<string, unknown>).selfSaju;
+      }
+
       setLoadingStep(3);
       await new Promise((r) => setTimeout(r, 800));
       setLoadingStep(4); // LoadingScreen은 step이 STEPS.length-1을 넘어가도 마지막 단계로 표시
@@ -394,6 +404,7 @@ export default function InputPage() {
         demo: usedMock,
         paid: false,
         productType,
+        selfSaju,
       };
       const json = JSON.stringify(result);
       try { sessionStorage.setItem("sajuResult", json); } catch { /* private mode */ }

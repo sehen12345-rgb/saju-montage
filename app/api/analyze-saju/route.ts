@@ -5,6 +5,7 @@ import {
   buildSpouseAnalysisBase,
   buildManseryeokPromptContext,
 } from "@/lib/sajuAnalyzer";
+import { buildSelfBase } from "@/lib/selfAnalyzer";
 import { getSajuSeed } from "@/lib/prompts";
 import { buildFullDeterministicAnalysis } from "@/lib/deterministic";
 import type { SajuInput, SajuAnalysis } from "@/lib/types";
@@ -159,7 +160,10 @@ export async function POST(req: NextRequest) {
       actionGuide: base.advice,
     };
 
-    return NextResponse.json(analysis);
+    // 6) 사용자 본인 사주 기본 데이터
+    const selfBase = buildSelfBase(manseryeok, name);
+
+    return NextResponse.json({ ...analysis, selfSaju: selfBase });
   } catch (err) {
     console.error("analyze-saju error:", err);
     return NextResponse.json({ error: "사주 분석 중 오류가 발생했습니다." }, { status: 500 });

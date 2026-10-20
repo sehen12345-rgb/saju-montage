@@ -553,6 +553,18 @@ export function buildManseryeokPromptContext(d: ManseryeokData): string {
 - 올해 세운: ${d.yearlyFortune.pillar}(${RATING_LABEL[d.yearlyFortune.rating]})
 - 올해 월별: ${monthly}
 - 삼재: ${d.samjae.isSamjae ? `현재 ${d.samjae.type}삼재 진입` : `해당없음 (대상 연도: ${d.samjae.samjaeYears.join("/") || "—"})`}
+- 격국: ${d.geokguk.name} — ${d.geokguk.description}
+- 용신(用神): ${d.yongshin.element} 기운 (${d.yongshin.sipShinType}) — ${d.yongshin.description}
+- 희신: ${d.yongshin.hiShin} 기운
+- 일지 12운성: ${d.dayUnSeong} — 일간이 일지에서 ${d.dayUnSeong} 단계에 있음
+- 통근: ${d.tongGeun.description} (강도 ${d.tongGeun.score}/10, 뿌리: ${d.tongGeun.roots.join("/") || "없음"})
+- 신살: ${d.sinSal.active.length > 0 ? d.sinSal.active.join(", ") : "특별 신살 없음"}
+
+【사주 전문 해석 지침】
+- 격국(${d.geokguk.name})의 특성을 인물 묘사에 반드시 반영하세요
+- 용신(${d.yongshin.element})과 희신(${d.yongshin.hiShin}) 기운이 강한 사람/환경을 긍정적으로 서술하세요
+- 신살(${d.sinSal.active.length > 0 ? d.sinSal.active.map(s => s.split("—")[0].trim()).join(", ") : "없음"})이 있다면 그 특성을 자연스럽게 녹여내세요
+- 12운성 ${d.dayUnSeong} 단계의 에너지를 현재 시기 서술에 반영하세요
 
 【지침】
 위 만세력 데이터를 근거로, 점수·시기 등 수치 필드는 수정하지 말고

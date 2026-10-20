@@ -346,7 +346,7 @@ export default function Home() {
 
                 <div className={`rounded-2xl border ${p.borderColor} p-3 bg-white/2`}>
                   <div className="flex items-center gap-1.5 mb-2">
-                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">1,900원으로 공개</span>
+                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">2,900원으로 공개</span>
                     <span className="text-[9px] text-red-400 bg-red-500/10 px-1.5 py-0.5 rounded-full font-bold">67% 할인</span>
                   </div>
                   <div className="grid grid-cols-2 gap-1">
@@ -362,8 +362,8 @@ export default function Home() {
 
               {/* 가격 */}
               <div className="flex items-center gap-2 mb-3">
-                <span className="text-sm text-gray-600 line-through">6,000원</span>
-                <span className="text-2xl font-black text-white">1,900원</span>
+                <span className="text-sm text-gray-600 line-through">9,900원</span>
+                <span className="text-2xl font-black text-white">2,900원</span>
                 <span className="text-xs text-gray-500">· 1회 결제</span>
               </div>
             </div>
@@ -433,7 +433,7 @@ export default function Home() {
               </div>
 
               <div className="flex items-center gap-2 mb-3">
-                <span className="text-sm text-gray-600 line-through">5,900원</span>
+                <span className="text-sm text-gray-600 line-through">9,900원</span>
                 <span className="text-2xl font-black text-white">990원</span>
                 <span className="text-xs text-gray-500">· 1회 결제</span>
               </div>

@@ -128,6 +128,7 @@ export interface GenerateResult {
   paid?: boolean;
   productType?: ProductType;
   bundleResults?: BundleResults;
+  selfSaju?: SelfSajuAnalysis;
 }
 
 export interface EnemyAnalysis {
@@ -201,4 +202,10 @@ export interface SelfSajuAnalysis {
   lifePhases: { age: string; theme: string; rating: number }[];  // 대운 흐름 4개
   luckyElements: string[];               // 행운 키워드 3가지
   actionNow: string[];                   // 지금 해야 할 행동 3가지
+
+  // ── 전문 분석 필드 (선택) ──────────────────────────────
+  geokguk?: string;           // 격국명
+  yongshin?: string;          // 용신 오행 + 설명
+  sinSal?: string[];          // 신살 목록
+  dayUnSeong?: string;        // 일지 12운성
 }

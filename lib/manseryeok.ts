@@ -481,6 +481,289 @@ export function analyzeInnerHapChung(sajuInfo: SajuInfo): InnerHapChung {
 }
 
 // ─────────────────────────────────────────────────────────────
+// 12운성 (Twelve Life Stages)
+// ─────────────────────────────────────────────────────────────
+
+const UN_SEONG_12 = ["장생", "목욕", "관대", "건록", "제왕", "쇠", "병", "사", "묘", "절", "태", "양"] as const;
+export type UnSeong12 = typeof UN_SEONG_12[number];
+
+const YANG_JANGSEONG: Record<string, number> = {
+  갑: 11, 병: 2, 무: 2, 경: 5, 임: 8,
+};
+const YIN_JANGSEONG: Record<string, number> = {
+  을: 6, 정: 9, 기: 9, 신: 0, 계: 3,
+};
+
+export function derive12UnSeong(dayStem: string, targetBranch: string): UnSeong12 {
+  const branchIdx = JIJI.indexOf(targetBranch as typeof JIJI[number]);
+  if (branchIdx < 0) return "장생";
+  const isYang = YANG_STEMS.includes(dayStem);
+  const startIdx = isYang ? (YANG_JANGSEONG[dayStem] ?? 0) : (YIN_JANGSEONG[dayStem] ?? 0);
+  let offset: number;
+  if (isYang) {
+    offset = ((branchIdx - startIdx) + 12) % 12;
+  } else {
+    offset = ((startIdx - branchIdx) + 12) % 12;
+  }
+  return UN_SEONG_12[offset];
+}
+
+// ─────────────────────────────────────────────────────────────
+// 용신(用神) — 억부법
+// ─────────────────────────────────────────────────────────────
+
+const GEUK_BY: Record<string, string> = { 木: "土", 火: "金", 土: "水", 金: "木", 水: "火" };
+const SAENG_BY: Record<string, string> = { 木: "火", 火: "土", 土: "金", 金: "水", 水: "木" };
+
+export interface YongshinResult {
+  element: string;
+  sipShinType: string;
+  description: string;
+  hiShin: string;
+}
+
+export function deriveYongshin(sajuInfo: SajuInfo, elements: ElementAnalysis, sipShin: Record<SipShin, number>): YongshinResult {
+  const dayElem = elements.dayElement;
+  const isSinGang = elements.isSinGang;
+
+  const gwanElement = (Object.keys(GEUK_BY) as string[]).find(k => GEUK_BY[k] === dayElem) ?? "金";
+  const inElement = (Object.keys(SAENG_BY) as string[]).find(k => SAENG_BY[k] === dayElem) ?? "水";
+  const siksangElement = SAENG_BY[dayElem] ?? "火";
+  const jaeElement = GEUK_BY[dayElem] ?? "土";
+
+  if (isSinGang) {
+    const biGeop = (sipShin.비견 ?? 0) + (sipShin.겁재 ?? 0);
+    const inSeong = (sipShin.정인 ?? 0) + (sipShin.편인 ?? 0);
+    if (inSeong >= 3) {
+      return {
+        element: jaeElement,
+        sipShinType: "재성(財星)",
+        description: `인성이 과다하여 ${jaeElement} 기운의 재성이 용신입니다. 실용적 가치를 추구하면 운이 열립니다.`,
+        hiShin: siksangElement,
+      };
+    }
+    if (biGeop >= 3) {
+      return {
+        element: gwanElement,
+        sipShinType: "관성(官星)",
+        description: `비겁이 강하여 ${gwanElement} 기운의 관성이 용신입니다. 원칙과 책임감이 운의 열쇠입니다.`,
+        hiShin: jaeElement,
+      };
+    }
+    return {
+      element: siksangElement,
+      sipShinType: "식상(食傷)",
+      description: `신강하여 ${siksangElement} 기운의 식상이 용신입니다. 재능과 표현으로 에너지를 발산하면 길합니다.`,
+      hiShin: jaeElement,
+    };
+  } else {
+    const biGeop = (sipShin.비견 ?? 0) + (sipShin.겁재 ?? 0);
+    if (biGeop >= 2) {
+      return {
+        element: dayElem,
+        sipShinType: "비겁(比劫)",
+        description: `신약하여 ${dayElem} 기운의 비겁이 용신입니다. 동료·협력자와 함께할 때 운이 상승합니다.`,
+        hiShin: inElement,
+      };
+    }
+    return {
+      element: inElement,
+      sipShinType: "인성(印星)",
+      description: `신약하여 ${inElement} 기운의 인성이 용신입니다. 학습·배움·정신적 충만함이 운의 근원입니다.`,
+      hiShin: dayElem,
+    };
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// 격국(格局) — 월지 기반
+// ─────────────────────────────────────────────────────────────
+
+export interface GeokgukResult {
+  name: string;
+  sipShinType: string;
+  element: string;
+  description: string;
+}
+
+const GEOKGUK_DESC: Record<string, string> = {
+  정관격: "사회적 규범과 명예를 중시하며 책임감이 강한 격국입니다. 공직·경영·법조에 적합하며 안정된 삶을 추구합니다.",
+  편관격: "강한 의지와 결단력을 가진 칠살격입니다. 도전적 환경에서 빛나며 군경·의료·스포츠 분야에 적합합니다.",
+  정인격: "지혜와 학문을 추구하는 격국입니다. 교육·연구·문화 분야에서 두각을 나타내며 어머니의 사랑처럼 포용력이 큽니다.",
+  편인격: "독창적 직관과 예술적 감수성이 특징입니다. 기존 틀을 벗어난 창의적 분야에서 능력이 발휘됩니다.",
+  식신격: "베풀고 표현하는 복덕 격국입니다. 요리·예술·교육 등 사람을 즐겁게 하는 분야에서 복이 넘칩니다.",
+  상관격: "뛰어난 재능과 창의성을 가진 격국입니다. 예술·기획·언론·IT에서 남다른 성과를 냅니다.",
+  정재격: "성실하고 꾸준하게 재물을 쌓는 격국입니다. 금융·회계·공무원처럼 안정적 수입이 강점입니다.",
+  편재격: "기회를 포착하는 역동적 재물 격국입니다. 사업·투자·무역에서 빛나며 활동적 삶을 즐깁니다.",
+  비견격: "독립심과 자존감이 강한 격국입니다. 자기 사업이나 전문직에서 자신만의 길을 개척합니다.",
+  겁재격: "강한 승부욕과 추진력의 격국입니다. 경쟁 환경에서 두각을 나타내며 리더십이 강합니다.",
+};
+
+export function deriveGeokguk(sajuInfo: SajuInfo): GeokgukResult {
+  const dayStem = sajuInfo.dayPillar.charAt(0);
+  const monthBranch = sajuInfo.monthPillar.charAt(1);
+  const hidden = HIDDEN_STEMS[monthBranch] ?? [];
+  const mainStem = hidden[hidden.length - 1] ?? monthBranch;
+  const sipShin = getSipShin(dayStem, mainStem);
+  const element = ganElement(mainStem);
+
+  const SIPSHIN_TO_GEOKGUK: Record<SipShin, string> = {
+    정관: "정관격", 편관: "편관격", 정인: "정인격", 편인: "편인격",
+    식신: "식신격", 상관: "상관격", 정재: "정재격", 편재: "편재격",
+    비견: "비견격", 겁재: "겁재격",
+  };
+
+  const name = SIPSHIN_TO_GEOKGUK[sipShin];
+  return {
+    name,
+    sipShinType: sipShin,
+    element,
+    description: GEOKGUK_DESC[name] ?? "사주의 기운을 온전히 발휘하는 격국입니다.",
+  };
+}
+
+// ─────────────────────────────────────────────────────────────
+// 신살(神殺)
+// ─────────────────────────────────────────────────────────────
+
+export interface SinSalResult {
+  dohwa: boolean;
+  yeokma: boolean;
+  hwagae: boolean;
+  yangIn: boolean;
+  cheonUlGuiIn: boolean;
+  munChang: boolean;
+  active: string[];
+}
+
+const SINSAL_SAMHAP_GROUPS: Record<string, string[]> = {
+  인오술: ["인", "오", "술"],
+  해묘미: ["해", "묘", "미"],
+  신자진: ["신", "자", "진"],
+  사유축: ["사", "유", "축"],
+};
+
+function getSinsalSamhapGroup(branch: string): string | null {
+  for (const [key, members] of Object.entries(SINSAL_SAMHAP_GROUPS)) {
+    if (members.includes(branch)) return key;
+  }
+  return null;
+}
+
+const DOHWA_MAP: Record<string, string> = {
+  인오술: "묘", 해묘미: "자", 신자진: "유", 사유축: "오",
+};
+const YEOKMA_MAP: Record<string, string> = {
+  인오술: "신", 해묘미: "사", 신자진: "인", 사유축: "해",
+};
+const HWAGAE_MAP: Record<string, string> = {
+  인오술: "술", 해묘미: "미", 신자진: "진", 사유축: "축",
+};
+
+const YANGIN_BRANCH: Record<string, string> = {
+  갑: "묘", 병: "오", 무: "오", 경: "유", 임: "자",
+};
+
+const CHEONUL_MAP: Record<string, string[]> = {
+  갑: ["축", "미"], 무: ["축", "미"], 경: ["축", "미"],
+  을: ["자", "신"], 기: ["자", "신"],
+  병: ["해", "유"], 정: ["해", "유"],
+  임: ["묘", "사"], 계: ["묘", "사"],
+  신: ["인", "오"],
+};
+
+const MUNCHANG_MAP: Record<string, string> = {
+  갑: "사", 을: "오", 병: "신", 정: "유",
+  무: "신", 기: "유", 경: "해", 신: "자",
+  임: "인", 계: "묘",
+};
+
+export function deriveSinSal(sajuInfo: SajuInfo): SinSalResult {
+  const dayStem = sajuInfo.dayPillar.charAt(0);
+  const branches = [
+    sajuInfo.yearPillar.charAt(1),
+    sajuInfo.monthPillar.charAt(1),
+    sajuInfo.dayPillar.charAt(1),
+    sajuInfo.hourPillar.charAt(1),
+  ].filter(b => JIJI.includes(b as typeof JIJI[number]));
+
+  const yearBranch = sajuInfo.yearPillar.charAt(1);
+  const dayBranch = sajuInfo.dayPillar.charAt(1);
+  const refBranches = [yearBranch, dayBranch];
+
+  let dohwa = false, yeokma = false, hwagae = false;
+  for (const ref of refBranches) {
+    const group = getSinsalSamhapGroup(ref);
+    if (!group) continue;
+    if (branches.includes(DOHWA_MAP[group])) dohwa = true;
+    if (branches.includes(YEOKMA_MAP[group])) yeokma = true;
+    if (branches.includes(HWAGAE_MAP[group])) hwagae = true;
+  }
+
+  const yangInBranch = YANGIN_BRANCH[dayStem];
+  const yangIn = !!yangInBranch && YANG_STEMS.includes(dayStem) && branches.includes(yangInBranch);
+
+  const cheonUlBranches = CHEONUL_MAP[dayStem] ?? [];
+  const cheonUlGuiIn = branches.some(b => cheonUlBranches.includes(b));
+
+  const munChangBranch = MUNCHANG_MAP[dayStem];
+  const munChang = !!munChangBranch && branches.includes(munChangBranch);
+
+  const active: string[] = [];
+  if (dohwa) active.push("도화살(桃花殺) — 강한 이성적 매력");
+  if (yeokma) active.push("역마살(驛馬殺) — 이동·변화·해외운");
+  if (hwagae) active.push("화개살(華蓋殺) — 예술·종교·고독한 천재성");
+  if (yangIn) active.push("양인살(羊刃殺) — 강렬한 추진력, 양날의 검");
+  if (cheonUlGuiIn) active.push("천을귀인(天乙貴人) — 귀인의 복이 강함");
+  if (munChang) active.push("문창귀인(文昌貴人) — 학문·재능·총명함");
+
+  return { dohwa, yeokma, hwagae, yangIn, cheonUlGuiIn, munChang, active };
+}
+
+// ─────────────────────────────────────────────────────────────
+// 통근(通根) 강도
+// ─────────────────────────────────────────────────────────────
+
+export interface TongGeunResult {
+  score: number;
+  roots: string[];
+  description: string;
+}
+
+export function deriveTongGeun(sajuInfo: SajuInfo): TongGeunResult {
+  const dayStem = sajuInfo.dayPillar.charAt(0);
+  const dayElem = ganElement(dayStem);
+  const branches = [
+    sajuInfo.yearPillar.charAt(1),
+    sajuInfo.monthPillar.charAt(1),
+    sajuInfo.dayPillar.charAt(1),
+    sajuInfo.hourPillar.charAt(1),
+  ].filter(b => JIJI.includes(b as typeof JIJI[number]));
+
+  let score = 0;
+  const roots: string[] = [];
+
+  for (const branch of branches) {
+    const hidden = HIDDEN_STEMS[branch] ?? [];
+    const mainIdx = hidden.length - 1;
+    for (let i = 0; i < hidden.length; i++) {
+      if (ganElement(hidden[i]) === dayElem) {
+        const pts = i === mainIdx ? 3 : i === mainIdx - 1 ? 2 : 1;
+        score += pts;
+        if (!roots.includes(branch)) roots.push(branch);
+      }
+    }
+  }
+
+  const desc = score >= 7 ? "통근이 매우 강해 일간의 뿌리가 깊습니다."
+    : score >= 4 ? "적당한 통근으로 일간이 안정적입니다."
+    : score >= 1 ? "통근이 약해 외부 지원이 필요합니다."
+    : "통근이 없어 일간이 뿌리 없이 허공에 떠 있는 상태입니다.";
+
+  return { score: Math.min(score, 10), roots, description: desc };
+}
+
+// ─────────────────────────────────────────────────────────────
 // 편의 함수: 입력 → 종합 만세력 데이터
 // ─────────────────────────────────────────────────────────────
 
@@ -497,6 +780,11 @@ export interface ManseryeokData {
   birthYear: number;
   currentAge: number;
   gender: "male" | "female";
+  yongshin: YongshinResult;
+  geokguk: GeokgukResult;
+  sinSal: SinSalResult;
+  dayUnSeong: UnSeong12;
+  tongGeun: TongGeunResult;
 }
 
 export function buildManseryeokData(
@@ -530,10 +818,17 @@ export function buildManseryeokData(
   const yearlyFortune = calculateYearlyFortune(sajuInfo, currentYear);
   const samjae = calculateSamjae(birthYear, currentYear);
 
+  const yongshin = deriveYongshin(sajuInfo, elements, sipShin);
+  const geokguk = deriveGeokguk(sajuInfo);
+  const sinSal = deriveSinSal(sajuInfo);
+  const dayUnSeong = derive12UnSeong(sajuInfo.dayPillar.charAt(0), sajuInfo.dayPillar.charAt(1));
+  const tongGeun = deriveTongGeun(sajuInfo);
+
   return {
     sajuInfo, elements, sipShin, innerHapChung,
     daeun, currentDaeunIndex,
     monthlyFortune, yearlyFortune, samjae,
     birthYear, currentAge, gender,
+    yongshin, geokguk, sinSal, dayUnSeong, tongGeun,
   };
 }
