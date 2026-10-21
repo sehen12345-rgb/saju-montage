@@ -29,21 +29,23 @@ function buildFinalPrompt(spouseGender: string, analysisPrompt: string, seed: nu
   const lighting = LIGHTING_STYLES[seed % LIGHTING_STYLES.length];
   const shot = SHOT_STYLES[seed % SHOT_STYLES.length];
 
-  return `${genderPrefix}, ${analysisPrompt}, ${shot}, ${lighting}, natural skin pores and texture, real human face, 85mm lens, 8k resolution`;
+  return `${genderPrefix}, ${analysisPrompt}, ${shot}, ${lighting}, raw photo, natural skin texture with visible pores, real human imperfections, DSLR photograph, 85mm f/1.8 lens, shallow depth of field, candid expression, not a painting not an illustration not anime`;
 }
 
 const NEGATIVE_PROMPT = [
   "blurry", "low quality", "distorted face", "ugly", "deformed",
   "cartoon", "anime", "illustration", "painting", "sketch", "drawing",
+  "digital art", "render", "3d", "cgi",
   "bad anatomy", "watermark", "text", "logo", "extra limbs",
   "disfigured", "mutated", "bad proportions", "unrealistic skin",
-  "plastic skin", "over-smoothed", "airbrushed",
+  "plastic skin", "over-smoothed", "airbrushed", "perfect skin",
+  "too smooth", "porcelain skin", "doll-like", "uncanny",
 ].join(", ");
 
 // ── Pollinations.ai (완전 무료, 키 불필요) ────────────────
 async function generateWithPollinations(prompt: string, seed: number): Promise<string> {
   const encoded = encodeURIComponent(prompt);
-  const url = `https://image.pollinations.ai/prompt/${encoded}?width=768&height=768&model=flux&seed=${seed}&nologo=true&enhance=false`;
+  const url = `https://image.pollinations.ai/prompt/${encoded}?width=768&height=768&model=flux-realism&seed=${seed}&nologo=true&enhance=false`;
 
   const res = await fetch(url, {
     signal: AbortSignal.timeout(90_000),
