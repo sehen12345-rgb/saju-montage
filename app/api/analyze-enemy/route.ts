@@ -28,9 +28,18 @@ async function generateEnemyNarrativeWithClaude(
     const genderLabel = gender === "male" ? "남성" : "여성";
     const hourStr = birthHour >= 0 ? `${birthHour}시` : "시간 모름";
 
-    const prompt = `당신은 사주명리학 전문가이자 악연(惡緣) 분석가입니다.
+    const prompt = `당신은 사주명리학 전문가이자 MZ 감성의 콘텐츠 작가입니다.
 아래 만세력 분석 데이터를 근거로 웬수(악연)의 서술 텍스트만 작성하세요.
 유형/관계/피해 영역/시기/월별 위험도/주의·실천 가이드는 만세력에서 이미 도출되었습니다.
+
+[필수 문체 지침 — 이것이 가장 중요합니다]
+- 친한 친구가 "야, 이런 사람 조심해!" 하고 귀띔해주는 톤
+- "마치 ~처럼" 비유를 적극 활용
+- 웃기면서도 '소름' 돋게 만들 것 (너무 현실적이라 무서운 느낌)
+- 무서운 이야기지만 끝에 "${name}님은 이미 알았으니 OK!" 식으로 안심시키기
+- "~합니다" 단정체가 아니라 "~할 수 있어요", "~겠죠?" 공감체 혼용
+- 이 사람의 이름(${name})을 자연스럽게 섞어서 개인화
+- 뻔한 말 절대 금지
 
 [기본 정보]
 - 이름: ${name}
@@ -52,13 +61,13 @@ ${manseryeokContext}
 위 결과와 모순되지 않는 범위에서만 서술 텍스트를 작성하세요.
 순수 JSON만 응답하세요 (마크다운 코드블록 없이):
 {
-  "description": "웬수 외모/첫인상 묘사 2-3문장 (겉으로 매력적이지만 속은 다른 특징, 일간 오행 약점 반영)",
-  "howToAvoid": "웬수를 피하는 방법과 상황 2-3문장 (구체적 장소·상황·행동)",
-  "myWeakness": "웬수에게 이용당하는 나의 약점 2문장 (구체적으로)",
-  "damage": "웬수가 끼치는 피해와 영향 2문장 (피해 영역과 일치)",
-  "signToRecognize": "웬수를 알아보는 법 2문장 (어떤 신호·행동·느낌으로 알아볼 수 있는지)",
-  "kakaoFirstMessage": "웬수가 처음 접근할 때 보낼 법한 메시지 (자연스럽고 의심 없어 보이는 말투, 1-2문장)",
-  "pastLifeConnection": "전생 악연 이야기 2-3문장 (구체적 시대·관계·갈등, 감성적으로)",
+  "description": "웬수 외모/첫인상 묘사 2-3문장. '마치 ~처럼' 비유로. 처음엔 매력적이지만 어딘가 불안한 느낌이 드는 묘사. '이런 사람 봤죠?' 공감 유발. (일간 오행 약점 반영)",
+  "howToAvoid": "웬수 피하는 법 2-3문장. 구체적 장소·상황·행동으로. '이럴 때 이렇게 하면 돼요!' 실용적이고 안심되게. (위험 시기와 일치)",
+  "myWeakness": "${name}님의 약점 2문장. '아 맞아, 나 이런 거 못 참지...' 하고 찔리게. 솔직하고 따뜻하게.",
+  "damage": "웬수가 끼치는 피해 2문장. '이렇게 당할 수 있어요' 현실적으로. 소름 돋지만 알아서 좋은 정보처럼. (피해 영역과 일치)",
+  "signToRecognize": "웬수 알아보는 법 2문장. '이런 신호가 오면 도망가세요!' 직관적이고 납득 가게. 유머 살짝 섞어서.",
+  "kakaoFirstMessage": "웬수가 처음 접근할 때 보낼 법한 메시지 (받으면 '어 괜찮은 사람인가?' 싶을 만큼 자연스럽고 의심 없어 보이는 말투, 읽고 나서 소름 돋게, 1-2문장)",
+  "pastLifeConnection": "전생 악연 이야기 2-3문장. 구체적 시대·관계·갈등으로. '이래서 이번 생에 또 만나는구나...' 납득하면서 소름 돋게.",
   "imagePrompt": "English portrait prompt for AI image generation: charming yet deceptive person, superficially attractive but cold calculating eyes, two-faced nature, stylish appearance, dramatic cinematic lighting with subtle shadows, photorealistic, high quality"
 }`;
 
