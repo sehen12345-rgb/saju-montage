@@ -175,6 +175,14 @@ export interface GuardianAnalysis {
   readiness?: { score: number; comment: string };
 }
 
+export interface SajuDeepSection {
+  icon: string;       // 이모지
+  title: string;      // 재미있고 공감되는 제목
+  content: string;    // 비유+설명 3-4문장 (유머+공감+구체적)
+  reason: string;     // 사주 근거 2문장 (명리학 용어 사용)
+  advice: string;     // 실천 조언 2문장
+}
+
 export interface SelfSajuAnalysis {
   sajuInfo: SajuInfo;
 
@@ -202,6 +210,9 @@ export interface SelfSajuAnalysis {
   lifePhases: { age: string; theme: string; rating: number }[];  // 대운 흐름 4개
   luckyElements: string[];               // 행운 키워드 3가지
   actionNow: string[];                   // 지금 해야 할 행동 3가지
+
+  // ── 심화 섹션 (12개) ──────────────────────────────────
+  deepSections?: SajuDeepSection[];       // 12개 심화 분석 섹션
 
   // ── 전문 분석 필드 (선택) ──────────────────────────────
   geokguk?: string;           // 격국명

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { SelfSajuAnalysis, SajuInfo } from "@/lib/types";
+import type { SelfSajuAnalysis, SajuDeepSection, SajuInfo } from "@/lib/types";
 import { isPaidForSaju, savePaidRecord, makeProductHash, PRICE_SELF } from "@/lib/paymentStorage";
 import { requestTossPayment } from "@/lib/tossPayments";
 
@@ -273,6 +273,25 @@ function SelfPayModal({ onClose, onPay }: { onClose: () => void; onPay: () => vo
   );
 }
 
+// ── 심화 섹션 카드 ──────────────────────────────────────────
+function DeepSectionCard({ section }: { section: SajuDeepSection }) {
+  return (
+    <div className="bg-white/5 border border-white/8 rounded-2xl p-4">
+      <div className="flex items-center gap-2 mb-2">
+        <span className="text-xl">{section.icon}</span>
+        <h3 className="text-sm font-black text-white">{section.title}</h3>
+      </div>
+      <p className="text-xs text-gray-300 leading-relaxed mb-2">{section.content}</p>
+      <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-xl px-3 py-2 mb-2">
+        <p className="text-[11px] text-indigo-300 leading-relaxed">📖 {section.reason}</p>
+      </div>
+      <div className="bg-green-500/10 border border-green-500/20 rounded-xl px-3 py-2">
+        <p className="text-[11px] text-green-300 leading-relaxed">💡 {section.advice}</p>
+      </div>
+    </div>
+  );
+}
+
 // ── 메인 컴포넌트 ──────────────────────────────────────────
 
 interface Props {
@@ -433,84 +452,95 @@ export default function SelfResultCard({ analysis, name, gender }: Props) {
               </div>
             )}
 
-            {/* 타고난 기질 */}
-            {analysis.personality && (
-              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
-                <p className="text-xs text-violet-400 font-medium mb-2">🧬 타고난 기질</p>
-                <p className="text-sm text-gray-300 leading-relaxed">{analysis.personality}</p>
-              </div>
-            )}
+            {/* ── 심화 섹션 (deepSections 있을 때 우선 표시) ── */}
+            {analysis.deepSections && analysis.deepSections.length > 0 ? (
+              <>
+                {analysis.deepSections.map((section, i) => (
+                  <DeepSectionCard key={i} section={section} />
+                ))}
+              </>
+            ) : (
+              <>
+                {/* 타고난 기질 */}
+                {analysis.personality && (
+                  <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+                    <p className="text-xs text-violet-400 font-medium mb-2">🧬 타고난 기질</p>
+                    <p className="text-sm text-gray-300 leading-relaxed">{analysis.personality}</p>
+                  </div>
+                )}
 
-            {/* 강점 3가지 */}
-            {analysis.strengths?.length > 0 && (
-              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
-                <p className="text-xs text-emerald-400 font-medium mb-3">💪 나의 강점</p>
-                <div className="space-y-2">
-                  {analysis.strengths.map((s, i) => (
-                    <div key={i} className="flex items-start gap-3 bg-emerald-500/8 border border-emerald-500/20 rounded-xl p-3">
-                      <span className="w-6 h-6 rounded-full bg-emerald-500 text-white text-xs font-black flex items-center justify-center shrink-0 mt-0.5">
-                        {i + 1}
-                      </span>
-                      <p className="text-sm text-gray-300 leading-relaxed">{s}</p>
+                {/* 강점 3가지 */}
+                {analysis.strengths?.length > 0 && (
+                  <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+                    <p className="text-xs text-emerald-400 font-medium mb-3">💪 나의 강점</p>
+                    <div className="space-y-2">
+                      {analysis.strengths.map((s, i) => (
+                        <div key={i} className="flex items-start gap-3 bg-emerald-500/8 border border-emerald-500/20 rounded-xl p-3">
+                          <span className="w-6 h-6 rounded-full bg-emerald-500 text-white text-xs font-black flex items-center justify-center shrink-0 mt-0.5">
+                            {i + 1}
+                          </span>
+                          <p className="text-sm text-gray-300 leading-relaxed">{s}</p>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
+                  </div>
+                )}
 
-            {/* 주의사항 3가지 */}
-            {analysis.weaknesses?.length > 0 && (
-              <div className="bg-red-900/20 border border-red-500/30 rounded-2xl p-5">
-                <p className="text-xs text-red-400 font-medium mb-3">⚠️ 주의사항</p>
-                <div className="space-y-2">
-                  {analysis.weaknesses.map((w, i) => (
-                    <div key={i} className="flex items-start gap-2">
-                      <span className="text-red-400 text-xs mt-0.5 shrink-0">•</span>
-                      <p className="text-xs text-gray-300 leading-relaxed">{w}</p>
+                {/* 주의사항 3가지 */}
+                {analysis.weaknesses?.length > 0 && (
+                  <div className="bg-red-900/20 border border-red-500/30 rounded-2xl p-5">
+                    <p className="text-xs text-red-400 font-medium mb-3">⚠️ 주의사항</p>
+                    <div className="space-y-2">
+                      {analysis.weaknesses.map((w, i) => (
+                        <div key={i} className="flex items-start gap-2">
+                          <span className="text-red-400 text-xs mt-0.5 shrink-0">•</span>
+                          <p className="text-xs text-gray-300 leading-relaxed">{w}</p>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
+                  </div>
+                )}
 
-            {/* 직업 적성 */}
-            {analysis.career && (
-              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
-                <p className="text-xs text-amber-400 font-medium mb-2">💼 직업 적성</p>
-                <p className="text-sm text-gray-300 leading-relaxed">{analysis.career}</p>
-              </div>
-            )}
+                {/* 직업 적성 */}
+                {analysis.career && (
+                  <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+                    <p className="text-xs text-amber-400 font-medium mb-2">💼 직업 적성</p>
+                    <p className="text-sm text-gray-300 leading-relaxed">{analysis.career}</p>
+                  </div>
+                )}
 
-            {/* 재물운 */}
-            {analysis.wealthFortune && (
-              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
-                <p className="text-xs text-yellow-400 font-medium mb-2">💰 재물운</p>
-                <p className="text-sm text-gray-300 leading-relaxed">{analysis.wealthFortune}</p>
-              </div>
-            )}
+                {/* 재물운 */}
+                {analysis.wealthFortune && (
+                  <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+                    <p className="text-xs text-yellow-400 font-medium mb-2">💰 재물운</p>
+                    <p className="text-sm text-gray-300 leading-relaxed">{analysis.wealthFortune}</p>
+                  </div>
+                )}
 
-            {/* 연애/결혼 스타일 */}
-            {analysis.loveStyle && (
-              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
-                <p className="text-xs text-pink-400 font-medium mb-2">💕 연애/결혼 스타일</p>
-                <p className="text-sm text-gray-300 leading-relaxed">{analysis.loveStyle}</p>
-              </div>
-            )}
+                {/* 연애/결혼 스타일 */}
+                {analysis.loveStyle && (
+                  <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+                    <p className="text-xs text-pink-400 font-medium mb-2">💕 연애/결혼 스타일</p>
+                    <p className="text-sm text-gray-300 leading-relaxed">{analysis.loveStyle}</p>
+                  </div>
+                )}
 
-            {/* 건강 주의 */}
-            {analysis.healthCaution && (
-              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
-                <p className="text-xs text-teal-400 font-medium mb-2">🏥 건강 주의</p>
-                <p className="text-sm text-gray-300 leading-relaxed">{analysis.healthCaution}</p>
-              </div>
-            )}
+                {/* 건강 주의 */}
+                {analysis.healthCaution && (
+                  <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+                    <p className="text-xs text-teal-400 font-medium mb-2">🏥 건강 주의</p>
+                    <p className="text-sm text-gray-300 leading-relaxed">{analysis.healthCaution}</p>
+                  </div>
+                )}
 
-            {/* 올해 운세 */}
-            {analysis.thisYearFortune && (
-              <div className="bg-gradient-to-br from-indigo-900/40 to-violet-900/40 border border-indigo-500/30 rounded-2xl p-5">
-                <p className="text-xs text-indigo-400 font-medium mb-2">🌟 올해 운세</p>
-                <p className="text-sm text-gray-200 leading-relaxed">{analysis.thisYearFortune}</p>
-              </div>
+                {/* 올해 운세 */}
+                {analysis.thisYearFortune && (
+                  <div className="bg-gradient-to-br from-indigo-900/40 to-violet-900/40 border border-indigo-500/30 rounded-2xl p-5">
+                    <p className="text-xs text-indigo-400 font-medium mb-2">🌟 올해 운세</p>
+                    <p className="text-sm text-gray-200 leading-relaxed">{analysis.thisYearFortune}</p>
+                  </div>
+                )}
+              </>
             )}
 
             {/* 현재 대운 */}

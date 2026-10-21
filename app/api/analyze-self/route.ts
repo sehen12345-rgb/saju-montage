@@ -6,8 +6,12 @@ import {
   deriveJob,
 } from "@/lib/sajuAnalyzer";
 import { buildSelfBase } from "@/lib/selfAnalyzer";
-import type { SelfSajuAnalysis } from "@/lib/types";
+import type { SelfSajuAnalysis, SajuDeepSection } from "@/lib/types";
 import Anthropic from "@anthropic-ai/sdk";
+
+type NarrativeResult = Partial<Pick<SelfSajuAnalysis, "personality" | "career" | "wealthFortune" | "loveStyle" | "healthCaution" | "thisYearFortune">> & {
+  deepSections?: SajuDeepSection[];
+};
 
 async function generateSelfNarrativeWithClaude(
   name: string,
@@ -19,7 +23,7 @@ async function generateSelfNarrativeWithClaude(
   base: ReturnType<typeof buildSelfBase>,
   manseryeokContext: string,
   sajuContext: string,
-): Promise<Partial<Pick<SelfSajuAnalysis, "personality" | "career" | "wealthFortune" | "loveStyle" | "healthCaution" | "thisYearFortune">> | null> {
+): Promise<NarrativeResult | null> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey || apiKey === "your_anthropic_api_key_here") return null;
 
@@ -28,9 +32,9 @@ async function generateSelfNarrativeWithClaude(
     const genderLabel = gender === "male" ? "남성" : "여성";
     const hourStr = birthHour >= 0 ? `${birthHour}시` : "시간 모름";
 
-    const prompt = `당신은 사주명리학 전문가입니다.
-아래 만세력 데이터를 바탕으로 ${name}님 본인의 사주 분석 서술 텍스트를 작성하세요.
-구체적이고 현실적이며 공감되게 작성하세요. 뻔하거나 일반적인 표현은 피하세요.
+    const prompt = `당신은 사주명리학 전문가이자 트렌디한 콘텐츠 작가입니다.
+아래 만세력 데이터를 바탕으로 ${name}님 본인의 사주 분석을 작성하세요.
+구체적이고 현실적이며 유머와 공감이 넘치게 작성하세요. 뻔하거나 일반적인 표현은 절대 금지입니다.
 
 [기본 정보]
 - 이름: ${name}
@@ -55,13 +59,43 @@ ${manseryeokContext}
   "career": "직업 적성과 커리어 방향 2-3문장. 십신 분포와 오행 강세 기반으로 어떤 환경에서 빛나는지, 구체적 직업군 언급.",
   "wealthFortune": "재물운 2-3문장. 재성(財星) 강도와 오행 균형을 기반으로 언제 어떻게 돈을 버는지, 조심할 점.",
   "loveStyle": "연애·결혼 스타일 2-3문장. 일지(배우자궁) 기반으로 어떤 사람에게 끌리고 어떻게 사랑을 표현하는지.",
-  "healthCaution": "건강 주의 사항 2문장. 부족한 오행(${base.dayMasterElement === "木" ? "金" : "木"} 계열 등) 기반으로 약한 신체 부위와 예방법.",
-  "thisYearFortune": "올해(2026년) 운세 2-3문장. 세운과 대운 흐름 기반으로 구체적 조언과 기회."
-}`;
+  "healthCaution": "건강 주의 사항 2문장. 부족한 오행 기반으로 약한 신체 부위와 예방법.",
+  "thisYearFortune": "올해(2026년) 운세 2-3문장. 세운과 대운 흐름 기반으로 구체적 조언과 기회.",
+  "deepSections": [
+    {
+      "icon": "이모지",
+      "title": "재미있고 공감되는 제목 (예: '가뭄에 콩 나듯 귀한 물 한 방울, 사막의 CEO 재질'처럼 비유+핵심을 담아)",
+      "content": "이 사람의 실제 사주 기반으로 비유 풍부하게 3-4문장. 유머+공감+구체적 사례 포함. 뻔한 말 금지.",
+      "reason": "명리학 용어 사용한 사주 근거 2문장 (재성/관성/인성/신강신약/격국/십신 등 명시).",
+      "advice": "실천 가능한 구체적 행동 조언 2문장."
+    }
+  ]
+}
+
+deepSections는 반드시 아래 순서로 정확히 12개를 생성하세요. 각 섹션의 title은 이 사람의 사주를 반영한 독창적이고 재미있는 제목이어야 합니다:
+
+1. 격국/오행 — 사주 핵심 구조 분석. icon: "🏯". title 예시: "내 사주의 정체가 드디어 밝혀졌다" 같은 느낌으로
+2. 성격/기질 — 외강내유/내강외유 등. icon: "🎭". title 예시: "겉으로는 쿨한데 속은 용광로" 느낌으로
+3. 행동 패턴/단점 — 자신도 모르는 나쁜 습관. icon: "😅". title 예시: "통장이 텅장인 이유가 있었네" 느낌으로
+4. 잠재력/강점 — 아직 안 꺼낸 능력. icon: "💎". title 예시: "아직 봉인 해제 안 한 능력치" 느낌으로
+5. 내면/심리 — I vs E, 진짜 내 모습. icon: "🧠". title 예시: "I인데 E인 척 하느라 힘드시죠" 느낌으로
+6. 직업/커리어 — 어울리는 직업 구체적으로. icon: "💼". title 예시: "교수님보단 대표님 소리가 어울려요" 느낌으로
+7. 재물운 — 돈과 나의 관계. icon: "💰". title 예시: "돈복은 있는데 유지력이 문제야" 느낌으로
+8. 연애/결혼운 — 연애 패턴과 이상형. icon: "💕". title 예시: "밀당이 아니라 그냥 멀어지는 거예요" 느낌으로
+9. 가족관계 — 부모/형제/자녀와의 관계. icon: "🏠". title 예시: "집에선 막내 같고 밖에선 어른 같은 이유" 느낌으로
+10. 친구/대인관계 — 사람 사귀는 방식. icon: "🤝". title 예시: "친구 많은 척하지만 진짜 친구는 3명" 느낌으로
+11. 거주지/방향 — 살기 좋은 곳과 방위. icon: "🧭". title 예시: "남쪽으로 가면 돈이 따라온다" 느낌으로
+12. 종합 메시지 — 이 사주가 전하는 핵심. icon: "✨". title 예시: "결국 당신은 이렇게 살아야 빛난다" 느낌으로
+
+중요 지침:
+- 각 title은 반드시 이 사람의 일간(${base.dayMasterStem}), 격국(${base.geokguk}), 신강신약(${base.isSinGang ? "신강" : "신약"}) 등을 반영해 개인화할 것
+- content는 "마치 ~처럼", "~하는 타입이다" 식의 비유로 생동감 있게
+- reason에는 반드시 명리학 용어(재성, 관성, 인성, 비겁, 식상, 격국명, 신강신약 등) 포함
+- advice는 "오늘부터 ~해보세요" 같은 실천 가능한 내용으로`;
 
     const response = await client.messages.create({
       model: "claude-sonnet-4-6",
-      max_tokens: 2000,
+      max_tokens: 4000,
       messages: [{ role: "user", content: prompt }],
     });
 
@@ -132,6 +166,7 @@ export async function POST(req: NextRequest) {
       loveStyle:       narrative?.loveStyle       ?? fallback.loveStyle,
       healthCaution:   narrative?.healthCaution   ?? fallback.healthCaution,
       thisYearFortune: narrative?.thisYearFortune ?? fallback.thisYearFortune,
+      ...(narrative?.deepSections ? { deepSections: narrative.deepSections } : {}),
     };
 
     return NextResponse.json(analysis);
