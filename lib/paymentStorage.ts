@@ -4,9 +4,9 @@
  */
 
 // ── 가격 상수 ─────────────────────────────────────────────
-export const PRICE_INDIVIDUAL = 2900;   // 개별 상품 1개 (1900→2900원)
+export const PRICE_INDIVIDUAL = 1900;   // 개별 상품 1개
 export const PRICE_BUNDLE = 4900;       // 3개 묶음
-export const PRICE_SELF = 990;          // 나의 사주 분석
+export const PRICE_SELF = 1900;         // 나의 사주 분석
 
 const STORAGE_KEY = "saju_paid_v1";
 const BUNDLE_STORAGE_KEY = "saju_bundle_paid_v1";

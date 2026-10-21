@@ -244,7 +244,7 @@ function SelfPayModal({ onClose, onPay }: { onClose: () => void; onPay: () => vo
                 <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current shrink-0">
                   <path d="M12 3C6.48 3 2 6.48 2 10.8c0 2.72 1.6 5.12 4.04 6.56l-1.02 3.76 4.38-2.88c.84.12 1.72.18 2.6.18 5.52 0 10-3.48 10-7.8S17.52 3 12 3z"/>
                 </svg>
-                카카오페이 990원
+                카카오페이 1,900원
               </>
             )}
           </button>
@@ -257,7 +257,7 @@ function SelfPayModal({ onClose, onPay }: { onClose: () => void; onPay: () => vo
           >
             {paying === "card" ? (
               <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : "💳 신용·체크카드 990원"}
+            ) : "💳 신용·체크카드 1,900원"}
           </button>
 
           <button onClick={onClose} className="w-full py-2.5 text-gray-600 text-sm hover:text-gray-400 transition-colors">
@@ -346,7 +346,7 @@ export default function SelfResultCard({ analysis, name, gender }: Props) {
             style={{ display: "flex" }}
           >
             <span className="text-lg">🔮 내 사주 전체 보기</span>
-            <span className="bg-white/20 rounded-xl px-3 py-1 text-sm font-black">990원</span>
+            <span className="bg-white/20 rounded-xl px-3 py-1 text-sm font-black">1,900원</span>
           </button>
         </div>
       )}
@@ -419,7 +419,7 @@ export default function SelfResultCard({ analysis, name, gender }: Props) {
                 onClick={() => setShowModal(true)}
                 className="mt-2 px-8 py-4 bg-violet-500 hover:bg-violet-400 text-white font-black text-base rounded-2xl shadow-lg active:scale-95 transition-all"
               >
-                🔮 990원으로 내 사주 전체 보기
+                🔮 1,900원으로 내 사주 전체 보기
               </button>
             </div>
           </div>
