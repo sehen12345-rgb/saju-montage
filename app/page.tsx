@@ -281,21 +281,27 @@ export default function Home() {
         </div>
 
         {/* ── 탭 선택 ── */}
-        <div className="bg-[#13131a] border border-white/10 rounded-2xl p-1.5 flex gap-1.5">
-          {PRODUCTS.map((p) => (
-            <button
-              key={p.id}
-              onClick={() => switchTab(p.id)}
-              className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                activeTab === p.id
-                  ? `bg-gradient-to-r ${p.btnGradient} text-white shadow-md`
-                  : "text-gray-500 hover:text-gray-300"
-              }`}
-            >
-              <span>{p.emoji}</span>
-              <span>{p.id === "spouse" ? "배우자" : p.id === "guardian" ? "귀인" : "웬수"}</span>
-            </button>
-          ))}
+        <div className="flex gap-2">
+          {PRODUCTS.map((p) => {
+            const isActive = activeTab === p.id;
+            const desc = p.id === "spouse" ? "운명의 상대" : p.id === "guardian" ? "내 편인 사람" : "조심할 사람";
+            const inactiveBg = p.id === "spouse" ? "bg-rose-500/12 border-rose-500/35 text-rose-300" : p.id === "guardian" ? "bg-amber-500/12 border-amber-500/35 text-amber-300" : "bg-slate-500/12 border-slate-500/35 text-slate-300";
+            return (
+              <button
+                key={p.id}
+                onClick={() => switchTab(p.id)}
+                className={`relative flex-1 flex flex-col items-center gap-1 py-3 px-2 rounded-2xl border font-bold transition-all active:scale-95 ${
+                  isActive
+                    ? `bg-gradient-to-b ${p.btnGradient} border-transparent text-white shadow-lg`
+                    : `${inactiveBg} hover:brightness-125`
+                }`}
+              >
+                <span className="text-2xl">{p.emoji}</span>
+                <span className="text-sm font-black">{p.id === "spouse" ? "배우자" : p.id === "guardian" ? "귀인" : "웬수"}</span>
+                <span className={`text-[10px] font-medium ${isActive ? "text-white/80" : "opacity-60"}`}>{desc}</span>
+              </button>
+            );
+          })}
         </div>
 
         {/* ── 상품 카드 (탭 선택된 것만 표시) ── */}
