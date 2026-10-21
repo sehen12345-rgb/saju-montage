@@ -18,15 +18,16 @@ const PRODUCT_LABEL: Record<string, { emoji: string; name: string; color: string
 };
 
 const BUNDLE_TABS = [
-  { key: "spouse",   emoji: "💑", label: "내님은누구",   color: "from-rose-500 to-pink-600",   active: "text-rose-400",   border: "border-rose-500/30" },
-  { key: "guardian", emoji: "🌟", label: "내귀인은누구", color: "from-amber-400 to-yellow-500", active: "text-amber-400",  border: "border-amber-500/30" },
-  { key: "enemy",    emoji: "😤", label: "내웬수는누구", color: "from-slate-500 to-slate-600",  active: "text-slate-300",  border: "border-slate-500/30" },
+  { key: "spouse",   emoji: "💑", label: "배우자",  desc: "운명의 상대",   color: "from-rose-500 to-pink-600",   bg: "bg-rose-500/15",   border: "border-rose-500/40",   text: "text-rose-300"   },
+  { key: "guardian", emoji: "🌟", label: "귀인",    desc: "내 편인 사람",  color: "from-amber-400 to-yellow-500", bg: "bg-amber-500/15",  border: "border-amber-500/40",  text: "text-amber-300"  },
+  { key: "enemy",    emoji: "😤", label: "웬수",    desc: "조심할 사람",  color: "from-slate-500 to-slate-600",  bg: "bg-slate-500/15",  border: "border-slate-500/40",  text: "text-slate-300"  },
 ] as const;
 
 export default function ResultPage() {
   const router = useRouter();
   const [result, setResult] = useState<GenerateResult | null>(null);
   const [bundleTab, setBundleTab] = useState<"spouse" | "guardian" | "enemy">("spouse");
+  const [visitedTabs, setVisitedTabs] = useState<Set<string>>(new Set(["spouse"]));
   const [bundlePaid, setBundlePaid] = useState(false);
 
   useEffect(() => {
@@ -134,20 +135,32 @@ export default function ResultPage() {
         {isBundle ? (
           <>
             {/* 번들 탭 */}
-            <div className="bg-[#13131a] border border-white/10 rounded-2xl p-1.5 mb-4 flex gap-1">
-              {BUNDLE_TABS.map((tab) => (
-                <button
-                  key={tab.key}
-                  onClick={() => setBundleTab(tab.key)}
-                  className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                    bundleTab === tab.key
-                      ? `bg-gradient-to-r ${tab.color} text-white shadow-md`
-                      : "text-gray-500 hover:text-gray-300"
-                  }`}
-                >
-                  {tab.emoji} {tab.key === "spouse" ? "내님" : tab.key === "guardian" ? "귀인" : "웬수"}
-                </button>
-              ))}
+            <div className="flex gap-2 mb-4">
+              {BUNDLE_TABS.map((tab) => {
+                const isActive = bundleTab === tab.key;
+                const isNew = !visitedTabs.has(tab.key);
+                return (
+                  <button
+                    key={tab.key}
+                    onClick={() => {
+                      setBundleTab(tab.key);
+                      setVisitedTabs(prev => new Set([...prev, tab.key]));
+                    }}
+                    className={`relative flex-1 flex flex-col items-center gap-1 py-3 px-2 rounded-2xl border font-bold transition-all active:scale-95 ${
+                      isActive
+                        ? `bg-gradient-to-b ${tab.color} border-transparent text-white shadow-lg`
+                        : `${tab.bg} ${tab.border} ${tab.text} hover:brightness-125`
+                    }`}
+                  >
+                    {isNew && !isActive && (
+                      <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-red-500 border-2 border-[#0d0d12]" />
+                    )}
+                    <span className="text-2xl">{tab.emoji}</span>
+                    <span className="text-sm font-black">{tab.label}</span>
+                    <span className={`text-[10px] font-medium ${isActive ? "text-white/80" : "opacity-60"}`}>{tab.desc}</span>
+                  </button>
+                );
+              })}
             </div>
             {(() => {
               const br = getBundleResult();
