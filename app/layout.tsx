@@ -31,10 +31,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko">
-      <head>
-        <Script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js" strategy="afterInteractive" />
-        <Script src="https://js.tosspayments.com/v2/standard" strategy="afterInteractive" />
-      </head>
       <body className="min-h-screen bg-[#0d0d12]">
         {/* 구버전 캐시 강제 초기화 */}
         <Script id="cache-bust" strategy="beforeInteractive">{`
@@ -47,6 +43,9 @@ export default function RootLayout({
             }
           })();
         `}</Script>
+        {/* 외부 SDK — body 안에 위치해야 Next.js Script가 정상 동작 */}
+        <Script src="https://js.tosspayments.com/v2/standard" strategy="afterInteractive" />
+        <Script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js" strategy="afterInteractive" />
         <AuthProvider>
           <Header />
           <main className="min-h-screen">{children}</main>

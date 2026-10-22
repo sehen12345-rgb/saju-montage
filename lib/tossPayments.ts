@@ -22,11 +22,15 @@ export async function requestTossPayment({
   isBundle?: boolean;
 }): Promise<void> {
   const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY;
-  if (!clientKey) throw new Error("NEXT_PUBLIC_TOSS_CLIENT_KEY not set");
+  if (!clientKey) {
+    alert("결제 키가 설정되지 않았습니다. 관리자에게 문의하세요.");
+    throw new Error("NEXT_PUBLIC_TOSS_CLIENT_KEY not set");
+  }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const TossPayments = (window as any).TossPayments;
   if (typeof window === "undefined" || !TossPayments) {
+    alert("결제 모듈 로딩 중입니다. 잠시 후 다시 시도해주세요.");
     throw new Error("Toss Payments SDK not loaded");
   }
 
