@@ -51,13 +51,9 @@ export async function requestTossPayment({
       orderName,
       successUrl,
       failUrl,
-      // 카카오페이: DIRECT 모드로 카카오페이 자체창 직접 오픈
-      ...(method === "KAKAOPAY" && {
-        card: {
-          flowMode: "DIRECT",
-          easyPay: "카카오페이",
-        },
-      }),
+      card: {
+        flowMode: "DEFAULT",
+      },
     });
   } catch (err: unknown) {
     // 사용자가 직접 취소한 경우 — 조용히 처리
