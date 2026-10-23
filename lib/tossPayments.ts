@@ -39,16 +39,29 @@ export async function requestTossPayment({
   const successUrl = `${origin}/payment/success${isBundle ? "?bundle=1" : ""}`;
   const failUrl = `${origin}/payment/fail`;
 
-  const toss = TossPayments(clientKey);
-  const payment = toss.payment({ customerKey: "ANONYMOUS" });
+  try {
+    const toss = TossPayments(clientKey);
+    // V2: 비회원 결제는 TossPayments.ANONYMOUS 상수 사용 (문자열 "ANONYMOUS" 아님)
+    const payment = toss.payment({ customerKey: TossPayments.ANONYMOUS });
 
-  await payment.requestPayment({
-    method: method === "KAKAOPAY" ? "EASY_PAY" : "CARD",
-    amount: { currency: "KRW", value: amount },
-    orderId,
-    orderName,
-    successUrl,
-    failUrl,
-    ...(method === "KAKAOPAY" && { easyPay: { easyPayCompany: "KAKAOPAY" } }),
-  });
+    await payment.requestPayment({
+      method: method === "KAKAOPAY" ? "EASY_PAY" : "CARD",
+      amount: { currency: "KRW", value: amount },
+      orderId,
+      orderName,
+      successUrl,
+      failUrl,
+      ...(method === "KAKAOPAY" && { easyPay: { easyPayCompany: "KAKAOPAY" } }),
+    });
+  } catch (err: unknown) {
+    // 사용자가 직접 취소한 경우 — 조용히 처리
+    const code = (err as { code?: string })?.code ?? "";
+    if (code === "PAY_PROCESS_CANCELED" || code === "USER_CANCEL") {
+      throw err; // 컴포넌트에서 paying 상태만 리셋
+    }
+    // 그 외 에러는 사용자에게 알림
+    const msg = (err as { message?: string })?.message ?? String(err);
+    alert(`결제 오류: ${msg}`);
+    throw err;
+  }
 }
