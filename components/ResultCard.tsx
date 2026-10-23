@@ -448,7 +448,7 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: (type: "indi
             <div className="flex items-baseline gap-2 mb-3">
               <span className="text-xs text-gray-500 line-through">6,000원</span>
               <span className="text-2xl font-black text-purple-300">4,900원</span>
-              <span className="text-xs text-purple-400 font-bold">1,000원 절약</span>
+              <span className="text-xs text-purple-400 font-bold">1,100원 절약</span>
             </div>
             <button
               onClick={() => handlePay("bundle")}

@@ -62,7 +62,7 @@ function PaymentSuccessContent() {
             console.error("결제 상태 저장 오류:", e);
           }
           setStatus("done");
-          setTimeout(() => router.push("/result"), 2000);
+          setTimeout(() => router.push("/result"), 1500);
         } else {
           setErrorMsg(data.error || "결제 확인에 실패했습니다.");
           setStatus("error");

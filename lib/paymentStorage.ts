@@ -27,9 +27,13 @@ function getRecords(key: string): PaidRecord[] {
 }
 
 export function savePaidRecord(sajuHash: string, orderId: string) {
-  const records = getRecords(STORAGE_KEY).filter((r) => r.sajuHash !== sajuHash);
-  records.push({ sajuHash, orderId, paidAt: Date.now() });
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+  try {
+    const records = getRecords(STORAGE_KEY).filter((r) => r.sajuHash !== sajuHash);
+    records.push({ sajuHash, orderId, paidAt: Date.now() });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+  } catch (e) {
+    console.error("savePaidRecord 오류:", e);
+  }
 }
 
 export function isPaidForSaju(sajuHash: string): boolean {
@@ -38,9 +42,13 @@ export function isPaidForSaju(sajuHash: string): boolean {
 
 /** 번들(3개 묶음) 결제 저장 — 사주 기본 해시 기준 */
 export function saveBundlePaidRecord(sajuBaseHash: string, orderId: string) {
-  const records = getRecords(BUNDLE_STORAGE_KEY).filter((r) => r.sajuHash !== sajuBaseHash);
-  records.push({ sajuHash: sajuBaseHash, orderId, paidAt: Date.now() });
-  localStorage.setItem(BUNDLE_STORAGE_KEY, JSON.stringify(records));
+  try {
+    const records = getRecords(BUNDLE_STORAGE_KEY).filter((r) => r.sajuHash !== sajuBaseHash);
+    records.push({ sajuHash: sajuBaseHash, orderId, paidAt: Date.now() });
+    localStorage.setItem(BUNDLE_STORAGE_KEY, JSON.stringify(records));
+  } catch (e) {
+    console.error("saveBundlePaidRecord 오류:", e);
+  }
 }
 
 /** 번들 결제 여부 확인 */

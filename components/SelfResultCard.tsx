@@ -223,10 +223,10 @@ function SelfPayModal({ onClose, onPay }: { onClose: () => void; onPay: () => vo
           {/* 가격 표시 */}
           <div className="bg-white/4 border border-white/8 rounded-2xl p-3 text-center">
             <div className="flex items-center justify-center gap-2 mb-0.5">
-              <span className="text-xs text-gray-500 line-through">3,900원</span>
-              <span className="text-xs bg-violet-500/20 text-violet-400 font-bold px-2 py-0.5 rounded-full">75% 할인</span>
+              <span className="text-xs text-gray-500 line-through">3,800원</span>
+              <span className="text-xs bg-violet-500/20 text-violet-400 font-bold px-2 py-0.5 rounded-full">50% 할인</span>
             </div>
-            <p className="text-2xl font-black text-white">990<span className="text-base font-bold">원</span></p>
+            <p className="text-2xl font-black text-white">1,900<span className="text-base font-bold">원</span></p>
             <p className="text-xs text-gray-500 mt-0.5">1회 결제 · 회원가입 불필요</p>
           </div>
 
