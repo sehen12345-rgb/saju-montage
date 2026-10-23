@@ -45,13 +45,19 @@ export async function requestTossPayment({
     const payment = toss.payment({ customerKey: TossPayments.ANONYMOUS });
 
     await payment.requestPayment({
-      method: method === "KAKAOPAY" ? "EASY_PAY" : "CARD",
+      method: "CARD",
       amount: { currency: "KRW", value: amount },
       orderId,
       orderName,
       successUrl,
       failUrl,
-      ...(method === "KAKAOPAY" && { easyPay: { easyPayCompany: "KAKAOPAY" } }),
+      // 카카오페이: DIRECT 모드로 카카오페이 자체창 직접 오픈
+      ...(method === "KAKAOPAY" && {
+        card: {
+          flowMode: "DIRECT",
+          easyPay: "카카오페이",
+        },
+      }),
     });
   } catch (err: unknown) {
     // 사용자가 직접 취소한 경우 — 조용히 처리
