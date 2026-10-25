@@ -95,13 +95,21 @@ function PaymentSuccessContent() {
   if (status === "done") {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-[#0d0d12]">
-        <div className="max-w-sm w-full text-center space-y-6">
-          <div className="text-6xl">✨</div>
-          <div>
-            <h2 className="text-2xl font-bold text-white">결제 완료!</h2>
-            <p className="text-yellow-400 text-sm mt-2">완전 분석 보고서를 확인하세요</p>
+        <div className="max-w-sm w-full text-center space-y-5">
+          <div className="relative w-24 h-24 mx-auto">
+            <div className="absolute inset-0 rounded-full bg-yellow-400/20 animate-ping" />
+            <div className="absolute inset-0 flex items-center justify-center text-5xl">✨</div>
           </div>
-          <div className="text-sm text-gray-500 animate-pulse">결과 페이지로 이동 중...</div>
+          <div>
+            <h2 className="text-2xl font-black text-white">결제 완료!</h2>
+            <p className="text-yellow-400 text-sm mt-1.5 font-semibold">운명의 상대가 공개될 준비가 됐어요</p>
+            <p className="text-gray-500 text-xs mt-1">사주 분석 보고서를 불러오는 중...</p>
+          </div>
+          <div className="flex justify-center gap-1.5">
+            {[0,1,2].map(i => (
+              <div key={i} className="w-2 h-2 rounded-full bg-yellow-400 animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
+            ))}
+          </div>
         </div>
       </div>
     );

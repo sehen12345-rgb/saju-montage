@@ -161,9 +161,9 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: (type: "indi
             <p className="text-xs font-bold text-purple-300 mb-1">💜 3개 묶음 특가</p>
             <p className="text-sm text-white font-bold mb-0.5">배우자 + 귀인 + 웬수 전부 공개</p>
             <div className="flex items-baseline gap-2 mb-3">
-              <span className="text-xs text-gray-500 line-through">6,000원</span>
+              <span className="text-xs text-gray-500 line-through">5,700원</span>
               <span className="text-2xl font-black text-purple-300">4,900원</span>
-              <span className="text-xs text-purple-400 font-bold">1,100원 절약</span>
+              <span className="text-xs text-purple-400 font-bold">800원 절약</span>
             </div>
             <button
               onClick={() => handlePay("bundle")}
@@ -179,8 +179,8 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: (type: "indi
             <p className="text-[11px] text-gray-500 text-center">— 또는 이 상품만 —</p>
             <div className="bg-white/4 border border-white/8 rounded-2xl p-3 text-center">
               <div className="flex items-center justify-center gap-2 mb-0.5">
-                <span className="text-xs text-gray-500 line-through">6,000원</span>
-                <span className="text-xs bg-red-500/20 text-red-400 font-bold px-2 py-0.5 rounded-full">67% 할인</span>
+                <span className="text-xs text-gray-500 line-through">3,800원</span>
+                <span className="text-xs bg-red-500/20 text-red-400 font-bold px-2 py-0.5 rounded-full">50% 할인</span>
               </div>
               <p className="text-2xl font-black text-white">1,900<span className="text-base font-bold">원</span></p>
               <p className="text-xs text-gray-500 mt-0.5">1회 결제 · 회원가입 불필요</p>

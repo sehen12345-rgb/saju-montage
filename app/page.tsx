@@ -47,10 +47,14 @@ const REVIEWS = [
   { name: "강○○", age: "31세", gender: "남", text: "관성 분석에서 직업이 '의료·교육 계열'이라고 나왔는데 현재 진지하게 보는 사람이 물리치료사임. 이거 실화냐", stars: 5, product: "내님은누구" },
   { name: "윤○○", age: "27세", gender: "여", text: "귀인 만남 시기가 '올 하반기, 직장 관련 모임'이라고 나왔는데 진짜 회사 행사에서 중요한 분 만났어요. 소름주의", stars: 5, product: "내귀인은누구" },
   { name: "한○○", age: "33세", gender: "남", text: "웬수 유형이 '겉으로 친절한 에너지 흡혈형'이라고 나왔는데 딱 그런 사람 주변에 있음. 관계 정리하길 잘했다", stars: 5, product: "내웬수는누구" },
+  { name: "오○○", age: "25세", gender: "여", text: "몽타주 이미지 보고 소름... 지금 좋아하는 사람이랑 분위기가 너무 비슷해서 폰 떨어뜨릴 뻔했어요. 친구들한테 다 보냈음", stars: 5, product: "내님은누구" },
+  { name: "서○○", age: "30세", gender: "남", text: "내 사주 분석에서 '직업 적성 — 창의·기획 분야'가 나왔는데 지금 마케팅 하고 있음. 와 이게 맞냐고 진짜", stars: 5, product: "내 사주 분석" },
+  { name: "임○○", age: "27세", gender: "여", text: "웬수 출현 시기가 '직장 이동 후 6개월 내'라고 나왔는데... 이직하고 딱 4개월째에 등장함. 미리 알았으면 얼마나 좋았을까ㅠ", stars: 5, product: "내웬수는누구" },
+  { name: "조○○", age: "35세", gender: "남", text: "귀인 분석 보고 반신반의했는데 외모 묘사까지 비슷하게 나와서 설득됨. 커피 한 잔 값에 이 퀄리티면 진짜 가성비", stars: 5, product: "내귀인은누구" },
 ];
 
 const STATS = [
-  { value: "41,200+", label: "분석 완료" },
+  { value: "43,500+", label: "분석 완료" },
   { value: "97%", label: "만족도" },
   { value: "4.9★", label: "평점" },
 ];
@@ -112,7 +116,7 @@ const PRODUCTS = [
 export default function Home() {
   const router = useRouter();
   const [reviewIdx, setReviewIdx] = useState(0);
-  const [count, setCount] = useState(41204);
+  const [count, setCount] = useState(43512);
   const [timeLeft, setTimeLeft] = useState({ h: 0, m: 0, s: 0 });
   const [openPrinciple, setOpenPrinciple] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<"spouse" | "guardian" | "enemy">("spouse");
@@ -188,10 +192,11 @@ export default function Home() {
                 이미 그 사람이 있습니다
               </span>
             </h1>
-            <p className="text-gray-400 text-sm leading-relaxed mb-5">
+            <p className="text-gray-400 text-sm leading-relaxed mb-2">
               사주팔자 <span className="text-white font-bold">8글자</span>를 AI가 분석해<br />
               <span className="text-yellow-400 font-bold">배우자 · 귀인 · 웬수</span>의 기운을 밝힙니다
             </p>
+            <p className="text-gray-600 text-[11px] mb-5">커피 한 잔 값 · 1분 입력 · 즉시 결과</p>
 
             {/* 할인 타이머 */}
             <div className="inline-flex items-center gap-2 bg-red-500/10 border border-red-500/30 rounded-2xl px-4 py-2.5 mb-5">
@@ -267,16 +272,17 @@ export default function Home() {
             className="w-full bg-gradient-to-r from-purple-900/60 to-indigo-900/60 border-2 border-purple-500/40 rounded-2xl p-4 text-center active:scale-95 transition-all hover:border-purple-400/60 group"
           >
             <div className="flex items-center justify-center gap-2 mb-1">
-              <span className="text-[9px] bg-purple-500 text-white font-black px-2 py-0.5 rounded-full">BEST VALUE</span>
+              <span className="text-[9px] bg-purple-500 text-white font-black px-2 py-0.5 rounded-full">🔥 BEST VALUE</span>
               <p className="text-xs text-purple-300 font-bold">셋 다 궁금하다면?</p>
             </div>
             <p className="text-white text-sm font-black">🔮 배우자 + 귀인 + 웬수 전부 분석</p>
             <p className="text-gray-400 text-xs mt-1">
-              <span className="line-through text-gray-600">6,000원</span>
+              <span className="line-through text-gray-600">5,700원</span>
               {" → "}
               <span className="text-purple-300 font-black text-base">4,900원</span>
-              <span className="ml-1.5 text-[10px] bg-purple-500/20 text-purple-300 px-1.5 py-0.5 rounded-full">17% 할인</span>
+              <span className="ml-1.5 text-[10px] bg-purple-500/20 text-purple-300 px-1.5 py-0.5 rounded-full">800원 절약</span>
             </p>
+            <p className="text-[10px] text-purple-400/70 mt-1.5">오늘 하루 할인가 적용 중</p>
           </button>
         </div>
 
@@ -353,7 +359,7 @@ export default function Home() {
                 <div className={`rounded-2xl border ${p.borderColor} p-3 bg-white/2`}>
                   <div className="flex items-center gap-1.5 mb-2">
                     <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">1,900원으로 공개</span>
-                    <span className="text-[9px] text-red-400 bg-red-500/10 px-1.5 py-0.5 rounded-full font-bold">67% 할인</span>
+                    <span className="text-[9px] text-red-400 bg-red-500/10 px-1.5 py-0.5 rounded-full font-bold">50% 할인</span>
                   </div>
                   <div className="grid grid-cols-2 gap-1">
                     {p.paidItems.map((item) => (
@@ -368,7 +374,7 @@ export default function Home() {
 
               {/* 가격 */}
               <div className="flex items-center gap-2 mb-3">
-                <span className="text-sm text-gray-600 line-through">5,700원</span>
+                <span className="text-sm text-gray-600 line-through">3,800원</span>
                 <span className="text-2xl font-black text-white">1,900원</span>
                 <span className="text-xs text-gray-500">· 1회 결제</span>
               </div>
@@ -503,13 +509,14 @@ export default function Home() {
         {/* ── 신뢰 배지 ── */}
         <div className="grid grid-cols-3 gap-2">
           {[
-            { icon: "🔒", text: "정보 저장 안함" },
-            { icon: "⚡", text: "즉시 분석" },
-            { icon: "🏯", text: "만세력 기반" },
+            { icon: "🔒", text: "정보 저장 안함", sub: "개인정보 무저장" },
+            { icon: "⚡", text: "즉시 분석", sub: "평균 20초" },
+            { icon: "🏯", text: "만세력 기반", sub: "4,200년 역법" },
           ].map((b) => (
             <div key={b.text} className="bg-[#13131a] border border-white/5 rounded-2xl p-3 text-center">
               <div className="text-lg mb-1">{b.icon}</div>
-              <div className="text-[10px] text-gray-500">{b.text}</div>
+              <div className="text-[11px] font-bold text-gray-400">{b.text}</div>
+              <div className="text-[9px] text-gray-600 mt-0.5">{b.sub}</div>
             </div>
           ))}
         </div>
