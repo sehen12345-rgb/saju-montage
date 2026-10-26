@@ -1,5 +1,5 @@
 /**
- * Toss Payments V2 SDK wrapper
+ * Toss Payments V2 SDK wrapper — 결제창형 결제 (widgets + renderPaymentWindow)
  * CDN script (https://js.tosspayments.com/v2/standard) must be loaded before calling.
  * Add to app/layout.tsx: <Script src="https://js.tosspayments.com/v2/standard" strategy="afterInteractive" />
  */
@@ -52,22 +52,39 @@ export async function requestTossPayment({
 
   try {
     const toss = TossPayments(clientKey);
-    // V2: 비회원 결제는 TossPayments.ANONYMOUS 상수 사용 (문자열 "ANONYMOUS" 아님)
-    const payment = toss.payment({ customerKey: TossPayments.ANONYMOUS });
+    // V2 결제창형: widgets + renderPaymentWindow (레거시 payment() 대신 정식 방식)
+    const widgets = toss.widgets({ customerKey: TossPayments.ANONYMOUS });
 
-    await payment.requestPayment({
-      method: "CARD",
-      amount: { currency: "KRW", value: amount },
-      orderId,
-      orderName,
-      successUrl,
-      failUrl,
-      card: {
-        flowMode: "DEFAULT",
-      },
+    await widgets.setAmount({ currency: "KRW", value: amount });
+
+    // 결제창 렌더링 — 팝업/오버레이 형태로 열림 (DOM 마운트 불필요)
+    const paymentWindow = await widgets.renderPaymentWindow({ orderName });
+
+    // 결제창에서 구매자가 결제수단 선택 후 "결제하기" 누르면 paymentRequest 이벤트 발생
+    await new Promise<void>((resolve, reject) => {
+      paymentWindow.on("paymentRequest", async () => {
+        try {
+          await widgets.requestPayment({
+            orderId,
+            orderName,
+            successUrl,
+            failUrl,
+          });
+          resolve(); // redirect 방식이라 실제로 실행되지 않지만 타입 완성용
+        } catch (err) {
+          await paymentWindow.destroy().catch(() => {});
+          reject(err);
+        }
+      });
+
+      // 구매자가 결제창을 닫으면 cancel 이벤트
+      paymentWindow.on("cancel", async () => {
+        await paymentWindow.destroy().catch(() => {});
+        reject({ code: "PAY_PROCESS_CANCELED", message: "결제를 취소했습니다." });
+      });
     });
   } catch (err: unknown) {
-    // 사용자가 직접 취소한 경우 — 조용히 처리
+    // 사용자가 직접 취소한 경우 — alert 없이 조용히 처리
     const code = (err as { code?: string })?.code ?? "";
     if (code === "PAY_PROCESS_CANCELED" || code === "USER_CANCEL") {
       throw err; // 컴포넌트에서 paying 상태만 리셋
@@ -75,7 +92,6 @@ export async function requestTossPayment({
     // 그 외 에러 — 전체 에러 정보 콘솔에 기록
     console.error("[TOSS_PAYMENT_ERROR]", { code, err });
     const msg = (err as { message?: string })?.message ?? String(err);
-    // 에러 코드가 있으면 함께 표시 (디버그용)
     const displayMsg = code ? `${msg} (${code})` : msg;
     alert(`결제 오류: ${displayMsg}`);
     throw err;
