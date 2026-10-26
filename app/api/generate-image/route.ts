@@ -76,52 +76,32 @@ function isValidImageBuffer(buffer: ArrayBuffer): boolean {
 }
 
 // ── Pollinations.ai (완전 무료, 키 불필요) ────────────────
+// Vercel maxDuration=60s 기준: 단일 시도 50s timeout → 10s 여유
 async function generateWithPollinations(prompt: string, seed: number): Promise<string> {
-  const encoded  = encodeURIComponent(prompt);
-  const negative = encodeURIComponent(NEGATIVE_PROMPT);
+  // 프롬프트가 너무 길면 URL 길이 초과 → 앞 900자로 제한
+  const trimmedPrompt = prompt.length > 900 ? prompt.slice(0, 900) : prompt;
+  const encoded = encodeURIComponent(trimmedPrompt);
 
-  // enhance=false: 서버 부하 낮춤 (enhance=true는 과부하 시 HTML 에러 페이지 반환)
-  // 모델 변주: seed 홀짝으로 두 모델 교대 사용
+  // 네거티브는 핵심만 (URL 길이 절약)
+  const negEncoded = encodeURIComponent("cartoon, anime, blurry, deformed, ugly, plastic skin, watermark");
+
+  // seed 기반으로 모델 교대 (다양성)
   const model = seed % 2 === 0 ? "flux-realism" : "flux";
-  const url = `https://image.pollinations.ai/prompt/${encoded}?width=768&height=1024&model=${model}&seed=${seed}&nologo=true&enhance=false&negative=${negative}`;
+  const url = `https://image.pollinations.ai/prompt/${encoded}?width=768&height=1024&model=${model}&seed=${seed}&nologo=true&enhance=false&negative=${negEncoded}`;
 
-  // 최대 3회 재시도 (Pollinations 일시적 부하 시 재시도)
-  for (let attempt = 0; attempt < 3; attempt++) {
-    if (attempt > 0) await new Promise(r => setTimeout(r, 3000 * attempt));
+  const res = await fetch(url, { signal: AbortSignal.timeout(50_000) });
 
-    const res = await fetch(url, {
-      signal: AbortSignal.timeout(90_000),
-    });
+  if (!res.ok) throw new Error(`Pollinations ${res.status}`);
 
-    if (!res.ok) {
-      console.warn(`Pollinations attempt ${attempt + 1} failed: ${res.status}`);
-      continue;
-    }
+  const contentType = res.headers.get("content-type") ?? "";
+  if (!contentType.startsWith("image/")) throw new Error(`non-image: ${contentType}`);
 
-    const contentType = res.headers.get("content-type") ?? "";
-    if (!contentType.startsWith("image/")) {
-      console.warn(`Pollinations attempt ${attempt + 1}: non-image content-type: ${contentType}`);
-      continue;
-    }
+  const buffer = await res.arrayBuffer();
+  if (!isValidImageBuffer(buffer)) throw new Error("invalid image magic bytes (HTML error page)");
+  if (buffer.byteLength < 5000) throw new Error(`too small: ${buffer.byteLength}bytes`);
 
-    const buffer = await res.arrayBuffer();
-
-    // 매직바이트로 실제 이미지인지 검증 (HTML 에러 페이지 차단)
-    if (!isValidImageBuffer(buffer)) {
-      console.warn(`Pollinations attempt ${attempt + 1}: invalid image data (likely HTML error page)`);
-      continue;
-    }
-
-    if (buffer.byteLength < 5000) {
-      console.warn(`Pollinations attempt ${attempt + 1}: image too small (${buffer.byteLength}bytes)`);
-      continue;
-    }
-
-    const base64 = Buffer.from(buffer).toString("base64");
-    return `data:${contentType};base64,${base64}`;
-  }
-
-  throw new Error("Pollinations: 3회 시도 모두 실패");
+  const base64 = Buffer.from(buffer).toString("base64");
+  return `data:${contentType};base64,${base64}`;
 }
 
 // ── HuggingFace FLUX (무료 토큰) ──────────────────────────
@@ -150,7 +130,7 @@ async function generateWithHuggingFace(prompt: string): Promise<string> {
               guidance_scale: 7.5,
             },
           }),
-          signal: AbortSignal.timeout(120_000),
+          signal: AbortSignal.timeout(40_000),
         }
       );
 
@@ -300,15 +280,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // ── 4순위: Stable Horde (무료, 느림) ─────────────────
-    try {
-      const imageUrl = await generateWithStableHorde(finalPrompt, seed);
-      return NextResponse.json({ imageUrl });
-    } catch (hordeErr) {
-      console.warn("Stable Horde 실패, SVG 폴백:", hordeErr);
-    }
-
-    // ── 5순위: SVG 초상화 폴백 ───────────────────────────
+    // ── 4순위: SVG 초상화 폴백 ───────────────────────────
     const imageUrl =
       `/api/portrait?gender=${gender}` +
       `&year=${encodeURIComponent(info?.yearPillar ?? "갑자")}` +
