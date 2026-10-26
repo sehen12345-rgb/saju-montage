@@ -6,22 +6,23 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://saju-montage.vercel.app"),
-  title: "내님은누구 | 사주로 보는 운명 AI 분석",
-  description: "사주팔자로 그려진 운명의 상대 얼굴 🔮 AI가 직접 그린 몽타주 + 귀인·악연 완전 분석. 소름돋게 정확한 결과!",
+  metadataBase: new URL("https://naenim.com"),
+  title: "내님은누구 | 사주로 보는 배우자·귀인·웬수 AI 분석",
+  description: "사주팔자 8글자로 운명의 상대 얼굴을 AI가 직접 그립니다 🔮 배우자 몽타주 + 이름 힌트 + 귀인·웬수 완전 분석. 43,500명이 이미 확인했어요.",
   openGraph: {
-    title: "내님은누구 👀 소름돋는 사주 AI 분석",
-    description: "사주팔자로 보는 내 운명의 상대 · 귀인 · 웬수 🔮 소름돋게 정확한 AI 완전 분석",
+    title: "내 사주 안에 이미 그 사람이 있습니다 👀",
+    description: "사주팔자로 보는 운명의 상대 · 귀인 · 웬수 🔮 AI가 그려주는 배우자 몽타주 + 이름 첫 글자 힌트. 소름돋는 정확도.",
     type: "website",
+    url: "https://naenim.com",
     locale: "ko_KR",
     siteName: "내님은누구",
   },
   twitter: {
     card: "summary_large_image",
-    title: "내님은누구 👀",
-    description: "사주팔자로 그려진 내 운명의 상대 얼굴 🔮",
+    title: "내님은누구 👀 — 사주로 보는 운명의 상대",
+    description: "사주팔자로 그린 배우자 AI 몽타주 + 이름 힌트. 43,500명이 이미 확인 🔮",
   },
-  keywords: ["사주", "배우자", "몽타주", "운명", "궁합", "사주팔자", "AI", "이미지생성"],
+  keywords: ["사주", "배우자", "몽타주", "운명", "궁합", "사주팔자", "AI", "이미지생성", "귀인", "웬수", "사주분석"],
 };
 
 export default function RootLayout({

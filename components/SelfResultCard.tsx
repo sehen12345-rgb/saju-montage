@@ -179,11 +179,7 @@ function SelfPayModal({ onClose, onPay }: { onClose: () => void; onPay: () => vo
     if (paying) return;
     setPaying(method);
     try {
-      if (method === "card") {
-        await requestTossPayment({ method: "CARD", amount: PRICE_SELF, orderName: "내 사주 완전 분석" });
-      } else {
-        await requestTossPayment({ method: "KAKAOPAY", amount: PRICE_SELF, orderName: "내 사주 완전 분석" });
-      }
+      await requestTossPayment({ amount: PRICE_SELF, orderName: "내 사주 완전 분석" });
     } catch {
       setPaying(null);
     }

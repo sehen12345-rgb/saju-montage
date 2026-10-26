@@ -3,4 +3,4 @@ Allow: /
 Disallow: /api/
 Disallow: /payment/
 
-Sitemap: https://saju-montage.vercel.app/sitemap.xml
+Sitemap: https://naenim.com/sitemap.xml

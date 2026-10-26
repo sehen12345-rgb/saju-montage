@@ -214,7 +214,7 @@ async function createStoryBlob(imageUrl: string, analysis: SajuAnalysis): Promis
   ctx.font = "32px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif";
   ctx.textAlign = "center";
   ctx.globalAlpha = 0.6;
-  ctx.fillText("내님은누구 · saju-montage.vercel.app", W / 2, H - 60);
+  ctx.fillText("내님은누구 · naenim.com", W / 2, H - 60);
   ctx.globalAlpha = 1;
 
   return new Promise((resolve, reject) => {
@@ -376,6 +376,7 @@ function getPromoTimeLeft(): number {
 function PayModal({ onClose, onPay }: { onClose: () => void; onPay: (type: "individual" | "bundle") => void }) {
   const [paying, setPaying] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState(() => getPromoTimeLeft());
+  const [showExitIntent, setShowExitIntent] = useState(false);
 
   useEffect(() => {
     if (timeLeft <= 0) return;
@@ -391,16 +392,19 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: (type: "indi
   const mm = String(Math.floor(timeLeft / 60)).padStart(2, "0");
   const ss = String(timeLeft % 60).padStart(2, "0");
 
-  async function handlePay(type: "individual" | "bundle" | "card") {
+  function handleCloseAttempt() {
+    if (!paying) setShowExitIntent(true);
+    else onClose();
+  }
+
+  async function handlePay(type: "individual" | "bundle") {
     if (paying) return;
     setPaying(type);
     try {
       if (type === "bundle") {
-        await requestTossPayment({ method: "KAKAOPAY", amount: PRICE_BUNDLE, orderName: "3개 묶음 특가 (배우자+귀인+웬수)", isBundle: true });
-      } else if (type === "card") {
-        await requestTossPayment({ method: "CARD", amount: PRICE_INDIVIDUAL, orderName: "배우자 몽타주 + 완전분석" });
+        await requestTossPayment({ amount: PRICE_BUNDLE, orderName: "3개 묶음 특가 (배우자+귀인+웬수)", isBundle: true });
       } else {
-        await requestTossPayment({ method: "KAKAOPAY", amount: PRICE_INDIVIDUAL, orderName: "배우자 몽타주 + 완전분석" });
+        await requestTossPayment({ amount: PRICE_INDIVIDUAL, orderName: "배우자 몽타주 + 완전분석" });
       }
     } catch {
       setPaying(null);
@@ -409,6 +413,33 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: (type: "indi
 
   const ITEMS = ["🎨 AI 배우자 몽타주", "✨ 이름 첫 글자 힌트", "💬 카카오톡 첫 메시지", "🌙 전생 인연 이야기", "💑 케미 타입 분석", "📊 5가지 궁합 점수", "💝 배우자 사랑 언어", "🧠 심리 분석", "📅 월별 인연운 차트", "🌟 닮은꼴 분위기", "🚀 인연 실천 가이드", "💡 인연 조언 3가지"];
 
+  if (showExitIntent) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+        <div className="bg-[#0f0f18] border border-white/15 rounded-3xl w-full max-w-xs shadow-2xl p-6 text-center space-y-4">
+          <div className="text-4xl">😢</div>
+          <div>
+            <h3 className="text-lg font-black text-white mb-1">정말 나가도 괜찮아요?</h3>
+            <p className="text-sm text-gray-400 leading-relaxed">지금 닫으면 <span className="text-yellow-400 font-bold">50% 특가</span>가 사라질 수 있어요.<br />운명의 상대가 거기서 기다리고 있는데... 🔮</p>
+          </div>
+          <button
+            onClick={() => { setShowExitIntent(false); handlePay("individual"); }}
+            className="w-full py-3.5 rounded-2xl font-black text-gray-900 text-sm active:scale-95 transition-all shadow-lg"
+            style={{ backgroundColor: "#FEE500" }}
+          >
+            💛 1,900원으로 지금 확인하기
+          </button>
+          <button
+            onClick={onClose}
+            className="w-full py-2.5 text-gray-600 text-sm hover:text-gray-400 transition-colors"
+          >
+            그래도 닫을게요
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3 bg-black/70 backdrop-blur-md">
       <div className="bg-[#0f0f18] border border-white/10 rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden max-h-[94vh] overflow-y-auto">
@@ -416,7 +447,7 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: (type: "indi
         {/* 헤더 */}
         <div className="relative p-5 text-center border-b border-white/8">
           <div className="absolute inset-0 bg-gradient-to-br from-rose-900/30 via-transparent to-amber-900/20 pointer-events-none" />
-          <button onClick={onClose} className="absolute top-4 right-4 text-white/40 hover:text-white text-xl z-10">✕</button>
+          <button onClick={handleCloseAttempt} className="absolute top-4 right-4 text-white/40 hover:text-white text-xl z-10">✕</button>
           <div className="relative">
             <div className="text-4xl mb-2">🔮</div>
             <h2 className="text-xl font-black text-white">배우자 몽타주 공개</h2>
@@ -486,7 +517,7 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: (type: "indi
             </button>
 
             <button
-              onClick={() => handlePay("card")}
+              onClick={() => handlePay("individual")}
               disabled={!!paying}
               className="w-full py-3.5 rounded-2xl border border-white/15 text-gray-300 font-semibold text-sm active:scale-95 disabled:opacity-60 transition-all flex items-center justify-center gap-2"
             >
@@ -652,7 +683,7 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
   }
 
   function handleShareTwitter() {
-    const text = `내님은누구 👀\n${analysis.characteristics.join(" · ")}\n\nsaju-montage.vercel.app\n#사주몽타주 #내님은누구 #운명의상대`;
+    const text = `내님은누구 👀\n${analysis.characteristics.join(" · ")}\n\nnaenim.com\n#사주몽타주 #내님은누구 #운명의상대`;
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, "_blank");
   }
 
@@ -707,7 +738,7 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
   }
 
   async function handleShare() {
-    const text = `내님은누구 👀\n${analysis.characteristics.join(" · ")}\n\n나도 해보기 → saju-montage.vercel.app ✨`;
+    const text = `내님은누구 👀\n${analysis.characteristics.join(" · ")}\n\n나도 해보기 → naenim.com ✨`;
     if (navigator.share) {
       try { await navigator.share({ title: "내님은누구", text }); }
       catch { await copyToClipboard(text); }
@@ -728,13 +759,13 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
       Kakao.Share.sendDefault({
         objectType: "text",
         text: shareText,
-        link: { mobileWebUrl: "https://saju-montage.vercel.app", webUrl: "https://saju-montage.vercel.app" },
+        link: { mobileWebUrl: "https://naenim.com", webUrl: "https://naenim.com" },
         buttonTitle: "나도 해보기",
       });
       return;
     }
     // fallback: 링크 복사
-    await copyToClipboard(`${shareText}\nhttps://saju-montage.vercel.app`);
+    await copyToClipboard(`${shareText}\nhttps://naenim.com`);
   }
 
   async function copyToClipboard(text: string) {
@@ -1406,7 +1437,7 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
                 {storySharing ? "⏳" : "📸 스토리"}
               </button>
               <button
-                onClick={() => copyToClipboard(`내님은누구 👀\n${analysis.characteristics.join(" · ")}\n\n나도 해보기 → saju-montage.vercel.app\n#사주몽타주 #내님은누구 #운명의상대`)}
+                onClick={() => copyToClipboard(`내님은누구 👀\n${analysis.characteristics.join(" · ")}\n\n나도 해보기 → naenim.com\n#사주몽타주 #내님은누구 #운명의상대`)}
                 className={`py-3 rounded-xl border-2 font-semibold transition-all text-sm active:scale-95 ${copied ? "border-green-400 text-green-700 bg-green-50" : "border-gray-300 text-gray-600 hover:bg-gray-50"}`}
               >
                 {copied ? "✅ 복사됨" : "🔗 복사"}

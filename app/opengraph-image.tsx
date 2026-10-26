@@ -140,7 +140,7 @@ export default function OGImage() {
             display: "flex", alignItems: "center", gap: 24,
           }}>
             <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              <span style={{ fontSize: 28, fontWeight: 900, color: "#fbbf24" }}>41,200+</span>
+              <span style={{ fontSize: 28, fontWeight: 900, color: "#fbbf24" }}>43,500+</span>
               <span style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", fontWeight: 500 }}>분석 완료</span>
             </div>
             <div style={{
@@ -156,7 +156,7 @@ export default function OGImage() {
               background: "rgba(255,255,255,0.1)", display: "flex",
             }} />
             <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              <span style={{ fontSize: 28, fontWeight: 900, color: "#fbbf24" }}>2,900원~</span>
+              <span style={{ fontSize: 28, fontWeight: 900, color: "#fbbf24" }}>1,900원~</span>
               <span style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", fontWeight: 500 }}>1회 분석</span>
             </div>
           </div>
@@ -245,7 +245,7 @@ export default function OGImage() {
               background: "#4ade80", display: "flex",
             }} />
             <span style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", letterSpacing: 0.5 }}>
-              saju-montage.vercel.app
+              naenim.com
             </span>
           </div>
         </div>

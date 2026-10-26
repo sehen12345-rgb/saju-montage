@@ -97,6 +97,12 @@ function getPromoTimeLeft(): number {
 function PayModal({ onClose, onPay }: { onClose: () => void; onPay: (type: "individual" | "bundle") => void }) {
   const [paying, setPaying] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState(() => getPromoTimeLeft());
+  const [showExitIntent, setShowExitIntent] = useState(false);
+
+  function handleCloseAttempt() {
+    if (!paying) setShowExitIntent(true);
+    else onClose();
+  }
 
   useEffect(() => {
     if (timeLeft <= 0) return;
@@ -109,16 +115,14 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: (type: "indi
   const mm = String(Math.floor(timeLeft / 60)).padStart(2, "0");
   const ss = String(timeLeft % 60).padStart(2, "0");
 
-  async function handlePay(type: "individual" | "bundle" | "card") {
+  async function handlePay(type: "individual" | "bundle") {
     if (paying) return;
     setPaying(type);
     try {
       if (type === "bundle") {
-        await requestTossPayment({ method: "KAKAOPAY", amount: PRICE_BUNDLE, orderName: "3개 묶음 특가 (배우자+귀인+웬수)", isBundle: true });
-      } else if (type === "card") {
-        await requestTossPayment({ method: "CARD", amount: PRICE_INDIVIDUAL, orderName: "귀인 몽타주 + 완전분석" });
+        await requestTossPayment({ amount: PRICE_BUNDLE, orderName: "3개 묶음 특가 (배우자+귀인+웬수)", isBundle: true });
       } else {
-        await requestTossPayment({ method: "KAKAOPAY", amount: PRICE_INDIVIDUAL, orderName: "귀인 몽타주 + 완전분석" });
+        await requestTossPayment({ amount: PRICE_INDIVIDUAL, orderName: "귀인 몽타주 + 완전분석" });
       }
     } catch {
       setPaying(null);
@@ -134,7 +138,7 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: (type: "indi
         {/* 헤더 */}
         <div className="relative p-5 text-center border-b border-white/8">
           <div className="absolute inset-0 bg-gradient-to-br from-amber-900/30 via-transparent to-yellow-900/20 pointer-events-none" />
-          <button onClick={onClose} className="absolute top-4 right-4 text-white/40 hover:text-white text-xl z-10">✕</button>
+          <button onClick={handleCloseAttempt} className="absolute top-4 right-4 text-white/40 hover:text-white text-xl z-10">✕</button>
           <div className="relative">
             <div className="text-4xl mb-2">🌟</div>
             <h2 className="text-xl font-black text-white">귀인 분석 공개</h2>
@@ -204,7 +208,7 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: (type: "indi
             </button>
 
             <button
-              onClick={() => handlePay("card")}
+              onClick={() => handlePay("individual")}
               disabled={!!paying}
               className="w-full py-3.5 rounded-2xl border border-white/15 text-gray-300 font-semibold text-sm active:scale-95 disabled:opacity-60 transition-all flex items-center justify-center gap-2"
             >
@@ -221,6 +225,30 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: (type: "indi
           </p>
         </div>
       </div>
+
+      {/* 이탈 방지 팝업 */}
+      {showExitIntent && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-[#0f0f18] border border-amber-500/30 rounded-3xl w-full max-w-xs p-6 text-center shadow-2xl">
+            <div className="text-5xl mb-3">🌟</div>
+            <h3 className="text-white font-black text-lg mb-2">정말 나가도 괜찮아요?</h3>
+            <p className="text-gray-400 text-sm mb-1">귀인이 바로 눈앞에 있는데...</p>
+            <p className="text-amber-400 text-xs font-bold mb-5">지금 분석하지 않으면 다시 만나기 어렵습니다</p>
+            <button
+              onClick={() => { setShowExitIntent(false); }}
+              className="w-full py-3.5 rounded-2xl bg-yellow-400 text-gray-900 font-black text-base mb-2 active:scale-95 transition-all"
+            >
+              🌟 귀인 만나기 (1,900원)
+            </button>
+            <button
+              onClick={onClose}
+              className="w-full py-2.5 text-gray-600 text-sm hover:text-gray-400 transition-colors"
+            >
+              그냥 나갈게요
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -342,13 +370,13 @@ export default function GuardianResultCard({ result, onReset, onPaid }: Props) {
       Kakao.Share.sendDefault({
         objectType: "text",
         text: shareText,
-        link: { mobileWebUrl: "https://saju-montage.vercel.app", webUrl: "https://saju-montage.vercel.app" },
+        link: { mobileWebUrl: "https://naenim.com", webUrl: "https://naenim.com" },
         buttonTitle: "나도 해보기",
       });
       return;
     }
     try {
-      await navigator.clipboard.writeText(`${shareText}\nhttps://saju-montage.vercel.app`);
+      await navigator.clipboard.writeText(`${shareText}\nhttps://naenim.com`);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
@@ -358,7 +386,7 @@ export default function GuardianResultCard({ result, onReset, onPaid }: Props) {
 
   async function handleCopyLink() {
     try {
-      await navigator.clipboard.writeText("https://saju-montage.vercel.app");
+      await navigator.clipboard.writeText("https://naenim.com");
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {

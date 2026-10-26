@@ -11,12 +11,10 @@ export function generateOrderId(): string {
 }
 
 export async function requestTossPayment({
-  method,
   amount,
   orderName,
   isBundle = false,
 }: {
-  method: "CARD" | "KAKAOPAY";
   amount: number;
   orderName: string;
   isBundle?: boolean;
