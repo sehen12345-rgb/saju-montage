@@ -68,7 +68,7 @@ ${manseryeokContext}
   "signToRecognize": "웬수 알아보는 법 2문장. '이런 신호가 오면 도망가세요!' 직관적이고 납득 가게. 유머 살짝 섞어서.",
   "kakaoFirstMessage": "웬수가 처음 접근할 때 보낼 법한 메시지 (받으면 '어 괜찮은 사람인가?' 싶을 만큼 자연스럽고 의심 없어 보이는 말투, 읽고 나서 소름 돋게, 1-2문장)",
   "pastLifeConnection": "전생 악연 이야기 2-3문장. 구체적 시대·관계·갈등으로. '이래서 이번 생에 또 만나는구나...' 납득하면서 소름 돋게.",
-  "imagePrompt": "English portrait prompt for AI image generation: charming yet deceptive person, superficially attractive but cold calculating eyes, two-faced nature, stylish appearance, dramatic cinematic lighting with subtle shadows, photorealistic, high quality"
+  "imagePrompt": "English: describe the enemy's face ONLY using these elements in order — [face shape] [eye shape + brow shape, with subtly guarded or sharp quality] [nose + lips] [skin tone] [hair style + color] [2 vibe adjectives reflecting the enemy type: ${base.enemyType}]. No evaluation words. Example: 'sharp angular face, narrow slightly cold double-lidded eyes, sharp straight brows, defined high nose, thin composed lips, clear pale skin, slicked-back dark hair, charismatic but unsettling'"
 }`;
 
     const response = await client.messages.create({

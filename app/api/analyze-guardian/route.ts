@@ -68,7 +68,7 @@ ${manseryeokContext}
   "signToRecognize": "귀인을 알아보는 법 2문장. '이런 느낌이 오면 그 사람이에요!' 직관적이고 납득 가게.",
   "kakaoFirstMessage": "귀인이 처음 보낼 메시지 (따뜻하고 신뢰감 있는 말투, 받으면 '오, 이 분 믿음직스러워' 느낌, 1-2문장)",
   "pastLifeConnection": "전생 인연 이야기 2-3문장. 구체적 시대·관계로 드라마틱하게. '이래서 이번 생에서도 만나는구나!' 납득 가게.",
-  "imagePrompt": "English portrait prompt for AI image generation: wise trustworthy person, describe appearance based on saju elements, kind yet authoritative face, professional and warm, photorealistic, studio lighting, high quality"
+  "imagePrompt": "English: describe the guardian's face ONLY using these elements in order — [face shape] [eye shape + brow shape] [nose + lips] [skin tone] [hair style + hair color] [2 vibe adjectives]. Use the saju day-stem (${base.sajuInfo.dayPillar[0]}) as visual base. No evaluation words (beautiful/handsome). Example format: 'soft oval face, slightly arched double-lidded warm eyes, delicate arched brows, refined button nose, naturally full lips, luminous peachy skin, shoulder-length wavy dark brown hair, gentle and trustworthy'"
 }`;
 
     const response = await client.messages.create({

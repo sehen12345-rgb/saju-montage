@@ -465,10 +465,12 @@ export function buildSajuSystemPrompt(): string {
 
 imagePrompt 작성 규칙:
 - 반드시 영어로 작성
-- 헤어스타일 구체적으로 명시 (예: shoulder-length wavy dark brown hair / short neat black hair / long straight hair with side-swept bangs)
-- 얼굴 특징을 구체적으로 (눈 모양, 눈썹 모양, 입술 모양 등)
+- 순서: [얼굴형] [눈+눈썹] [코+입술] [피부] [헤어(스타일+컬러)] [분위기 형용사]
+- 헤어스타일 필수 포함 (예: shoulder-length layered dark brown waves / short tousled black hair / long straight hair with wispy bangs)
+- 얼굴 특징 구체적으로 (눈 모양, 눈썹 두께, 입술 두께, 콧날 높이 등)
 - "photorealistic"·"portrait"·"Korean" 같은 기술적·민족 단어 제외
-- 분위기 단어 반드시 포함 (예: warm, mysterious, confident, gentle 등)`;
+- 분위기 형용사 2개 이상 포함 (예: warm and approachable / mysterious and refined / confident and bright)
+- 절대 금지: "beautiful", "pretty", "handsome" 같은 평가어 — 구체적 묘사로 대체`;
 }
 
 export function buildSajuUserPrompt(
@@ -792,20 +794,30 @@ export function buildFacialImagePrompt(
     ? `photorealistic portrait of a young East Asian woman in her ${ageEN}`
     : `photorealistic portrait of a young East Asian man in his ${ageEN}`;
 
-  // 얼굴 묘사: 일간(기본 얼굴) + 일지(인상) + 년지(피부) + 월간(헤어) + 월지(계절감) + 시지(특별)
+  // 헤어 컬러 – 월지 기반 뉘앙스
+  const HAIR_COLOR: Record<string, string> = {
+    자: "natural black hair",     축: "dark brown hair",
+    인: "rich dark brown hair",   묘: "soft chestnut brown hair",
+    진: "deep black hair",        사: "warm dark brown hair",
+    오: "glossy black hair",      미: "warm honey-brown hair",
+    신: "sleek dark black hair",  유: "polished dark brown hair",
+    술: "natural dark hair",      해: "dark wavy hair",
+  };
+  const hairColor = HAIR_COLOR[monthJi] ?? "natural dark hair";
+
+  // 얼굴 묘사: 일간(기본 얼굴) + 일지(인상) + 년지(피부) + 월간(헤어질감) + 월지(색/계절감) + 시지(특별)
   const facialParts = [
     dayV.faceShape,
-    dayV.eyes,
-    dayV.nose,
-    dayV.lips,
+    `${dayV.eyes}, ${dayV.eyebrows}`,
+    `${dayV.nose}, ${dayV.lips}`,
     dayV.jaw,
     impression,
     skinTone,
-    monthV.hair,
+    `${monthV.hair}, ${hairColor}`,
     seasonVibe,
     special,
-    dayV.vibe,
+    `overall vibe: ${dayV.vibe}`,
   ].filter(Boolean).join(", ");
 
-  return `${genderPrefix}, ${facialParts}, ${shot}, ${lighting}, natural skin pores and texture, real human face, 85mm lens, 8k resolution`;
+  return `${genderPrefix}, ${facialParts}, ${shot}, ${lighting}, natural skin micro-texture, true-to-life face`;
 }

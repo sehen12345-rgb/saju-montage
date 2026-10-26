@@ -6,49 +6,70 @@ import type { SajuInfo } from "@/lib/types";
 
 // 씨드 기반으로 촬영 환경/분위기 변주 (같은 사주면 항상 같은 환경)
 const LIGHTING_STYLES = [
-  "soft natural window light, clean white background",
-  "warm golden hour sunlight, outdoor bokeh background",
-  "soft studio lighting, neutral gray background",
-  "cool morning light, minimalist indoor setting",
-  "gentle diffused light, warm beige background",
-  "bright airy daylight, soft cream background",
+  "soft butterfly lighting, neutral gray gradient background",
+  "warm Rembrandt lighting, dark bokeh background",
+  "clean high-key studio lighting, pure white background",
+  "gentle natural window light, soft cream background",
+  "golden hour back-rim light, outdoor blurred background",
+  "soft diffused overcast light, warm beige background",
 ];
 
 const SHOT_STYLES = [
-  "close-up portrait, face fills frame, sharp focus on eyes",
-  "head and shoulders portrait, slight angle, sharp focus on face",
-  "close-up face, straight on, intense eye contact with camera",
-  "three-quarter face angle, sharp facial details",
+  "chest-up portrait, facing camera, slight head tilt",
+  "head and shoulders, three-quarter angle, sharp eyes",
+  "bust portrait, facing directly forward, symmetrical",
+  "close bust shot, slight chin-down angle, intense eye contact",
+];
+
+const EXPRESSION_STYLES = [
+  "natural confident expression, soft relaxed lips, looking directly at camera",
+  "warm gentle smile, approachable expression, eyes looking at camera",
+  "calm composed expression, slight smile, direct eye contact",
+  "subtle warm expression, thoughtful gaze, looking at camera",
 ];
 
 function buildFinalPrompt(spouseGender: string, analysisPrompt: string, seed: number): string {
   const genderPrefix = spouseGender === "woman"
-    ? "photorealistic portrait of a young East Asian woman"
-    : "photorealistic portrait of a young East Asian man";
+    ? "ultra-realistic portrait photograph of a beautiful young East Asian woman"
+    : "ultra-realistic portrait photograph of a handsome young East Asian man";
 
-  const lighting = LIGHTING_STYLES[seed % LIGHTING_STYLES.length];
-  const shot = SHOT_STYLES[seed % SHOT_STYLES.length];
+  const lighting   = LIGHTING_STYLES[seed % LIGHTING_STYLES.length];
+  const shot       = SHOT_STYLES[(seed >> 1) % SHOT_STYLES.length];
+  const expression = EXPRESSION_STYLES[(seed >> 2) % EXPRESSION_STYLES.length];
 
-  return `${genderPrefix}, ${analysisPrompt}, ${shot}, ${lighting}, raw photo, natural skin texture with visible pores, real human imperfections, DSLR photograph, 85mm f/1.8 lens, shallow depth of field, candid expression, not a painting not an illustration not anime`;
+  return [
+    genderPrefix,
+    analysisPrompt,
+    expression,
+    shot,
+    lighting,
+    "85mm portrait lens, f/1.4 shallow depth of field, creamy background bokeh",
+    "natural skin pores and micro-texture, subsurface scattering, true-to-life skin",
+    "4K DSLR photograph, ultra-sharp facial details, professional headshot quality",
+    "hyperrealistic, photorealistic, RAW photo",
+  ].join(", ");
 }
 
 const NEGATIVE_PROMPT = [
-  "blurry", "low quality", "distorted face", "ugly", "deformed",
+  "blurry face", "soft focus face", "low quality", "low resolution",
+  "distorted face", "ugly", "deformed", "bad anatomy",
   "cartoon", "anime", "illustration", "painting", "sketch", "drawing",
-  "digital art", "render", "3d", "cgi",
-  "bad anatomy", "watermark", "text", "logo", "extra limbs",
-  "disfigured", "mutated", "bad proportions", "unrealistic skin",
-  "plastic skin", "over-smoothed", "airbrushed", "perfect skin",
-  "too smooth", "porcelain skin", "doll-like", "uncanny",
+  "digital art", "render", "3d cgi", "plastic skin",
+  "over-smoothed skin", "airbrushed", "excessive beauty filter",
+  "doll-like", "uncanny valley", "watermark", "text", "logo",
+  "extra limbs", "disfigured", "mutated hands", "bad proportions",
+  "dark background", "flat lighting", "overexposed", "underexposed",
 ].join(", ");
 
 // ── Pollinations.ai (완전 무료, 키 불필요) ────────────────
 async function generateWithPollinations(prompt: string, seed: number): Promise<string> {
-  const encoded = encodeURIComponent(prompt);
-  const url = `https://image.pollinations.ai/prompt/${encoded}?width=768&height=768&model=flux-realism&seed=${seed}&nologo=true&enhance=false`;
+  const encoded  = encodeURIComponent(prompt);
+  const negative = encodeURIComponent(NEGATIVE_PROMPT);
+  // 768×1024: 인물 포트레이트에 최적, enhance=true: AI 품질 향상, negative 프롬프트 추가
+  const url = `https://image.pollinations.ai/prompt/${encoded}?width=768&height=1024&model=flux-realism&seed=${seed}&nologo=true&enhance=true&negative=${negative}`;
 
   const res = await fetch(url, {
-    signal: AbortSignal.timeout(90_000),
+    signal: AbortSignal.timeout(120_000),
   });
 
   if (!res.ok) throw new Error(`Pollinations 오류: ${res.status}`);
@@ -83,10 +104,10 @@ async function generateWithHuggingFace(prompt: string): Promise<string> {
           body: JSON.stringify({
             inputs: prompt,
             parameters: {
-              num_inference_steps: model.includes("flux") ? 4 : 25,
+              num_inference_steps: model.includes("flux") ? 4 : 30,
               width: 768,
-              height: 768,
-              guidance_scale: 7,
+              height: 1024,
+              guidance_scale: 7.5,
             },
           }),
           signal: AbortSignal.timeout(120_000),
@@ -125,16 +146,16 @@ async function generateWithStableHorde(prompt: string, seed: number): Promise<st
     body: JSON.stringify({
       prompt: `${prompt} ### ${NEGATIVE_PROMPT}`,
       params: {
-        sampler_name: "k_euler_a",
-        cfg_scale: 7.5,
-        steps: 30,
+        sampler_name: "k_dpmpp_2m",
+        cfg_scale: 8,
+        steps: 35,
         width: 512,
         height: 768,
         n: 1,
         karras: true,
         seed,
       },
-      models: ["Realistic Vision"],
+      models: ["Realistic Vision", "Dreamshaper"],
       r2: true,
       shared: false,
       trusted_workers: false,
