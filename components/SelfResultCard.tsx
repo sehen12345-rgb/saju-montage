@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { SelfSajuAnalysis, SajuDeepSection, SajuInfo } from "@/lib/types";
+import type { SelfSajuAnalysis, SajuDeepSection, SajuInfo, ProductType } from "@/lib/types";
 import { isPaidForSaju, savePaidRecord, makeProductHash, PRICE_SELF } from "@/lib/paymentStorage";
 import { requestTossPayment } from "@/lib/tossPayments";
 
@@ -219,10 +219,10 @@ function SelfPayModal({ onClose, onPay }: { onClose: () => void; onPay: () => vo
           {/* 가격 표시 */}
           <div className="bg-white/4 border border-white/8 rounded-2xl p-3 text-center">
             <div className="flex items-center justify-center gap-2 mb-0.5">
-              <span className="text-xs text-gray-500 line-through">3,800원</span>
+              <span className="text-xs text-gray-500 line-through">1,980원</span>
               <span className="text-xs bg-violet-500/20 text-violet-400 font-bold px-2 py-0.5 rounded-full">50% 할인</span>
             </div>
-            <p className="text-2xl font-black text-white">1,900<span className="text-base font-bold">원</span></p>
+            <p className="text-2xl font-black text-white">990<span className="text-base font-bold">원</span></p>
             <p className="text-xs text-gray-500 mt-0.5">1회 결제 · 회원가입 불필요</p>
           </div>
 
@@ -240,7 +240,7 @@ function SelfPayModal({ onClose, onPay }: { onClose: () => void; onPay: () => vo
                 <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current shrink-0">
                   <path d="M12 3C6.48 3 2 6.48 2 10.8c0 2.72 1.6 5.12 4.04 6.56l-1.02 3.76 4.38-2.88c.84.12 1.72.18 2.6.18 5.52 0 10-3.48 10-7.8S17.52 3 12 3z"/>
                 </svg>
-                카카오페이 1,900원
+                카카오페이 990원
               </>
             )}
           </button>
@@ -253,7 +253,7 @@ function SelfPayModal({ onClose, onPay }: { onClose: () => void; onPay: () => vo
           >
             {paying === "card" ? (
               <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : "💳 신용·체크카드 1,900원"}
+            ) : "💳 신용·체크카드 990원"}
           </button>
 
           <button onClick={onClose} className="w-full py-2.5 text-gray-600 text-sm hover:text-gray-400 transition-colors">
@@ -290,13 +290,22 @@ function DeepSectionCard({ section }: { section: SajuDeepSection }) {
 
 // ── 메인 컴포넌트 ──────────────────────────────────────────
 
+const INTENDED_META: Record<string, { emoji: string; label: string; color: string; gradFrom: string; gradTo: string }> = {
+  spouse:  { emoji: "💑", label: "배우자 보기",       color: "text-rose-300",   gradFrom: "from-rose-600",   gradTo: "to-pink-600"   },
+  guardian:{ emoji: "🌟", label: "귀인 보기",         color: "text-amber-300",  gradFrom: "from-amber-500",  gradTo: "to-yellow-500" },
+  enemy:   { emoji: "😤", label: "웬수 보기",         color: "text-slate-300",  gradFrom: "from-slate-600",  gradTo: "to-slate-700"  },
+  bundle:  { emoji: "🔮", label: "전체 분석 보기",   color: "text-violet-300", gradFrom: "from-violet-600", gradTo: "to-purple-600" },
+};
+
 interface Props {
   analysis: SelfSajuAnalysis;
   name: string;
   gender: "male" | "female";
+  intendedProduct?: ProductType;
+  onProceedToIntended?: () => void;
 }
 
-export default function SelfResultCard({ analysis, name, gender }: Props) {
+export default function SelfResultCard({ analysis, name, gender, intendedProduct, onProceedToIntended }: Props) {
   const [paid, setPaid] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [justUnlocked, setJustUnlocked] = useState(false);
@@ -361,7 +370,7 @@ export default function SelfResultCard({ analysis, name, gender }: Props) {
             style={{ display: "flex" }}
           >
             <span className="text-lg">🔮 내 사주 전체 보기</span>
-            <span className="bg-white/20 rounded-xl px-3 py-1 text-sm font-black">1,900원</span>
+            <span className="bg-white/20 rounded-xl px-3 py-1 text-sm font-black">990원</span>
           </button>
         </div>
       )}
@@ -434,7 +443,7 @@ export default function SelfResultCard({ analysis, name, gender }: Props) {
                 onClick={() => setShowModal(true)}
                 className="mt-2 px-8 py-4 bg-violet-500 hover:bg-violet-400 text-white font-black text-base rounded-2xl shadow-lg active:scale-95 transition-all"
               >
-                🔮 1,900원으로 내 사주 전체 보기
+                🔮 990원으로 내 사주 전체 보기
               </button>
             </div>
           </div>
@@ -637,6 +646,27 @@ export default function SelfResultCard({ analysis, name, gender }: Props) {
                 </div>
               </div>
             )}
+
+            {/* 다음 단계 CTA — 배우자/귀인/웬수 분석으로 이동 */}
+            {intendedProduct && onProceedToIntended && (() => {
+              const meta = INTENDED_META[intendedProduct];
+              if (!meta) return null;
+              const nextLabel = intendedProduct === "spouse" ? "운명의 배우자" : intendedProduct === "guardian" ? "내 귀인" : intendedProduct === "bundle" ? "전체 분석" : "내 웬수";
+              return (
+                <div className={`bg-gradient-to-br from-white/5 to-white/2 border border-white/10 rounded-3xl p-5 text-center`}>
+                  <p className="text-2xl mb-2">{meta.emoji}</p>
+                  <p className="text-white font-black text-base mb-1">본인 사주 분석 완료!</p>
+                  <p className="text-gray-400 text-sm mb-4">{nextLabel}도 확인해보세요 →</p>
+                  <button
+                    onClick={onProceedToIntended}
+                    className={`w-full py-4 rounded-2xl font-black text-base text-white bg-gradient-to-r ${meta.gradFrom} ${meta.gradTo} shadow-lg active:scale-95 transition-all`}
+                  >
+                    {meta.emoji} {meta.label}
+                  </button>
+                  <p className="text-xs text-gray-600 mt-2">별도 1,900원 결제</p>
+                </div>
+              );
+            })()}
           </>
         )}
       </div>

@@ -51,25 +51,16 @@ export async function requestTossPayment({
   const failUrl = `${origin}/payment/fail`;
 
   try {
-    // 디버그: ANONYMOUS 상수 확인
     const ANON = TossPayments.ANONYMOUS;
-    console.log("[TOSS_DEBUG] clientKey prefix:", clientKey.slice(0, 10));
-    console.log("[TOSS_DEBUG] TossPayments.ANONYMOUS:", ANON);
-
     const toss = TossPayments(clientKey);
-    console.log("[TOSS_DEBUG] toss instance created");
 
-    // V2 결제창형: widgets + renderPaymentWindow (레거시 payment() 대신 정식 방식)
-    // TossPayments.ANONYMOUS가 undefined면 "ANONYMOUS" 문자열 폴백
+    // V2 결제창형: widgets + renderPaymentWindow
     const widgets = toss.widgets({ customerKey: ANON ?? "ANONYMOUS" });
-    console.log("[TOSS_DEBUG] widgets created");
 
     await widgets.setAmount({ currency: "KRW", value: amount });
-    console.log("[TOSS_DEBUG] setAmount done, rendering payment window...");
 
     // 결제창 렌더링 — 팝업/오버레이 형태로 열림 (DOM 마운트 불필요)
     const paymentWindow = await widgets.renderPaymentWindow({ orderName });
-    console.log("[TOSS_DEBUG] renderPaymentWindow done");
 
     // 결제창에서 구매자가 결제수단 선택 후 "결제하기" 누르면 paymentRequest 이벤트 발생
     await new Promise<void>((resolve, reject) => {
@@ -101,7 +92,7 @@ export async function requestTossPayment({
       throw err; // 컴포넌트에서 paying 상태만 리셋
     }
     // 그 외 에러 — 전체 에러 정보 콘솔에 기록
-    console.error("[TOSS_PAYMENT_ERROR]", { code, err });
+    console.error("[TOSS_ERROR]", { code, err });
     const msg = (err as { message?: string })?.message ?? String(err);
     const displayMsg = code ? `${msg} (${code})` : msg;
     alert(`결제 오류: ${displayMsg}`);

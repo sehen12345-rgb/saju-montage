@@ -6,7 +6,7 @@ import ResultCard from "@/components/ResultCard";
 import GuardianResultCard from "@/components/GuardianResultCard";
 import EnemyResultCard from "@/components/EnemyResultCard";
 import SelfResultCard from "@/components/SelfResultCard";
-import type { GenerateResult, SajuAnalysis, GuardianAnalysis, EnemyAnalysis, SelfSajuAnalysis } from "@/lib/types";
+import type { GenerateResult, SajuAnalysis, GuardianAnalysis, EnemyAnalysis, SelfSajuAnalysis, ProductType } from "@/lib/types";
 import SajuSummaryCard from "@/components/SajuSummaryCard";
 import { makeSajuHash, isBundlePaid, saveBundlePaidRecord } from "@/lib/paymentStorage";
 
@@ -29,6 +29,7 @@ export default function ResultPage() {
   const [bundleTab, setBundleTab] = useState<"spouse" | "guardian" | "enemy">("spouse");
   const [visitedTabs, setVisitedTabs] = useState<Set<string>>(new Set(["spouse"]));
   const [bundlePaid, setBundlePaid] = useState(false);
+  const [intendedProduct, setIntendedProduct] = useState<ProductType | null>(null);
 
   useEffect(() => {
     let stored: string | null = null;
@@ -50,6 +51,15 @@ export default function ResultPage() {
     }
   }, [router]);
 
+  // 본인 사주 페이지에서 intendedProduct 읽기
+  useEffect(() => {
+    if (!result || result.productType !== "self") return;
+    try {
+      const ip = sessionStorage.getItem("intendedProduct") as ProductType | null;
+      if (ip) setIntendedProduct(ip);
+    } catch { /* ignore */ }
+  }, [result?.productType]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // 번들 결제 상태 복원 (브라우저 재방문 시)
   useEffect(() => {
     if (!result || result.productType !== "bundle") return;
@@ -68,8 +78,27 @@ export default function ResultPage() {
     }
   }
 
+  function handleProceedToIntended() {
+    try {
+      const stored = sessionStorage.getItem("intendedSajuResult");
+      if (!stored) return;
+      const intendedResult: GenerateResult = JSON.parse(stored);
+      intendedResult.paid = false;
+      sessionStorage.setItem("sajuResult", JSON.stringify(intendedResult));
+      try { localStorage.setItem("sajuResult_backup", JSON.stringify(intendedResult)); } catch { /* ignore */ }
+      sessionStorage.removeItem("intendedSajuResult");
+      sessionStorage.removeItem("intendedProduct");
+      setIntendedProduct(null);
+      setResult(intendedResult);
+    } catch (e) {
+      console.error("proceed to intended error:", e);
+    }
+  }
+
   function handleReset() {
     sessionStorage.removeItem("sajuResult");
+    sessionStorage.removeItem("intendedSajuResult");
+    sessionStorage.removeItem("intendedProduct");
     router.push("/");
   }
 
@@ -179,6 +208,8 @@ export default function ResultPage() {
             analysis={result.analysis as SelfSajuAnalysis}
             name={result.name}
             gender={result.gender ?? "male"}
+            intendedProduct={intendedProduct ?? undefined}
+            onProceedToIntended={intendedProduct ? handleProceedToIntended : undefined}
           />
         ) : (
           <ResultCard result={result} onReset={handleReset} />

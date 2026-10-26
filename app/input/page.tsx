@@ -344,69 +344,105 @@ export default function InputPage() {
         return;
       }
 
-      // ── 단일 상품 분석 ──
-      let analysis;
-      let usedMock = false;
+      // ── 단일 상품 분석 (배우자/귀인/웬수) ──
+      // 항상 본인 사주를 먼저 보여주고, 결제 후 배우자/귀인/웬수로 이동
       const autoStep1 = setTimeout(() => setLoadingStep(1), 5000);
       const autoStep2 = setTimeout(() => setLoadingStep(2), 12000);
-      try {
-        const apiPath = isGuardian ? "/api/analyze-guardian" : isEnemy ? "/api/analyze-enemy" : "/api/analyze-saju";
-        const ctrl = new AbortController();
-        const timeout = setTimeout(() => ctrl.abort(), 25000);
-        const analysisRes = await fetch(apiPath, {
+
+      const apiPath = isGuardian ? "/api/analyze-guardian" : isEnemy ? "/api/analyze-enemy" : "/api/analyze-saju";
+
+      // 본인 사주 + 의도한 분석 병렬 요청
+      const selfCtrl = new AbortController();
+      const selfTimeout = setTimeout(() => selfCtrl.abort(), 25000);
+      const intendedCtrl = new AbortController();
+      const intendedTimeout = setTimeout(() => intendedCtrl.abort(), 25000);
+
+      const [selfFetch, intendedFetch] = await Promise.allSettled([
+        fetch("/api/analyze-self", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+          signal: selfCtrl.signal,
+        }),
+        fetch(apiPath, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ ...data, productType }),
-          signal: ctrl.signal,
-        });
-        clearTimeout(timeout);
-        if (analysisRes.ok) {
-          analysis = await analysisRes.json();
-        } else {
-          throw new Error("api_fail");
-        }
-      } catch {
-        usedMock = true;
-        if (isGuardian) {
-          analysis = buildMockGuardianAnalysis(data.name, data.birthYear);
-        } else if (isEnemy) {
-          analysis = buildMockEnemyAnalysis(data.name, data.birthYear);
-        } else {
-          analysis = buildMockSpouseAnalysis(data.name, data.birthYear, data.gender);
-        }
-      }
+          signal: intendedCtrl.signal,
+        }),
+      ]);
+      clearTimeout(selfTimeout);
+      clearTimeout(intendedTimeout);
       clearTimeout(autoStep1);
       clearTimeout(autoStep2);
 
-      // Extract selfSaju from analysis response (API attaches it as extra field)
-      const selfSaju = (analysis as Record<string, unknown>).selfSaju as SelfSajuAnalysis | undefined;
-      if (selfSaju) {
-        delete (analysis as Record<string, unknown>).selfSaju;
+      // 본인 사주 처리
+      let selfAnalysis: SelfSajuAnalysis;
+      let selfUsedMock = false;
+      try {
+        if (selfFetch.status === "fulfilled" && selfFetch.value.ok) {
+          selfAnalysis = await selfFetch.value.json();
+        } else throw new Error("self_fail");
+      } catch {
+        selfUsedMock = true;
+        selfAnalysis = buildMockSelfAnalysis(data.name, data.birthYear, data.gender);
+      }
+
+      // 의도한 분석(배우자/귀인/웬수) 처리
+      let intendedAnalysis;
+      let intendedUsedMock = false;
+      try {
+        if (intendedFetch.status === "fulfilled" && intendedFetch.value.ok) {
+          intendedAnalysis = await intendedFetch.value.json();
+          // 배우자 API가 selfSaju를 함께 반환하는 경우 제거
+          delete (intendedAnalysis as Record<string, unknown>).selfSaju;
+        } else throw new Error("intended_fail");
+      } catch {
+        intendedUsedMock = true;
+        if (isGuardian) {
+          intendedAnalysis = buildMockGuardianAnalysis(data.name, data.birthYear);
+        } else if (isEnemy) {
+          intendedAnalysis = buildMockEnemyAnalysis(data.name, data.birthYear);
+        } else {
+          intendedAnalysis = buildMockSpouseAnalysis(data.name, data.birthYear, data.gender);
+        }
       }
 
       setLoadingStep(3);
       await new Promise((r) => setTimeout(r, 800));
-      setLoadingStep(4); // LoadingScreen은 step이 STEPS.length-1을 넘어가도 마지막 단계로 표시
+      setLoadingStep(4);
       await new Promise((r) => setTimeout(r, 600));
 
-      const imageUrl = buildImageUrl(
-        analysis,
+      // 의도한 분석 결과를 sessionStorage에 저장 (본인 사주 결제 후 CTA에서 사용)
+      const intendedImageUrl = buildImageUrl(
+        intendedAnalysis,
         isGuardian ? "guardian" : isEnemy ? "enemy" : "spouse",
         data.gender,
-        isEnemy ? 9999 : 0,
+        isEnemy ? 9999 : isGuardian ? 1111 : 0,
       );
-
-      const result: GenerateResult = {
+      const intendedResult: GenerateResult = {
         name: data.name,
-        analysis,
-        imageUrl,
+        analysis: intendedAnalysis,
+        imageUrl: intendedImageUrl,
         gender: data.gender,
-        demo: usedMock,
+        demo: intendedUsedMock,
         paid: false,
         productType,
-        selfSaju,
       };
-      const json = JSON.stringify(result);
+      try { sessionStorage.setItem("intendedSajuResult", JSON.stringify(intendedResult)); } catch { /* private mode */ }
+      try { sessionStorage.setItem("intendedProduct", productType); } catch { /* private mode */ }
+
+      // 본인 사주를 먼저 표시
+      const selfResult: GenerateResult = {
+        name: data.name,
+        analysis: selfAnalysis,
+        imageUrl: "",
+        gender: data.gender,
+        demo: selfUsedMock,
+        paid: false,
+        productType: "self",
+      };
+      const json = JSON.stringify(selfResult);
       try { sessionStorage.setItem("sajuResult", json); } catch { /* private mode */ }
       try { localStorage.setItem("sajuResult_backup", json); } catch { /* storage full */ }
 
