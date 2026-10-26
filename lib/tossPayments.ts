@@ -19,17 +19,30 @@ export async function requestTossPayment({
   orderName: string;
   isBundle?: boolean;
 }): Promise<void> {
+  if (typeof window === "undefined") {
+    throw new Error("결제는 브라우저에서만 가능합니다.");
+  }
+
   const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY;
   if (!clientKey) {
     alert("결제 키가 설정되지 않았습니다. 관리자에게 문의하세요.");
     throw new Error("NEXT_PUBLIC_TOSS_CLIENT_KEY not set");
   }
 
+  // SDK 로드 대기 (최대 5초, 500ms 간격 폴링)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const TossPayments = (window as any).TossPayments;
-  if (typeof window === "undefined" || !TossPayments) {
-    alert("결제 모듈 로딩 중입니다. 잠시 후 다시 시도해주세요.");
-    throw new Error("Toss Payments SDK not loaded");
+  let TossPayments = (window as any).TossPayments;
+  if (!TossPayments) {
+    for (let i = 0; i < 10; i++) {
+      await new Promise((r) => setTimeout(r, 500));
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      TossPayments = (window as any).TossPayments;
+      if (TossPayments) break;
+    }
+  }
+  if (!TossPayments) {
+    alert("결제 모듈 로딩 중입니다. 페이지를 새로고침 후 다시 시도해주세요.");
+    throw new Error("Toss Payments SDK not loaded after 5s");
   }
 
   const orderId = generateOrderId();
@@ -59,9 +72,12 @@ export async function requestTossPayment({
     if (code === "PAY_PROCESS_CANCELED" || code === "USER_CANCEL") {
       throw err; // 컴포넌트에서 paying 상태만 리셋
     }
-    // 그 외 에러는 사용자에게 알림
+    // 그 외 에러 — 전체 에러 정보 콘솔에 기록
+    console.error("[TOSS_PAYMENT_ERROR]", { code, err });
     const msg = (err as { message?: string })?.message ?? String(err);
-    alert(`결제 오류: ${msg}`);
+    // 에러 코드가 있으면 함께 표시 (디버그용)
+    const displayMsg = code ? `${msg} (${code})` : msg;
+    alert(`결제 오류: ${displayMsg}`);
     throw err;
   }
 }
