@@ -641,17 +641,31 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
     onPaid?.();
   }
 
-  function handleRegenerateImage() {
+  async function handleRegenerateImage() {
     if (regenerating) return;
     setRegenerating(true);
     setImgLoaded(false);
     setImgError(false);
-
-    const newSeed = Math.floor(Math.random() * 999999) + 1;
-    const encoded = encodeURIComponent(analysis.imagePrompt);
-    const newUrl = `https://image.pollinations.ai/prompt/${encoded}?width=768&height=768&model=flux&seed=${newSeed}&nologo=true&enhance=false`;
-    setCurrentImageUrl(newUrl);
-    setTimeout(() => setRegenerating(false), 500);
+    try {
+      const res = await fetch("/api/generate-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt: analysis.imagePrompt,
+          gender: result.gender,
+          sajuInfo: analysis.sajuInfo,
+          // 랜덤 seed로 다른 결과
+          _randomSeed: Math.floor(Math.random() * 999999) + 1,
+        }),
+      });
+      const data = await res.json();
+      if (data.imageUrl) setCurrentImageUrl(data.imageUrl);
+      else setImgError(true);
+    } catch {
+      setImgError(true);
+    } finally {
+      setRegenerating(false);
+    }
   }
 
   async function handleDownload() {

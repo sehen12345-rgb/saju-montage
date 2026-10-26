@@ -34,6 +34,10 @@ export async function GET(req: NextRequest) {
       }
 
       const contentType = res.headers.get("content-type") ?? "image/jpeg";
+      if (!contentType.startsWith("image/")) {
+        return NextResponse.json({ error: "이미지가 아닌 응답입니다." }, { status: 502 });
+      }
+
       const buffer = await res.arrayBuffer();
 
       return new NextResponse(buffer, {

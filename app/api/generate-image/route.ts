@@ -61,27 +61,67 @@ const NEGATIVE_PROMPT = [
   "dark background", "flat lighting", "overexposed", "underexposed",
 ].join(", ");
 
+// ── 이미지 매직바이트 검증 (HTML/텍스트 응답 차단) ──────────
+function isValidImageBuffer(buffer: ArrayBuffer): boolean {
+  const bytes = new Uint8Array(buffer.slice(0, 12));
+  // JPEG: FF D8 FF
+  if (bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF) return true;
+  // PNG: 89 50 4E 47
+  if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47) return true;
+  // WEBP: 52 49 46 46 ?? ?? ?? ?? 57 45 42 50
+  if (bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[8] === 0x57 && bytes[9] === 0x45) return true;
+  // GIF: 47 49 46 38
+  if (bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x38) return true;
+  return false;
+}
+
 // ── Pollinations.ai (완전 무료, 키 불필요) ────────────────
 async function generateWithPollinations(prompt: string, seed: number): Promise<string> {
   const encoded  = encodeURIComponent(prompt);
   const negative = encodeURIComponent(NEGATIVE_PROMPT);
-  // 768×1024: 인물 포트레이트에 최적, enhance=true: AI 품질 향상, negative 프롬프트 추가
-  const url = `https://image.pollinations.ai/prompt/${encoded}?width=768&height=1024&model=flux-realism&seed=${seed}&nologo=true&enhance=true&negative=${negative}`;
 
-  const res = await fetch(url, {
-    signal: AbortSignal.timeout(120_000),
-  });
+  // enhance=false: 서버 부하 낮춤 (enhance=true는 과부하 시 HTML 에러 페이지 반환)
+  // 모델 변주: seed 홀짝으로 두 모델 교대 사용
+  const model = seed % 2 === 0 ? "flux-realism" : "flux";
+  const url = `https://image.pollinations.ai/prompt/${encoded}?width=768&height=1024&model=${model}&seed=${seed}&nologo=true&enhance=false&negative=${negative}`;
 
-  if (!res.ok) throw new Error(`Pollinations 오류: ${res.status}`);
+  // 최대 3회 재시도 (Pollinations 일시적 부하 시 재시도)
+  for (let attempt = 0; attempt < 3; attempt++) {
+    if (attempt > 0) await new Promise(r => setTimeout(r, 3000 * attempt));
 
-  const contentType = res.headers.get("content-type") ?? "image/jpeg";
-  if (!contentType.startsWith("image/")) throw new Error("Pollinations: 이미지 응답 아님");
+    const res = await fetch(url, {
+      signal: AbortSignal.timeout(90_000),
+    });
 
-  const buffer = await res.arrayBuffer();
-  if (buffer.byteLength < 1000) throw new Error("Pollinations: 이미지 크기 너무 작음");
+    if (!res.ok) {
+      console.warn(`Pollinations attempt ${attempt + 1} failed: ${res.status}`);
+      continue;
+    }
 
-  const base64 = Buffer.from(buffer).toString("base64");
-  return `data:${contentType};base64,${base64}`;
+    const contentType = res.headers.get("content-type") ?? "";
+    if (!contentType.startsWith("image/")) {
+      console.warn(`Pollinations attempt ${attempt + 1}: non-image content-type: ${contentType}`);
+      continue;
+    }
+
+    const buffer = await res.arrayBuffer();
+
+    // 매직바이트로 실제 이미지인지 검증 (HTML 에러 페이지 차단)
+    if (!isValidImageBuffer(buffer)) {
+      console.warn(`Pollinations attempt ${attempt + 1}: invalid image data (likely HTML error page)`);
+      continue;
+    }
+
+    if (buffer.byteLength < 5000) {
+      console.warn(`Pollinations attempt ${attempt + 1}: image too small (${buffer.byteLength}bytes)`);
+      continue;
+    }
+
+    const base64 = Buffer.from(buffer).toString("base64");
+    return `data:${contentType};base64,${base64}`;
+  }
+
+  throw new Error("Pollinations: 3회 시도 모두 실패");
 }
 
 // ── HuggingFace FLUX (무료 토큰) ──────────────────────────
@@ -211,7 +251,7 @@ async function generateWithStableHorde(prompt: string, seed: number): Promise<st
 
 export async function POST(req: NextRequest) {
   try {
-    const { prompt, gender, sajuInfo } = await req.json();
+    const { prompt, gender, sajuInfo, _randomSeed } = await req.json();
 
     if (!prompt) {
       return NextResponse.json({ error: "프롬프트가 없습니다." }, { status: 400 });
@@ -219,7 +259,8 @@ export async function POST(req: NextRequest) {
 
     const spouseGender = (gender as string) === "male" ? "woman" : "man";
     const info = sajuInfo as SajuInfo;
-    const seed = getSajuSeed(info, spouseGender);
+    // _randomSeed가 있으면 재생성 요청 → 다른 이미지 생성
+    const seed = _randomSeed ?? getSajuSeed(info, spouseGender);
     const finalPrompt = buildFinalPrompt(spouseGender, prompt, seed);
 
     console.log("Image prompt:", finalPrompt);
