@@ -269,20 +269,24 @@ function SelfPayModal({ onClose, onPay }: { onClose: () => void; onPay: () => vo
   );
 }
 
-// ── 심화 섹션 카드 ──────────────────────────────────────────
-function DeepSectionCard({ section }: { section: SajuDeepSection }) {
+// ── 심화 섹션 카드 (사주아이 스타일) ────────────────────────
+function DeepSectionCard({ section, isLast }: { section: SajuDeepSection; isLast?: boolean }) {
   return (
-    <div className="bg-white/5 border border-white/8 rounded-2xl p-4">
-      <div className="flex items-center gap-2 mb-2">
-        <span className="text-xl">{section.icon}</span>
-        <h3 className="text-sm font-black text-white">{section.title}</h3>
+    <div className={`py-6 ${isLast ? "" : "border-b border-white/8"}`}>
+      {/* 카테고리 태그 */}
+      {section.category && (
+        <p className="text-[11px] text-gray-500 font-medium mb-2 tracking-wide">{section.category}</p>
+      )}
+      {/* 제목 */}
+      <div className="flex items-start gap-2.5 mb-4">
+        <span className="text-base shrink-0 mt-0.5 opacity-80">{section.icon}</span>
+        <h3 className="text-[15px] font-black text-white leading-snug">{section.title}</h3>
       </div>
-      <p className="text-xs text-gray-300 leading-relaxed mb-2">{section.content}</p>
-      <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-xl px-3 py-2 mb-2">
-        <p className="text-[11px] text-indigo-300 leading-relaxed">📖 {section.reason}</p>
-      </div>
-      <div className="bg-green-500/10 border border-green-500/20 rounded-xl px-3 py-2">
-        <p className="text-[11px] text-green-300 leading-relaxed">💡 {section.advice}</p>
+      {/* 본문 — 사주아이처럼 단락 구분 */}
+      <div className="space-y-3 text-[13px] leading-relaxed">
+        <p className="text-gray-200">{section.content}</p>
+        <p className="text-gray-400">{section.reason}</p>
+        <p className="text-gray-300">{section.advice}</p>
       </div>
     </div>
   );
@@ -459,11 +463,15 @@ export default function SelfResultCard({ analysis, name, gender, intendedProduct
 
             {/* ── 심화 섹션 (deepSections 있을 때 우선 표시) ── */}
             {analysis.deepSections && analysis.deepSections.length > 0 ? (
-              <>
+              <div className="bg-[#13131a] border border-white/8 rounded-2xl px-5">
                 {analysis.deepSections.map((section, i) => (
-                  <DeepSectionCard key={i} section={section} />
+                  <DeepSectionCard
+                    key={i}
+                    section={section}
+                    isLast={i === (analysis.deepSections?.length ?? 0) - 1}
+                  />
                 ))}
-              </>
+              </div>
             ) : (
               <>
                 {/* 타고난 기질 */}

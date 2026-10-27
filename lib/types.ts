@@ -177,6 +177,7 @@ export interface GuardianAnalysis {
 
 export interface SajuDeepSection {
   icon: string;       // 이모지
+  category: string;   // 섹션 카테고리 태그 (예: "한마디로", "재물복", "연애운")
   title: string;      // 재미있고 공감되는 제목
   content: string;    // 비유+설명 3-4문장 (유머+공감+구체적)
   reason: string;     // 사주 근거 2문장 (명리학 용어 사용)
