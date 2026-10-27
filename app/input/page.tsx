@@ -429,8 +429,12 @@ export default function InputPage() {
         paid: false,
         productType,
       };
-      try { sessionStorage.setItem("intendedSajuResult", JSON.stringify(intendedResult)); } catch { /* private mode */ }
+      const intendedJson = JSON.stringify(intendedResult);
+      try { sessionStorage.setItem("intendedSajuResult", intendedJson); } catch { /* private mode */ }
       try { sessionStorage.setItem("intendedProduct", productType); } catch { /* private mode */ }
+      // 카카오페이 앱 전환 시 sessionStorage 소실 대비 → localStorage 백업
+      try { localStorage.setItem("intendedSajuResult_backup", intendedJson); } catch { /* storage full */ }
+      try { localStorage.setItem("intendedProduct_backup", productType); } catch { /* storage full */ }
 
       // 본인 사주를 먼저 표시
       const selfResult: GenerateResult = {
@@ -445,6 +449,8 @@ export default function InputPage() {
       const json = JSON.stringify(selfResult);
       try { sessionStorage.setItem("sajuResult", json); } catch { /* private mode */ }
       try { localStorage.setItem("sajuResult_backup", json); } catch { /* storage full */ }
+      // 배우자/귀인/웬수 결과로 이동 후 내 사주로 돌아올 수 있도록 별도 보존
+      try { localStorage.setItem("selfSajuResult_backup", json); } catch { /* storage full */ }
 
       router.push("/result");
     } catch (err) {

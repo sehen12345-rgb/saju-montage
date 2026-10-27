@@ -51,12 +51,20 @@ export default function ResultPage() {
     }
   }, [router]);
 
-  // 본인 사주 페이지에서 intendedProduct 읽기
+  // 본인 사주 페이지에서 intendedProduct 읽기 (sessionStorage 소실 시 localStorage 백업 참조)
   useEffect(() => {
     if (!result || result.productType !== "self") return;
     try {
-      const ip = sessionStorage.getItem("intendedProduct") as ProductType | null;
+      const ip = (sessionStorage.getItem("intendedProduct") ?? localStorage.getItem("intendedProduct_backup")) as ProductType | null;
       if (ip) setIntendedProduct(ip);
+      // sessionStorage가 날아갔다면 복원
+      if (!sessionStorage.getItem("intendedSajuResult")) {
+        const backup = localStorage.getItem("intendedSajuResult_backup");
+        if (backup) sessionStorage.setItem("intendedSajuResult", backup);
+      }
+      if (!sessionStorage.getItem("intendedProduct") && ip) {
+        sessionStorage.setItem("intendedProduct", ip);
+      }
     } catch { /* ignore */ }
   }, [result?.productType]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -80,14 +88,17 @@ export default function ResultPage() {
 
   function handleProceedToIntended() {
     try {
-      const stored = sessionStorage.getItem("intendedSajuResult");
+      const stored = sessionStorage.getItem("intendedSajuResult") ?? localStorage.getItem("intendedSajuResult_backup");
       if (!stored) return;
       const intendedResult: GenerateResult = JSON.parse(stored);
       intendedResult.paid = false;
-      sessionStorage.setItem("sajuResult", JSON.stringify(intendedResult));
-      try { localStorage.setItem("sajuResult_backup", JSON.stringify(intendedResult)); } catch { /* ignore */ }
+      const intendedJson = JSON.stringify(intendedResult);
+      sessionStorage.setItem("sajuResult", intendedJson);
+      try { localStorage.setItem("sajuResult_backup", intendedJson); } catch { /* ignore */ }
       sessionStorage.removeItem("intendedSajuResult");
       sessionStorage.removeItem("intendedProduct");
+      try { localStorage.removeItem("intendedSajuResult_backup"); } catch { /* ignore */ }
+      try { localStorage.removeItem("intendedProduct_backup"); } catch { /* ignore */ }
       setIntendedProduct(null);
       setResult(intendedResult);
     } catch (e) {
@@ -95,10 +106,25 @@ export default function ResultPage() {
     }
   }
 
+  function handleBackToSelf() {
+    try {
+      const stored = localStorage.getItem("selfSajuResult_backup");
+      if (!stored) return;
+      const selfResult: GenerateResult = JSON.parse(stored);
+      sessionStorage.setItem("sajuResult", stored);
+      setResult(selfResult);
+    } catch (e) {
+      console.error("back to self error:", e);
+    }
+  }
+
   function handleReset() {
     sessionStorage.removeItem("sajuResult");
     sessionStorage.removeItem("intendedSajuResult");
     sessionStorage.removeItem("intendedProduct");
+    try { localStorage.removeItem("intendedSajuResult_backup"); } catch { /* ignore */ }
+    try { localStorage.removeItem("intendedProduct_backup"); } catch { /* ignore */ }
+    try { localStorage.removeItem("selfSajuResult_backup"); } catch { /* ignore */ }
     router.push("/");
   }
 
@@ -200,9 +226,23 @@ export default function ResultPage() {
             })()}
           </>
         ) : isGuardian ? (
-          <GuardianResultCard result={result} onReset={handleReset} />
+          <>
+            {typeof window !== "undefined" && localStorage.getItem("selfSajuResult_backup") && (
+              <button onClick={handleBackToSelf} className="w-full mb-3 py-2.5 px-4 rounded-2xl bg-white/5 border border-white/10 text-gray-400 text-sm font-medium active:scale-95 transition-all text-left flex items-center gap-2">
+                <span>←</span><span>내 사주 분석 다시 보기</span>
+              </button>
+            )}
+            <GuardianResultCard result={result} onReset={handleReset} />
+          </>
         ) : isEnemy ? (
-          <EnemyResultCard result={result} onReset={handleReset} />
+          <>
+            {typeof window !== "undefined" && localStorage.getItem("selfSajuResult_backup") && (
+              <button onClick={handleBackToSelf} className="w-full mb-3 py-2.5 px-4 rounded-2xl bg-white/5 border border-white/10 text-gray-400 text-sm font-medium active:scale-95 transition-all text-left flex items-center gap-2">
+                <span>←</span><span>내 사주 분석 다시 보기</span>
+              </button>
+            )}
+            <EnemyResultCard result={result} onReset={handleReset} />
+          </>
         ) : isSelf ? (
           <SelfResultCard
             analysis={result.analysis as SelfSajuAnalysis}
@@ -212,7 +252,14 @@ export default function ResultPage() {
             onProceedToIntended={intendedProduct ? handleProceedToIntended : undefined}
           />
         ) : (
-          <ResultCard result={result} onReset={handleReset} />
+          <>
+            {typeof window !== "undefined" && localStorage.getItem("selfSajuResult_backup") && (
+              <button onClick={handleBackToSelf} className="w-full mb-3 py-2.5 px-4 rounded-2xl bg-white/5 border border-white/10 text-gray-400 text-sm font-medium active:scale-95 transition-all text-left flex items-center gap-2">
+                <span>←</span><span>내 사주 분석 다시 보기</span>
+              </button>
+            )}
+            <ResultCard result={result} onReset={handleReset} />
+          </>
         )}
       </div>
     </div>
