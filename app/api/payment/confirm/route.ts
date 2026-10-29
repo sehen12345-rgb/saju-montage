@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
 
     const encoded = Buffer.from(`${secretKey}:`).toString("base64");
 
-    const res = await fetch("https://api.tosspayments.com/v2/payments/confirm", {
+    const res = await fetch("https://api.tosspayments.com/v1/payments/confirm", {
       method: "POST",
       headers: {
         Authorization: `Basic ${encoded}`,
