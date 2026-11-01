@@ -270,18 +270,22 @@ export async function POST(req: NextRequest) {
 
     // ── 1순위: OpenAI DALL·E 3 (키 있을 때) ─────────────
     if (!isKeyPlaceholder(process.env.OPENAI_API_KEY)) {
-      const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-      const response = await openai.images.generate({
-        model: "dall-e-3",
-        prompt: finalPrompt,
-        n: 1,
-        size: "1024x1024",
-        quality: "hd",
-        style: "natural",
-      });
-      const imageUrl = response.data?.[0]?.url;
-      if (!imageUrl) throw new Error("이미지 URL을 받지 못했습니다.");
-      return NextResponse.json({ imageUrl });
+      try {
+        const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+        const response = await openai.images.generate({
+          model: "dall-e-3",
+          prompt: finalPrompt,
+          n: 1,
+          size: "1024x1024",
+          quality: "hd",
+          style: "natural",
+        });
+        const imageUrl = response.data?.[0]?.url;
+        if (!imageUrl) throw new Error("이미지 URL을 받지 못했습니다.");
+        return NextResponse.json({ imageUrl });
+      } catch (dalleErr) {
+        console.warn("DALL-E 3 실패, Pollinations으로 폴백:", dalleErr);
+      }
     }
 
     // ── 2순위: Pollinations.ai (완전 무료, 키 불필요) ────
