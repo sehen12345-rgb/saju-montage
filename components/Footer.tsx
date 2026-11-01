@@ -25,13 +25,20 @@ export default function Footer() {
           <Link href="/privacy" className="text-[11px] text-gray-500 hover:text-gray-300 transition-colors">
             개인정보처리방침
           </Link>
-          <a href="mailto:sehen12345@gmail.com" className="text-[11px] text-gray-500 hover:text-gray-300 transition-colors">
-            고객문의
+          <Link href="/refund" className="text-[11px] text-gray-500 hover:text-gray-300 transition-colors">
+            환불정책
+          </Link>
+          <a href="tel:01063127762" className="text-[11px] text-gray-500 hover:text-gray-300 transition-colors">
+            고객센터
           </a>
         </div>
-        <p className="text-[10px] text-gray-700">
-          © 2026 내님은누구. All rights reserved.
-        </p>
+        <div className="text-[10px] text-gray-700 leading-relaxed space-y-0.5">
+          <p>상호명: 몽타주ai · 대표자: 정필권</p>
+          <p>사업자등록번호: 755-74-00514</p>
+          <p>주소: 충청남도 천안시 동남구 대흥로 321, 508-7호</p>
+          <p>고객센터: 010-6312-7762</p>
+          <p className="mt-1">© 2026 내님은누구. All rights reserved.</p>
+        </div>
       </div>
     </footer>
   );
