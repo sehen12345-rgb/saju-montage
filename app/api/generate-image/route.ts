@@ -4,61 +4,83 @@ import { isKeyPlaceholder } from "@/lib/demo";
 import { getSajuSeed } from "@/lib/prompts";
 import type { SajuInfo } from "@/lib/types";
 
-// 씨드 기반으로 촬영 환경/분위기 변주 (같은 사주면 항상 같은 환경)
+// ── 씨드 기반 촬영 환경 변주 (같은 사주 = 항상 같은 분위기) ──────────
+// 2026 최신 기법: 구체적 카메라 스펙 + 조명 유형 명시 → 리얼리즘 극대화
 const LIGHTING_STYLES = [
-  "soft butterfly lighting, neutral gray gradient background",
-  "warm Rembrandt lighting, dark bokeh background",
-  "clean high-key studio lighting, pure white background",
-  "gentle natural window light, soft cream background",
-  "golden hour back-rim light, outdoor blurred background",
-  "soft diffused overcast light, warm beige background",
+  "soft butterfly lighting, seamless light gray studio background, even fill light",
+  "warm Rembrandt lighting, subtle shadow triangle on cheek, deep charcoal background",
+  "clean high-key studio lighting, pure white background, bright airy mood",
+  "gentle natural window light diffused through sheer curtain, warm cream background",
+  "golden hour rim light from behind, soft front fill, outdoor blurred bokeh",
+  "professional beauty dish lighting, silver reflector fill, neutral gradient background",
 ];
 
 const SHOT_STYLES = [
-  "chest-up portrait, facing camera, slight head tilt",
-  "head and shoulders, three-quarter angle, sharp eyes",
-  "bust portrait, facing directly forward, symmetrical",
-  "close bust shot, slight chin-down angle, intense eye contact",
+  "chest-up portrait, subject facing camera directly, slight natural head tilt",
+  "head and shoulders, three-quarter angle, confident posture, sharp focus on eyes",
+  "bust-length portrait, symmetrical frontal composition, strong eye contact",
+  "close chest-up shot, slight chin-down angle, intense direct gaze into lens",
 ];
 
 const EXPRESSION_STYLES = [
-  "natural confident expression, soft relaxed lips, looking directly at camera",
-  "warm gentle smile, approachable expression, eyes looking at camera",
-  "calm composed expression, slight smile, direct eye contact",
-  "subtle warm expression, thoughtful gaze, looking at camera",
+  "natural relaxed expression, soft parted lips, calm confident look directly at camera",
+  "warm genuine smile, crow's feet at corners of eyes, approachable friendly expression",
+  "composed serene expression, subtle closed-mouth smile, thoughtful intelligent gaze",
+  "quiet charismatic look, eyes with natural depth and warmth, slight asymmetric smile",
 ];
 
+// 피부 연령대 — 사주 씨드로 결정 (20대 초반~30대 중반 범위)
+const AGE_DESCRIPTORS_F = ["early 20s", "mid 20s", "late 20s", "early 30s"];
+const AGE_DESCRIPTORS_M = ["mid 20s", "late 20s", "early 30s", "mid 30s"];
+
 function buildFinalPrompt(spouseGender: string, analysisPrompt: string, seed: number): string {
-  const genderPrefix = spouseGender === "woman"
-    ? "ultra-realistic portrait photograph of a beautiful young East Asian woman"
-    : "ultra-realistic portrait photograph of a handsome young East Asian man";
+  const isFemale = spouseGender === "woman";
+  const ageArr   = isFemale ? AGE_DESCRIPTORS_F : AGE_DESCRIPTORS_M;
+  const age      = ageArr[seed % ageArr.length];
+
+  // 2026 권장: 성별·나이·민족을 앞에 명시 → 모델이 얼굴 구조를 먼저 확정
+  const subject = isFemale
+    ? `RAW photo, portrait of a beautiful ${age} Korean woman`
+    : `RAW photo, portrait of a handsome ${age} Korean man`;
 
   const lighting   = LIGHTING_STYLES[seed % LIGHTING_STYLES.length];
   const shot       = SHOT_STYLES[(seed >> 1) % SHOT_STYLES.length];
   const expression = EXPRESSION_STYLES[(seed >> 2) % EXPRESSION_STYLES.length];
 
+  // 피부 디테일: "visible pores", "natural skin imperfections" → uncanny valley 제거
+  const skinDetail = isFemale
+    ? "flawless yet natural Korean beauty skin, subtle natural makeup, visible skin pores, soft subsurface scattering, realistic skin luminosity, natural slight skin imperfections"
+    : "healthy natural skin, light stubble or clean-shaven, visible pores, realistic skin texture, natural skin tone variation, subsurface scattering";
+
+  // 카메라 스펙 명시 → 2026 리서치 기준 최고 리얼리즘 달성
+  const cameraSpec = "Canon EOS R5, 85mm f/1.4 lens, shallow depth of field, creamy bokeh background, ISO 100, 1/125s";
+
+  // 눈 디테일 강화 (AI 인물화의 핵심 약점)
+  const eyeDetail = "ultra-sharp eyes, realistic iris texture with subtle limbal ring, natural catchlight reflection, depth in pupils, natural eyelashes";
+
   return [
-    genderPrefix,
+    subject,
     analysisPrompt,
     expression,
     shot,
     lighting,
-    "85mm portrait lens, f/1.4 shallow depth of field, creamy background bokeh",
-    "natural skin pores and micro-texture, subsurface scattering, true-to-life skin",
-    "4K DSLR photograph, ultra-sharp facial details, professional headshot quality",
-    "hyperrealistic, photorealistic, RAW photo",
+    skinDetail,
+    eyeDetail,
+    cameraSpec,
+    "professional headshot quality, high-end beauty editorial, 8K ultra-detailed",
+    "photorealistic, hyperrealistic, cinematographic",
   ].join(", ");
 }
 
+// 2026 최신 네거티브 프롬프트 — FLUX/SD 공통 최적화
 const NEGATIVE_PROMPT = [
-  "blurry face", "soft focus face", "low quality", "low resolution",
-  "distorted face", "ugly", "deformed", "bad anatomy",
-  "cartoon", "anime", "illustration", "painting", "sketch", "drawing",
-  "digital art", "render", "3d cgi", "plastic skin",
-  "over-smoothed skin", "airbrushed", "excessive beauty filter",
-  "doll-like", "uncanny valley", "watermark", "text", "logo",
-  "extra limbs", "disfigured", "mutated hands", "bad proportions",
-  "dark background", "flat lighting", "overexposed", "underexposed",
+  "3d render", "cgi", "illustration", "painting", "sketch", "drawing", "cartoon", "anime",
+  "plastic skin", "overly smooth skin", "waxy face", "airbrushed", "excessive beauty filter",
+  "doll-like", "uncanny valley", "mannequin", "fake HDR",
+  "blurry face", "soft focus", "out of focus eyes", "asymmetric eyes",
+  "distorted face", "deformed", "bad anatomy", "extra fingers", "mutated hands",
+  "watermark", "text", "logo", "signature", "frame", "border",
+  "overexposed", "underexposed", "flat lighting", "low quality", "low resolution",
 ].join(", ");
 
 // ── 이미지 매직바이트 검증 (HTML/텍스트 응답 차단) ──────────
