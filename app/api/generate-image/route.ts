@@ -271,47 +271,46 @@ export async function POST(req: NextRequest) {
 
     // ── 1순위: OpenAI gpt-image-1 (GPT-4o 네이티브, 최고품질) ──
     if (!isKeyPlaceholder(process.env.OPENAI_API_KEY)) {
+      // gpt-image-1 시도
       try {
         const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+        // gpt-image-1은 항상 b64_json 반환, 프롬프트 1000자 제한
+        const trimmedPrompt = finalPrompt.length > 1000 ? finalPrompt.slice(0, 1000) : finalPrompt;
         const response = await openai.images.generate({
           model: "gpt-image-1",
-          prompt: finalPrompt,
+          prompt: trimmedPrompt,
           n: 1,
           size: "1024x1536",
           quality: "high",
-        } as Parameters<typeof openai.images.generate>[0]);
-        const imageUrl = response.data?.[0]?.url;
-        if (!imageUrl) {
-          // gpt-image-1은 b64_json으로 반환될 수 있음
-          const b64 = (response.data?.[0] as { b64_json?: string })?.b64_json;
-          if (b64) {
-            return NextResponse.json({ imageUrl: `data:image/png;base64,${b64}` });
-          }
-          throw new Error("이미지 URL/데이터를 받지 못했습니다.");
-        }
-        return NextResponse.json({ imageUrl });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any);
+        const b64 = response.data?.[0]?.b64_json as string | undefined;
+        if (!b64) throw new Error("gpt-image-1 b64_json 없음");
+        console.log("gpt-image-1 성공");
+        return NextResponse.json({ imageUrl: `data:image/png;base64,${b64}` });
       } catch (gptImgErr: unknown) {
         const msg = gptImgErr instanceof Error ? gptImgErr.message : String(gptImgErr);
-        console.warn("gpt-image-1 실패, DALL-E 3 시도:", msg);
+        console.warn("gpt-image-1 실패:", msg);
+      }
 
-        // ── 1-b: DALL·E 3 폴백 ─────────────────────────────
-        try {
-          const openai2 = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-          const response2 = await openai2.images.generate({
-            model: "dall-e-3",
-            prompt: finalPrompt,
-            n: 1,
-            size: "1024x1024",
-            quality: "hd",
-            style: "natural",
-          });
-          const imageUrl2 = response2.data?.[0]?.url;
-          if (!imageUrl2) throw new Error("DALL-E 3 이미지 URL 없음");
-          return NextResponse.json({ imageUrl: imageUrl2 });
-        } catch (dalleErr: unknown) {
-          const dalleMsg = dalleErr instanceof Error ? dalleErr.message : String(dalleErr);
-          console.warn("DALL-E 3 실패, Pollinations으로 폴백:", dalleMsg);
-        }
+      // DALL-E 3 시도
+      try {
+        const openai2 = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+        const response2 = await openai2.images.generate({
+          model: "dall-e-3",
+          prompt: finalPrompt,
+          n: 1,
+          size: "1024x1024",
+          quality: "hd",
+          style: "natural",
+        });
+        const imageUrl2 = response2.data?.[0]?.url;
+        if (!imageUrl2) throw new Error("DALL-E 3 이미지 URL 없음");
+        console.log("DALL-E 3 성공");
+        return NextResponse.json({ imageUrl: imageUrl2 });
+      } catch (dalleErr: unknown) {
+        const dalleMsg = dalleErr instanceof Error ? dalleErr.message : String(dalleErr);
+        console.warn("DALL-E 3 실패, Pollinations으로 폴백:", dalleMsg);
       }
     }
 
