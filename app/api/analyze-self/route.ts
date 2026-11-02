@@ -105,7 +105,7 @@ deepSections는 반드시 아래 순서대로 정확히 12개. category는 반�
 - reason에는 전문 용어(재성, 관성, 인성, 비겁, 식상, 격국명 등) 반드시 포함`;
 
     const response = await client.messages.create({
-      model: "claude-sonnet-4-6",
+      model: "claude-haiku-4-5-20251001",
       max_tokens: 4000,
       messages: [{ role: "user", content: prompt }],
     });
