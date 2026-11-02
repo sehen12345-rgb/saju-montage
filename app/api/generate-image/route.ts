@@ -107,9 +107,10 @@ async function generateWithPollinations(prompt: string, seed: number): Promise<s
   // 네거티브는 핵심만 (URL 길이 절약)
   const negEncoded = encodeURIComponent("cartoon, anime, blurry, deformed, ugly, plastic skin, watermark");
 
-  // seed 기반으로 모델 교대 (다양성)
-  const model = seed % 2 === 0 ? "flux-realism" : "flux";
-  const url = `https://image.pollinations.ai/prompt/${encoded}?width=768&height=1024&model=${model}&seed=${seed}&nologo=true&enhance=false&negative=${negEncoded}`;
+  // flux-pro → flux-realism → flux 순으로 품질 우선
+  const models = ["flux-pro", "flux-realism", "flux"];
+  const model = models[seed % models.length];
+  const url = `https://image.pollinations.ai/prompt/${encoded}?width=768&height=1024&model=${model}&seed=${seed}&nologo=true&enhance=true&negative=${negEncoded}`;
 
   const res = await fetch(url, { signal: AbortSignal.timeout(50_000) });
 
@@ -268,23 +269,49 @@ export async function POST(req: NextRequest) {
     console.log("Image prompt:", finalPrompt);
     console.log("Seed:", seed);
 
-    // ── 1순위: OpenAI DALL·E 3 (키 있을 때) ─────────────
+    // ── 1순위: OpenAI gpt-image-1 (GPT-4o 네이티브, 최고품질) ──
     if (!isKeyPlaceholder(process.env.OPENAI_API_KEY)) {
       try {
         const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
         const response = await openai.images.generate({
-          model: "dall-e-3",
+          model: "gpt-image-1",
           prompt: finalPrompt,
           n: 1,
-          size: "1024x1024",
-          quality: "hd",
-          style: "natural",
-        });
+          size: "1024x1536",
+          quality: "high",
+        } as Parameters<typeof openai.images.generate>[0]);
         const imageUrl = response.data?.[0]?.url;
-        if (!imageUrl) throw new Error("이미지 URL을 받지 못했습니다.");
+        if (!imageUrl) {
+          // gpt-image-1은 b64_json으로 반환될 수 있음
+          const b64 = (response.data?.[0] as { b64_json?: string })?.b64_json;
+          if (b64) {
+            return NextResponse.json({ imageUrl: `data:image/png;base64,${b64}` });
+          }
+          throw new Error("이미지 URL/데이터를 받지 못했습니다.");
+        }
         return NextResponse.json({ imageUrl });
-      } catch (dalleErr) {
-        console.warn("DALL-E 3 실패, Pollinations으로 폴백:", dalleErr);
+      } catch (gptImgErr: unknown) {
+        const msg = gptImgErr instanceof Error ? gptImgErr.message : String(gptImgErr);
+        console.warn("gpt-image-1 실패, DALL-E 3 시도:", msg);
+
+        // ── 1-b: DALL·E 3 폴백 ─────────────────────────────
+        try {
+          const openai2 = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+          const response2 = await openai2.images.generate({
+            model: "dall-e-3",
+            prompt: finalPrompt,
+            n: 1,
+            size: "1024x1024",
+            quality: "hd",
+            style: "natural",
+          });
+          const imageUrl2 = response2.data?.[0]?.url;
+          if (!imageUrl2) throw new Error("DALL-E 3 이미지 URL 없음");
+          return NextResponse.json({ imageUrl: imageUrl2 });
+        } catch (dalleErr: unknown) {
+          const dalleMsg = dalleErr instanceof Error ? dalleErr.message : String(dalleErr);
+          console.warn("DALL-E 3 실패, Pollinations으로 폴백:", dalleMsg);
+        }
       }
     }
 
