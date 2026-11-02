@@ -37,6 +37,7 @@ export default function Footer() {
           <p>사업자등록번호: 755-74-00514</p>
           <p>주소: 충청남도 천안시 동남구 대흥로 321, 508-7호</p>
           <p>고객센터: 010-6312-7762</p>
+          <p>이메일: support@naenim.com</p>
           <p>통신판매업 신고번호: 제2026-충남천안-1130호</p>
           <p className="mt-1">© 2026 내님은누구. All rights reserved.</p>
         </div>

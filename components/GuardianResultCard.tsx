@@ -110,7 +110,9 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: (type: "indi
       setTimeLeft((s) => { if (s <= 1) { clearInterval(t); return 0; } return s - 1; });
     }, 1000);
     return () => clearInterval(t);
-  }, [timeLeft <= 0]);
+  // timeLeft가 0이 되면 effect를 재실행해 타이머를 정리
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeLeft === 0]);
 
   const mm = String(Math.floor(timeLeft / 60)).padStart(2, "0");
   const ss = String(timeLeft % 60).padStart(2, "0");
@@ -299,6 +301,13 @@ export default function GuardianResultCard({ result, onReset, onPaid }: Props) {
         "guardian"
       )
     : "";
+
+  // ?preview=1 파라미터 지원 (SSR hydration mismatch 방지: useEffect에서 처리)
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("preview") === "1") {
+      setPaid(true);
+    }
+  }, []);
 
   useEffect(() => {
     if (paid) return;

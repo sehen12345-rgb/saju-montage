@@ -39,7 +39,9 @@ function PaymentSuccessContent() {
             if (stored) {
               const parsed = JSON.parse(stored);
               parsed.paid = true;
-              sessionStorage.setItem("sajuResult", JSON.stringify(parsed));
+              const parsedJson = JSON.stringify(parsed);
+              sessionStorage.setItem("sajuResult", parsedJson);
+              // sajuResult_backup은 결제 완료 후 제거하되, selfSajuResult_backup은 보존
               localStorage.removeItem("sajuResult_backup");
               if (parsed.analysis?.sajuInfo && orderId) {
                 const { yearPillar, monthPillar, dayPillar, hourPillar } = parsed.analysis.sajuInfo;
@@ -52,9 +54,16 @@ function PaymentSuccessContent() {
                   const baseHash = makeSajuHash(yearPillar, monthPillar, dayPillar, hourPillar, gender);
                   saveBundlePaidRecord(baseHash, orderId);
                 } else {
+                  // productType이 "self"인 경우도 정확히 처리
                   const productType = parsed.productType ?? "spouse";
                   const hash = makeProductHash(yearPillar, monthPillar, dayPillar, hourPillar, gender, productType);
                   savePaidRecord(hash, orderId);
+                  // self 결제 완료 시 selfSajuResult_backup도 paid=true로 업데이트
+                  if (productType === "self") {
+                    try {
+                      localStorage.setItem("selfSajuResult_backup", parsedJson);
+                    } catch { /* ignore */ }
+                  }
                 }
               }
             }

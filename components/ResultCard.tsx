@@ -387,7 +387,9 @@ function PayModal({ onClose, onPay }: { onClose: () => void; onPay: (type: "indi
       });
     }, 1000);
     return () => clearInterval(t);
-  }, [timeLeft <= 0]);
+  // timeLeft가 0이 되면 effect를 재실행해 타이머를 정리
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeLeft === 0]);
 
   const mm = String(Math.floor(timeLeft / 60)).padStart(2, "0");
   const ss = String(timeLeft % 60).padStart(2, "0");
@@ -551,8 +553,7 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
   const [copied, setCopied] = useState(false);
   const [storySharing, setStorySharing] = useState(false);
   const [storyToast, setStoryToast] = useState<string | null>(null);
-  const isPreview = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("preview") === "1";
-  const [paid, setPaid] = useState((result.paid ?? false) || isPreview);
+  const [paid, setPaid] = useState(result.paid ?? false);
   const [showModal, setShowModal] = useState(false);
   const [justUnlocked, setJustUnlocked] = useState(false);
   const [showStickyBtn, setShowStickyBtn] = useState(false);
@@ -568,6 +569,13 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
         result.productType ?? "spouse"
       )
     : "";
+
+  // ?preview=1 파라미터 지원 (SSR hydration mismatch 방지: useEffect에서 처리)
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("preview") === "1") {
+      setPaid(true);
+    }
+  }, []);
 
   // 스크롤 시 스티키 결제 버튼 표시 (비결제 상태일 때만)
   useEffect(() => {

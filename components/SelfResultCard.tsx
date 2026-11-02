@@ -170,7 +170,9 @@ function SelfPayModal({ onClose, onPay }: { onClose: () => void; onPay: () => vo
     }, 1000);
     return () => clearInterval(t);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [timeLeft <= 0]);
+  // timeLeft가 0이 되면 effect를 재실행해 타이머를 정리
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeLeft === 0]);
 
   const mm = String(Math.floor(timeLeft / 60)).padStart(2, "0");
   const ss = String(timeLeft % 60).padStart(2, "0");
@@ -310,8 +312,7 @@ interface Props {
 }
 
 export default function SelfResultCard({ analysis, name, gender, intendedProduct, onProceedToIntended }: Props) {
-  const isPreview = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("preview") === "1";
-  const [paid, setPaid] = useState(isPreview);
+  const [paid, setPaid] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [justUnlocked, setJustUnlocked] = useState(false);
   const [showStickyBtn, setShowStickyBtn] = useState(false);
@@ -334,6 +335,13 @@ export default function SelfResultCard({ analysis, name, gender, intendedProduct
     window.addEventListener("scroll", handler, { passive: true });
     return () => window.removeEventListener("scroll", handler);
   }, [paid]);
+
+  // ?preview=1 파라미터 지원 (SSR hydration mismatch 방지: useEffect에서 처리)
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("preview") === "1") {
+      setPaid(true);
+    }
+  }, []);
 
   // localStorage 결제 기록 확인
   useEffect(() => {

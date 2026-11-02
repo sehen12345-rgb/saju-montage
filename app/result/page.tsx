@@ -30,6 +30,7 @@ export default function ResultPage() {
   const [visitedTabs, setVisitedTabs] = useState<Set<string>>(new Set(["spouse"]));
   const [bundlePaid, setBundlePaid] = useState(false);
   const [intendedProduct, setIntendedProduct] = useState<ProductType | null>(null);
+  const [hasSelfBackup, setHasSelfBackup] = useState(false);
 
   useEffect(() => {
     let stored: string | null = null;
@@ -75,6 +76,13 @@ export default function ResultPage() {
     if (!sajuInfo) return;
     const hash = makeSajuHash(sajuInfo.yearPillar, sajuInfo.monthPillar, sajuInfo.dayPillar, sajuInfo.hourPillar, result.gender ?? "male");
     if (isBundlePaid(hash)) setBundlePaid(true);
+  }, [result]);
+
+  // 내 사주 백업 여부 확인 (클라이언트 전용 — SSR에서 localStorage 직접 접근 방지)
+  useEffect(() => {
+    try {
+      setHasSelfBackup(!!localStorage.getItem("selfSajuResult_backup"));
+    } catch { /* ignore */ }
   }, [result]);
 
   function handleBundlePaid() {
@@ -227,7 +235,7 @@ export default function ResultPage() {
           </>
         ) : isGuardian ? (
           <>
-            {typeof window !== "undefined" && localStorage.getItem("selfSajuResult_backup") && (
+            {hasSelfBackup && (
               <button onClick={handleBackToSelf} className="w-full mb-3 py-2.5 px-4 rounded-2xl bg-white/5 border border-white/10 text-gray-400 text-sm font-medium active:scale-95 transition-all text-left flex items-center gap-2">
                 <span>←</span><span>내 사주 분석 다시 보기</span>
               </button>
@@ -236,7 +244,7 @@ export default function ResultPage() {
           </>
         ) : isEnemy ? (
           <>
-            {typeof window !== "undefined" && localStorage.getItem("selfSajuResult_backup") && (
+            {hasSelfBackup && (
               <button onClick={handleBackToSelf} className="w-full mb-3 py-2.5 px-4 rounded-2xl bg-white/5 border border-white/10 text-gray-400 text-sm font-medium active:scale-95 transition-all text-left flex items-center gap-2">
                 <span>←</span><span>내 사주 분석 다시 보기</span>
               </button>
@@ -253,7 +261,7 @@ export default function ResultPage() {
           />
         ) : (
           <>
-            {typeof window !== "undefined" && localStorage.getItem("selfSajuResult_backup") && (
+            {hasSelfBackup && (
               <button onClick={handleBackToSelf} className="w-full mb-3 py-2.5 px-4 rounded-2xl bg-white/5 border border-white/10 text-gray-400 text-sm font-medium active:scale-95 transition-all text-left flex items-center gap-2">
                 <span>←</span><span>내 사주 분석 다시 보기</span>
               </button>
