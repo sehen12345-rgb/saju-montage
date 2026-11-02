@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+
+export const maxDuration = 60;
 import { buildSajuContext } from "@/lib/saju";
 import { buildManseryeokData } from "@/lib/manseryeok";
 import {
