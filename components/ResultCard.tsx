@@ -551,7 +551,8 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
   const [copied, setCopied] = useState(false);
   const [storySharing, setStorySharing] = useState(false);
   const [storyToast, setStoryToast] = useState<string | null>(null);
-  const [paid, setPaid] = useState(result.paid ?? false);
+  const isPreview = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("preview") === "1";
+  const [paid, setPaid] = useState((result.paid ?? false) || isPreview);
   const [showModal, setShowModal] = useState(false);
   const [justUnlocked, setJustUnlocked] = useState(false);
   const [showStickyBtn, setShowStickyBtn] = useState(false);

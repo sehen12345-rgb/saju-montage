@@ -310,7 +310,8 @@ interface Props {
 }
 
 export default function SelfResultCard({ analysis, name, gender, intendedProduct, onProceedToIntended }: Props) {
-  const [paid, setPaid] = useState(false);
+  const isPreview = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("preview") === "1";
+  const [paid, setPaid] = useState(isPreview);
   const [showModal, setShowModal] = useState(false);
   const [justUnlocked, setJustUnlocked] = useState(false);
   const [showStickyBtn, setShowStickyBtn] = useState(false);
