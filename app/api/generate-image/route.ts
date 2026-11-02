@@ -107,8 +107,7 @@ async function generateWithPollinations(prompt: string, seed: number): Promise<s
   // 네거티브는 핵심만 (URL 길이 절약)
   const negEncoded = encodeURIComponent("cartoon, anime, blurry, deformed, ugly, plastic skin, watermark");
 
-  // flux-pro → flux-realism → flux 순으로 품질 우선
-  const models = ["flux-pro", "flux-realism", "flux"];
+  const models = ["flux-realism", "flux-realism", "flux"];
   const model = models[seed % models.length];
   const url = `https://image.pollinations.ai/prompt/${encoded}?width=768&height=1024&model=${model}&seed=${seed}&nologo=true&enhance=true&negative=${negEncoded}`;
 
@@ -302,7 +301,6 @@ export async function POST(req: NextRequest) {
           n: 1,
           size: "1024x1024",
           quality: "hd",
-          style: "natural",
         });
         const imageUrl2 = response2.data?.[0]?.url;
         if (!imageUrl2) throw new Error("DALL-E 3 이미지 URL 없음");
