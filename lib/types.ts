@@ -82,6 +82,18 @@ export interface SajuAnalysis {
   };
   warnType?: string;           // 악연 주의 유형
 
+  // 바이럴 무료 콘텐츠
+  animalFace?: {
+    type: string;    // e.g. "강아지상"
+    emoji: string;   // e.g. "🐶"
+    desc: string;    // e.g. "눈이 크고 동그래서..."
+  };
+  celebrityLookalikes?: Array<{
+    name: string;       // e.g. "아이유"
+    likePart: string;   // e.g. "눈매와 미소"
+    reason: string;     // e.g. "선이 부드럽고..."
+  }>;
+
   // 심화 유료 콘텐츠
   celebrityVibe?: string;      // 닮은꼴 연예인 분위기
   myCharm?: string;            // 배우자 눈에 비친 나의 매력

@@ -72,6 +72,8 @@ ${manseryeokContext}
 위 만세력 결정 결과와 모순되지 않는 범위에서만 서술 텍스트를 작성하세요.
 순수 JSON만 응답하세요 (마크다운 코드블록 없이):
 {
+  "animalFace": { "type": "강아지상/고양이상/여우상/토끼상/곰상/사슴상 중 하나 (오행 기반)", "emoji": "해당 이모지", "desc": "왜 이 동물상인지 눈코입 특징 1문장" },
+  "celebrityLookalikes": [{"name": "한국 연예인 실명", "likePart": "닮은 부위", "reason": "닮은 이유 한 줄"}, {"name": "...", "likePart": "...", "reason": "..."}, {"name": "...", "likePart": "...", "reason": "..."}],
   "description": "배우자 외모 설명 2-3문장. '마치 ~처럼' 비유로 시각적으로 묘사. 딱딱한 나열이 아니라 실제로 마주쳤을 때의 첫인상 느낌으로. (일간 오행 특성 반영)",
   "personality": "성격 설명 3-4문장. 일상에서 드러나는 구체적 행동·말투로. '이런 사람 있잖아요~' 공감 유도. (만세력 일간/십신 특성 반영)",
   "loveStyle": "연애 스타일 2-3문장. '연애할 때 ~하는 타입이에요' 식으로 구체적이고 공감되게. 설레는 감정 유발. (만세력 사랑언어와 일치)",
@@ -158,6 +160,8 @@ export async function POST(req: NextRequest) {
       myCharm:            narrative?.myCharm            ?? det.myCharm,
       warnType:           narrative?.warnType           ?? det.warnType,
       celebrityVibe:      narrative?.celebrityVibe      ?? det.celebrityVibe,
+      animalFace:         narrative?.animalFace,
+      celebrityLookalikes: narrative?.celebrityLookalikes,
       partnerPsychology:  narrative?.partnerPsychology,
 
       // 데모에만 있는 보조 필드

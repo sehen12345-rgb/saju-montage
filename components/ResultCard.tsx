@@ -863,6 +863,44 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
           <p className="text-gray-300 leading-relaxed text-sm">{analysis.description}</p>
         </InfoSection>
 
+        {/* ── 동물상 (무료 바이럴 콘텐츠) ── */}
+        {analysis.animalFace && (
+          <div className="bg-gradient-to-br from-amber-900/30 to-orange-900/20 border border-amber-500/25 rounded-2xl p-5 text-center relative overflow-hidden">
+            <div className="absolute inset-0 opacity-5 pointer-events-none select-none">
+              {["🐾","✨","🐾","✨","🐾","✨","🐾","✨"].map((s, i) => (
+                <span key={i} className="absolute text-2xl" style={{ top: `${8 + (i * 11) % 80}%`, left: `${4 + (i * 13) % 92}%` }}>{s}</span>
+              ))}
+            </div>
+            <p className="text-[10px] text-amber-400 font-bold uppercase tracking-widest mb-2 relative">🐾 동물상</p>
+            <div className="text-6xl my-3 relative">{analysis.animalFace.emoji}</div>
+            <h3 className="text-2xl font-black text-white mb-2 relative">{analysis.animalFace.type}</h3>
+            <p className="text-sm text-amber-100/80 leading-relaxed relative">{analysis.animalFace.desc}</p>
+          </div>
+        )}
+
+        {/* ── 닮은꼴 연예인 (무료 바이럴 콘텐츠) ── */}
+        {analysis.celebrityLookalikes && analysis.celebrityLookalikes.length > 0 && (
+          <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+            <p className="text-[10px] text-violet-400 font-bold uppercase tracking-widest mb-3">🌟 닮은꼴 연예인</p>
+            <div className="space-y-3">
+              {analysis.celebrityLookalikes.map((cel, i) => (
+                <div key={i} className="flex items-start gap-3 bg-white/4 border border-white/6 rounded-xl px-4 py-3">
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 text-white text-xs font-black flex items-center justify-center shrink-0 mt-0.5">
+                    {i + 1}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                      <span className="text-sm font-black text-white">{cel.name}</span>
+                      <span className="text-[10px] bg-violet-500/20 text-violet-300 border border-violet-500/30 rounded-full px-2 py-0.5 font-semibold shrink-0">{cel.likePart}</span>
+                    </div>
+                    <p className="text-xs text-gray-400 leading-relaxed">{cel.reason}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* ── MBTI · 직업군 힌트 (무료) ── */}
         {(analysis.mbti || analysis.job) && (
           <div className="grid grid-cols-2 gap-3">
