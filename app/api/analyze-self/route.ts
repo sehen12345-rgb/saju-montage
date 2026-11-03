@@ -106,14 +106,23 @@ deepSections는 반드시 아래 순서대로 정확히 12개. category는 반�
 
     const response = await client.messages.create({
       model: "claude-haiku-4-5-20251001",
-      max_tokens: 4000,
+      max_tokens: 8000,
       messages: [{ role: "user", content: prompt }],
     });
 
     const text = response.content[0].type === "text" ? response.content[0].text : "";
     const match = text.match(/\{[\s\S]*\}/);
     if (!match) return null;
-    return JSON.parse(match[0]);
+
+    // JSON이 잘렸을 경우 복구 시도
+    let jsonStr = match[0];
+    try {
+      return JSON.parse(jsonStr);
+    } catch {
+      // 마지막 완전한 배열/객체까지만 잘라서 재시도
+      const truncated = jsonStr.replace(/,\s*[\[\{][^\]\}]*$/, "").replace(/,\s*"[^"]*":\s*[^,}\]]*$/, "") + "]}";
+      try { return JSON.parse(truncated); } catch { return null; }
+    }
   } catch (err) {
     console.error("Claude self narrative error:", err);
     return null;
