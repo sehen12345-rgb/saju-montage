@@ -561,6 +561,26 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
 
   const imageUrl = currentImageUrl;
 
+  // 이미지가 없거나 Pollinations URL이면 자동으로 고품질 이미지 생성
+  useEffect(() => {
+    const isPollinations = currentImageUrl?.includes("pollinations.ai") || currentImageUrl?.includes("image.pollinations");
+    if (!currentImageUrl || isPollinations) {
+      fetch("/api/generate-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt: analysis.imagePrompt ?? "",
+          gender: result.gender ?? "male",
+          sajuInfo: analysis.sajuInfo,
+        }),
+      })
+        .then((r) => r.json())
+        .then((data) => { if (data.imageUrl) setCurrentImageUrl(data.imageUrl); })
+        .catch(() => {/* 실패 시 기존 이미지 유지 */});
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const productHash = analysis?.sajuInfo
     ? makeProductHash(
         analysis.sajuInfo.yearPillar, analysis.sajuInfo.monthPillar,
