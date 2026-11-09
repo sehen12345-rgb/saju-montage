@@ -271,7 +271,8 @@ export async function POST(req: NextRequest) {
     // ── 1순위: OpenAI gpt-image-1 (GPT-4o 네이티브, 최고품질) ──
     // 모델당 15s timeout → 최대 2회 시도 = 30s, Pollinations 25s → 총 최대 55s < 60s
     if (!isKeyPlaceholder(process.env.OPENAI_API_KEY)) {
-      const imageModels = ["gpt-image-1", "dall-e-3"];
+      // 최신순: gpt-image-2.6-flare (7x faster, 2026.11), sunburst (고품질), gpt-image-1 (안정)
+      const imageModels = ["gpt-image-2.6-flare", "gpt-image-2.6-sunburst", "gpt-image-1"];
       const trimmedPrompt = finalPrompt.length > 1000 ? finalPrompt.slice(0, 1000) : finalPrompt;
       const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -284,8 +285,8 @@ export async function POST(req: NextRequest) {
             n: 1,
             size: "1024x1024",
           };
-          // gpt-image-1은 quality 지원, dall-e-3은 quality 미지원
-          if (imgModel === "gpt-image-1") generateParams.quality = "high";
+          // gpt-image-2.6/1 은 quality 지원
+          if (!imgModel.startsWith("dall-e")) generateParams.quality = "high";
 
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const timeoutPromise = new Promise<never>((_, reject) =>
