@@ -83,20 +83,16 @@ ${manseryeokContext}
   ]
 }
 
-deepSections는 반드시 아래 순서대로 정확히 12개. category는 반드시 아래 한국어 표기 그대로 사용:
+deepSections는 반드시 아래 순서대로 정확히 8개. category는 반드시 아래 한국어 표기 그대로 사용:
 
 1. category: "한마디로" | icon: "✦" | 이 사주 전체를 관통하는 핵심 한 마디. 핵심 비유 확립. title 예: "가뭄에 콩 나듯 귀한 물 한 방울, 사막의 CEO 재질"
-2. category: "오행으로 보는 사주" | icon: "◈" | 오행 불균형과 의미. title 예: "불바다 속 외로운 물방울, 금수저... 아니 金과 水저가 시급!"
-3. category: "일주와 십성" | icon: "◎" | 일주 특성 + 십성 분포. title 예: "겉바속촉 CEO? NO, 겉은 불도저 속은 섬세한 예술가"
-4. category: "쓴소리 좀 할게" | icon: "✗" | 단점/나쁜 습관. title 예: "혹시... 금사빠에 용두사미 전문 아니세요?"
-5. category: "나만의 매력" | icon: "♡" | 숨겨진 강점/잠재력. title 예: "아무도 몰라주는 당신의 고군분투, 사실은 다이아몬드 원석"
-6. category: "나라는 사람" | icon: "☺" | 내면 심리/진짜 나. title 예: "MBTI는 I인데 E인 척 하느라 힘드시죠? 내 안의 혹염룡을 다스리는 법"
-7. category: "나에게 맞는 일" | icon: "💼" | 직업/커리어 구체적으로. title 예: "교수님보단 대표님 소리가 어울려요. 돈 냄새는 기가 막히게 맡는 편"
-8. category: "재물복" | icon: "💰" | 재물운. title 예: "돈은 벌 만큼 버는데 통장이 텅장? 댐을 지어야 부자가 됩니다"
-9. category: "연애운" | icon: "♡" | 연애 패턴+이상형. title 예: "인기는 많은데 연애는 왜 항상 롤러코스터일까?"
-10. category: "가족인연" | icon: "🏠" | 부모형제 관계. title 예: "아빠는 슈퍼맨, 엄마는... 글쎄요? 독립이 최고의 효도"
-11. category: "곁에 둘 사람" | icon: "☽" | 친구/대인관계. title 예: "나보다 잘난 친구 말고, 내 편인 친구 딱 한 명이면 돼"
-12. category: "마지막 한마디" | icon: "❝" | 따뜻한 마무리. title 예: "사막을 적시는 단 한 방울의 물, 당신의 존재가 바로 기적입니다."
+2. category: "쓴소리 좀 할게" | icon: "✗" | 단점/나쁜 습관. title 예: "혹시... 금사빠에 용두사미 전문 아니세요?"
+3. category: "나만의 매력" | icon: "♡" | 숨겨진 강점/잠재력. title 예: "아무도 몰라주는 당신의 고군분투, 사실은 다이아몬드 원석"
+4. category: "나에게 맞는 일" | icon: "💼" | 직업/커리어 구체적으로. title 예: "교수님보단 대표님 소리가 어울려요. 돈 냄새는 기가 막히게 맡는 편"
+5. category: "재물복" | icon: "💰" | 재물운. title 예: "돈은 벌 만큼 버는데 통장이 텅장? 댐을 지어야 부자가 됩니다"
+6. category: "연애운" | icon: "♡" | 연애 패턴+이상형. title 예: "인기는 많은데 연애는 왜 항상 롤러코스터일까?"
+7. category: "곁에 둘 사람" | icon: "☽" | 친구/대인관계. title 예: "나보다 잘난 친구 말고, 내 편인 친구 딱 한 명이면 돼"
+8. category: "마지막 한마디" | icon: "❝" | 따뜻한 마무리. title 예: "사막을 적시는 단 한 방울의 물, 당신의 존재가 바로 기적입니다."
 
 [title 작성 필수 규칙]
 - 반드시 이 사람의 일간(${base.dayMasterStem}), 격국(${base.geokguk}), 신강신약(${base.isSinGang ? "신강" : "신약"}), 나이(만 ${currentAge}세) 중 최소 1개 반영
@@ -105,8 +101,8 @@ deepSections는 반드시 아래 순서대로 정확히 12개. category는 반�
 - reason에는 전문 용어(재성, 관성, 인성, 비겁, 식상, 격국명 등) 반드시 포함`;
 
     const response = await client.messages.create({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 8000,
+      model: "claude-sonnet-4-6",
+      max_tokens: 6000,
       messages: [{ role: "user", content: prompt }],
     });
 
