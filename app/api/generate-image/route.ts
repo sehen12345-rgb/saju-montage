@@ -98,7 +98,7 @@ function isValidImageBuffer(buffer: ArrayBuffer): boolean {
 }
 
 // ── Pollinations.ai (완전 무료, 키 불필요) ────────────────
-// Vercel maxDuration=60s 기준: 단일 시도 50s timeout → 10s 여유
+// Vercel maxDuration=60s 기준: OpenAI 최대 15s + Pollinations 25s = 40s < 60s
 async function generateWithPollinations(prompt: string, seed: number): Promise<string> {
   // 프롬프트가 너무 길면 URL 길이 초과 → 앞 900자로 제한
   const trimmedPrompt = prompt.length > 900 ? prompt.slice(0, 900) : prompt;
@@ -111,7 +111,7 @@ async function generateWithPollinations(prompt: string, seed: number): Promise<s
   const model = models[seed % models.length];
   const url = `https://image.pollinations.ai/prompt/${encoded}?width=768&height=1024&model=${model}&seed=${seed}&nologo=true&enhance=true&negative=${negEncoded}`;
 
-  const res = await fetch(url, { signal: AbortSignal.timeout(50_000) });
+  const res = await fetch(url, { signal: AbortSignal.timeout(25_000) });
 
   if (!res.ok) throw new Error(`Pollinations ${res.status}`);
 
@@ -269,32 +269,44 @@ export async function POST(req: NextRequest) {
     console.log("Seed:", seed);
 
     // ── 1순위: OpenAI gpt-image-1 (GPT-4o 네이티브, 최고품질) ──
+    // 모델당 15s timeout → 최대 2회 시도 = 30s, Pollinations 25s → 총 최대 55s < 60s
     if (!isKeyPlaceholder(process.env.OPENAI_API_KEY)) {
-      // 사용 가능한 모델 순서대로 시도 (2026 기준)
-      const imageModels = ["gpt-image-2", "gpt-image-1.5", "gpt-image-1", "chatgpt-image-latest"];
+      const imageModels = ["gpt-image-1", "dall-e-3"];
       const trimmedPrompt = finalPrompt.length > 1000 ? finalPrompt.slice(0, 1000) : finalPrompt;
+      const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
       for (const imgModel of imageModels) {
         try {
-          const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const response = await openai.images.generate({
+          // 15s per-model timeout (SDK는 AbortSignal 미지원 → Promise.race 사용)
+          const generateParams: Record<string, unknown> = {
             model: imgModel,
             prompt: trimmedPrompt,
             n: 1,
             size: "1024x1024",
-            quality: "high",
-          } as any);
+          };
+          // gpt-image-1은 quality 지원, dall-e-3은 quality 미지원
+          if (imgModel === "gpt-image-1") generateParams.quality = "high";
+
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const timeoutPromise = new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error("OpenAI 15s timeout")), 15_000)
+          );
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const response = await Promise.race([
+            openai.images.generate(generateParams as any),
+            timeoutPromise,
+          ]);
           // b64_json 또는 url 둘 다 처리
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const b64 = (response.data?.[0] as any)?.b64_json as string | undefined;
           if (b64) {
             console.log(`${imgModel} 성공 (b64)`);
             return NextResponse.json({ imageUrl: `data:image/png;base64,${b64}` });
           }
-          const url = response.data?.[0]?.url;
-          if (url) {
+          const imgUrl = response.data?.[0]?.url;
+          if (imgUrl) {
             console.log(`${imgModel} 성공 (url)`);
-            return NextResponse.json({ imageUrl: url });
+            return NextResponse.json({ imageUrl: imgUrl });
           }
           throw new Error("이미지 데이터 없음");
         } catch (err: unknown) {
@@ -312,17 +324,7 @@ export async function POST(req: NextRequest) {
       console.warn("Pollinations 실패:", pollinationsErr);
     }
 
-    // ── 3순위: HuggingFace FLUX (무료 토큰) ─────────────
-    if (!isKeyPlaceholder(process.env.HF_TOKEN)) {
-      try {
-        const imageUrl = await generateWithHuggingFace(finalPrompt);
-        return NextResponse.json({ imageUrl });
-      } catch (hfErr) {
-        console.warn("HuggingFace 실패:", hfErr);
-      }
-    }
-
-    // ── 4순위: SVG 초상화 폴백 ───────────────────────────
+    // ── 3순위: SVG 초상화 폴백 ───────────────────────────
     const imageUrl =
       `/api/portrait?gender=${gender}` +
       `&year=${encodeURIComponent(info?.yearPillar ?? "갑자")}` +

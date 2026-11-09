@@ -560,11 +560,13 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
   const [showBundleUpsell, setShowBundleUpsell] = useState(false);
 
   const imageUrl = currentImageUrl;
+  const [autoUpgrading, setAutoUpgrading] = useState(false);
 
-  // 이미지가 없거나 Pollinations URL이면 자동으로 고품질 이미지 생성
+  // 이미지가 없거나 Pollinations URL이면 자동으로 고품질 이미지 생성 (최초 1회)
   useEffect(() => {
     const isPollinations = currentImageUrl?.includes("pollinations.ai") || currentImageUrl?.includes("image.pollinations");
     if (!currentImageUrl || isPollinations) {
+      setAutoUpgrading(true);
       fetch("/api/generate-image", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -575,8 +577,14 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
         }),
       })
         .then((r) => r.json())
-        .then((data) => { if (data.imageUrl) setCurrentImageUrl(data.imageUrl); })
-        .catch(() => {/* 실패 시 기존 이미지 유지 */});
+        .then((data) => {
+          if (data.imageUrl) {
+            setCurrentImageUrl(data.imageUrl);
+            setImgLoaded(false);
+          }
+        })
+        .catch(() => {/* 실패 시 기존 이미지 유지 */})
+        .finally(() => setAutoUpgrading(false));
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -1023,8 +1031,17 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
             {/* 몽타주 이미지 */}
             <div className="relative w-full aspect-square rounded-2xl overflow-hidden shadow-xl border border-white/10 bg-[#13131a]">
               {!imgLoaded && !imgError && (
-                <div className="absolute inset-0 flex items-center justify-center">
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
                   <div className="w-10 h-10 rounded-full border-4 border-amber-200 border-t-amber-500 animate-spin" />
+                  {autoUpgrading && (
+                    <p className="text-amber-300/70 text-xs mt-1 animate-pulse">AI가 고화질 이미지 생성 중...</p>
+                  )}
+                </div>
+              )}
+              {autoUpgrading && imgLoaded && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/50 z-10">
+                  <div className="w-8 h-8 rounded-full border-4 border-amber-200 border-t-amber-500 animate-spin" />
+                  <p className="text-amber-300 text-xs animate-pulse">고화질 이미지로 교체 중...</p>
                 </div>
               )}
               {imgError && (
