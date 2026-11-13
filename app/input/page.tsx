@@ -6,6 +6,8 @@ import SajuInputForm from "@/components/SajuInputForm";
 import LoadingScreen from "@/components/LoadingScreen";
 import type { SajuInput, GenerateResult, ProductType, SajuAnalysis, GuardianAnalysis, EnemyAnalysis, BundleResults, SelfSajuAnalysis } from "@/lib/types";
 import { getSajuSeed } from "@/lib/prompts";
+import { calculateFourPillars } from "manseryeok";
+import type { SajuInfo } from "@/lib/types";
 
 // ── API 실패 시 모의 분석 데이터 생성 ─────────────────────────
 
@@ -15,13 +17,32 @@ function makeSeed(name: string, year: number): number {
   return Math.abs(s);
 }
 
-function buildMockSpouseAnalysis(name: string, birthYear: number, gender: "male" | "female"): SajuAnalysis {
+// 실제 만세력 계산으로 사주팔자 생성 (데모에서도 정확한 사주 보장)
+function calcRealSajuInfo(
+  birthYear: number, birthMonth: number, birthDay: number, birthHour: number,
+): SajuInfo {
+  const effectiveHour = birthHour >= 0 ? birthHour : 12;
+  const fp = calculateFourPillars({
+    year: birthYear, month: birthMonth, day: birthDay,
+    hour: effectiveHour, minute: 0,
+  });
+  return {
+    yearPillar: fp.year.heavenlyStem + fp.year.earthlyBranch,
+    monthPillar: fp.month.heavenlyStem + fp.month.earthlyBranch,
+    dayPillar: fp.day.heavenlyStem + fp.day.earthlyBranch,
+    hourPillar: birthHour >= 0
+      ? fp.hour.heavenlyStem + fp.hour.earthlyBranch
+      : "미상",
+  };
+}
+
+function buildMockSpouseAnalysis(name: string, birthYear: number, birthMonth: number, birthDay: number, birthHour: number, gender: "male" | "female"): SajuAnalysis {
   const seed = makeSeed(name, birthYear);
-  const pillars = ["갑자", "을축", "병인", "정묘", "무진", "기사", "경오", "신미", "임신", "계유"];
-  const yp = pillars[seed % 10];
-  const mp = pillars[(seed + 3) % 10];
-  const dp = pillars[(seed + 7) % 10];
-  const hp = pillars[(seed + 5) % 10];
+  const saju = calcRealSajuInfo(birthYear, birthMonth, birthDay, birthHour);
+  const yp = saju.yearPillar;
+  const mp = saju.monthPillar;
+  const dp = saju.dayPillar;
+  const hp = saju.hourPillar;
   const spouseAdj = gender === "male" ? ["따뜻하고 지적인", "활발하고 감성적인", "차분하고 우아한", "유머러스하고 세심한"] : ["듬직하고 자상한", "지적이고 유머러스한", "열정적이고 배려심 있는", "차분하고 책임감 있는"];
   const adj = spouseAdj[seed % spouseAdj.length];
   const jobs = ["의료·교육 계열", "IT·디자인 계열", "금융·경영 계열", "예술·문화 계열", "서비스·마케팅 계열"];
@@ -65,14 +86,14 @@ function buildMockSpouseAnalysis(name: string, birthYear: number, gender: "male"
   };
 }
 
-function buildMockGuardianAnalysis(name: string, birthYear: number): GuardianAnalysis {
+function buildMockGuardianAnalysis(name: string, birthYear: number, birthMonth: number, birthDay: number, birthHour: number): GuardianAnalysis {
   const seed = makeSeed(name, birthYear);
-  const pillars = ["갑자", "을축", "병인", "정묘", "무진", "기사", "경오", "신미", "임신", "계유"];
+  const saju = calcRealSajuInfo(birthYear, birthMonth, birthDay, birthHour);
   const gTypes = [{ type: "사업 귀인", emoji: "💼" }, { type: "금전 귀인", emoji: "💰" }, { type: "인생 멘토형", emoji: "🌟" }, { type: "학업 귀인", emoji: "📚" }];
   const gt = gTypes[seed % gTypes.length];
   const meetAge = 28 + (seed % 8);
   return {
-    sajuInfo: { yearPillar: pillars[seed % 10], monthPillar: pillars[(seed+3)%10], dayPillar: pillars[(seed+7)%10], hourPillar: pillars[(seed+5)%10] },
+    sajuInfo: saju,
     imagePrompt: `Portrait of a wise trustworthy mentor, kind authoritative face, photorealistic, studio lighting`,
     guardianType: gt.type,
     guardianTypeEmoji: gt.emoji,
@@ -98,14 +119,14 @@ function buildMockGuardianAnalysis(name: string, birthYear: number): GuardianAna
   };
 }
 
-function buildMockEnemyAnalysis(name: string, birthYear: number): EnemyAnalysis {
+function buildMockEnemyAnalysis(name: string, birthYear: number, birthMonth: number, birthDay: number, birthHour: number): EnemyAnalysis {
   const seed = makeSeed(name, birthYear);
-  const pillars = ["갑자", "을축", "병인", "정묘", "무진", "기사", "경오", "신미", "임신", "계유"];
+  const saju = calcRealSajuInfo(birthYear, birthMonth, birthDay, birthHour);
   const eTypes = [{ type: "질투형 악연", emoji: "😤" }, { type: "배신형 악연", emoji: "🗡️" }, { type: "에너지 흡혈형", emoji: "🧛" }, { type: "사기형 악연", emoji: "🎭" }];
   const et = eTypes[seed % eTypes.length];
   const meetAge = 26 + (seed % 8);
   return {
-    sajuInfo: { yearPillar: pillars[seed % 10], monthPillar: pillars[(seed+3)%10], dayPillar: pillars[(seed+7)%10], hourPillar: pillars[(seed+5)%10] },
+    sajuInfo: saju,
     imagePrompt: `Portrait of a deceptive charming person, cold calculating eyes, superficially friendly smile, photorealistic`,
     enemyType: et.type,
     enemyTypeEmoji: et.emoji,
@@ -131,18 +152,19 @@ function buildMockEnemyAnalysis(name: string, birthYear: number): EnemyAnalysis 
   };
 }
 
-function buildMockSelfAnalysis(name: string, birthYear: number, gender: "male" | "female"): SelfSajuAnalysis {
+function buildMockSelfAnalysis(name: string, birthYear: number, birthMonth: number, birthDay: number, birthHour: number, gender: "male" | "female"): SelfSajuAnalysis {
   const seed = makeSeed(name, birthYear);
-  const pillars = ["갑자", "을축", "병인", "정묘", "무진", "기사", "경오", "신미", "임신", "계유"];
+  const saju = calcRealSajuInfo(birthYear, birthMonth, birthDay, birthHour);
   const stems = ["갑", "을", "병", "정", "무", "기", "경", "신", "임", "계"];
   const elements = ["木", "火", "土", "金", "水"];
   const mbtis = ["ENFJ", "INFP", "ENFP", "ISFJ", "ENTJ", "INTJ", "ESFP", "INFJ"];
-  const dayPillar = pillars[(seed + 7) % 10];
-  const dayStem = stems[(seed + 7) % 10];
-  const dayElement = elements[Math.floor(((seed + 7) % 10) / 2)];
+  // 일간(天干)을 실제 사주에서 추출
+  const dayStem = saju.dayPillar.charAt(0);
+  const stemIdx = stems.indexOf(dayStem);
+  const dayElement = stemIdx >= 0 ? elements[Math.floor(stemIdx / 2)] : "土";
   const isSinGang = seed % 2 === 0;
   return {
-    sajuInfo: { yearPillar: pillars[seed % 10], monthPillar: pillars[(seed+3)%10], dayPillar, hourPillar: pillars[(seed+5)%10] },
+    sajuInfo: saju,
     elementCounts: { 木: 1 + (seed % 3), 火: 1 + ((seed+1) % 3), 土: 1 + ((seed+2) % 3), 金: 1 + ((seed+3) % 3), 水: 1 + ((seed+4) % 3) },
     dayMasterElement: dayElement,
     dayMasterStem: dayStem,
@@ -158,14 +180,14 @@ function buildMockSelfAnalysis(name: string, birthYear: number, gender: "male" |
     loveStyle: `${dayElement} 기운의 연애 스타일로 진심을 중요하게 여깁니다. 처음엔 다가가는 것이 어렵지만 한번 마음을 열면 깊고 오래 가는 관계를 만들어갑니다.`,
     healthCaution: `${dayElement === "木" ? "간·담 기능" : dayElement === "火" ? "심장·혈압" : dayElement === "土" ? "소화기계" : dayElement === "金" ? "폐·호흡기" : "신장·방광"}에 주의하세요. 규칙적인 운동과 충분한 수면이 건강 유지의 핵심입니다.`,
     thisYearFortune: `올해는 변화와 성장이 함께하는 한 해입니다. ${isSinGang ? "적극적으로 도전하면 좋은 결과를 얻을 수 있습니다." : "주변의 도움을 잘 활용하면 기대 이상의 성과를 낼 수 있습니다."} 하반기로 갈수록 운이 상승합니다.`,
-    currentDaeun: pillars[(seed + 2) % 10],
+    currentDaeun: saju.monthPillar,
     currentDaeunAge: `${30 + (seed % 10)}~${40 + (seed % 10)}세`,
     monthlyFortune: [65, 70, 80, 75, 60, 85, 90, 72, 68, 78, 83, 71].map((v, i) => Math.min(100, v + ((seed + i) % 10) - 5)),
     lifePhases: [
-      { age: "20~29세", theme: pillars[(seed) % 10], rating: 65 + (seed % 20) },
-      { age: "30~39세", theme: pillars[(seed+2) % 10], rating: 72 + (seed % 18) },
-      { age: "40~49세", theme: pillars[(seed+4) % 10], rating: 80 + (seed % 15) },
-      { age: "50~59세", theme: pillars[(seed+6) % 10], rating: 75 + (seed % 18) },
+      { age: "20~29세", theme: saju.yearPillar, rating: 65 + (seed % 20) },
+      { age: "30~39세", theme: saju.monthPillar, rating: 72 + (seed % 18) },
+      { age: "40~49세", theme: saju.dayPillar, rating: 80 + (seed % 15) },
+      { age: "50~59세", theme: saju.hourPillar, rating: 75 + (seed % 18) },
     ],
     luckyElements: ["초록·파랑 컬러 아이템", "동쪽·동남쪽 방향", "목요일·봄 시즌"].slice(0, 3),
     actionNow: ["자신의 강점을 살릴 수 있는 새로운 도전을 시작해보세요.", "가까운 사람들과의 관계에 더 많은 시간을 투자하세요.", "규칙적인 루틴을 만들어 에너지 관리를 시작해보세요."],
@@ -259,12 +281,12 @@ export default function InputPage() {
 
         const usedMock = spouseRes.usedMock || guardianRes.usedMock || enemyRes.usedMock;
 
-        const spouseRaw = (spouseRes.result ?? buildMockSpouseAnalysis(data.name, data.birthYear, data.gender)) as Record<string, unknown>;
+        const spouseRaw = (spouseRes.result ?? buildMockSpouseAnalysis(data.name, data.birthYear, data.birthMonth, data.birthDay, data.birthHour, data.gender)) as Record<string, unknown>;
         const bundleSelfSaju = spouseRaw.selfSaju as SelfSajuAnalysis | undefined;
         if (bundleSelfSaju) delete spouseRaw.selfSaju;
         const spouseAnalysis = spouseRaw as unknown as SajuAnalysis;
-        const guardianAnalysis = (guardianRes.result as GuardianAnalysis) ?? buildMockGuardianAnalysis(data.name, data.birthYear);
-        const enemyAnalysis = (enemyRes.result as EnemyAnalysis) ?? buildMockEnemyAnalysis(data.name, data.birthYear);
+        const guardianAnalysis = (guardianRes.result as GuardianAnalysis) ?? buildMockGuardianAnalysis(data.name, data.birthYear, data.birthMonth, data.birthDay, data.birthHour);
+        const enemyAnalysis = (enemyRes.result as EnemyAnalysis) ?? buildMockEnemyAnalysis(data.name, data.birthYear, data.birthMonth, data.birthDay, data.birthHour);
 
         setLoadingStep(3);
         await new Promise((r) => setTimeout(r, 600));
@@ -319,7 +341,7 @@ export default function InputPage() {
           }
         } catch {
           usedMock = true;
-          selfAnalysis = buildMockSelfAnalysis(data.name, data.birthYear, data.gender);
+          selfAnalysis = buildMockSelfAnalysis(data.name, data.birthYear, data.birthMonth, data.birthDay, data.birthHour, data.gender);
         }
         clearTimeout(autoStep1);
         clearTimeout(autoStep2);
@@ -385,7 +407,7 @@ export default function InputPage() {
         } else throw new Error("self_fail");
       } catch {
         selfUsedMock = true;
-        selfAnalysis = buildMockSelfAnalysis(data.name, data.birthYear, data.gender);
+        selfAnalysis = buildMockSelfAnalysis(data.name, data.birthYear, data.birthMonth, data.birthDay, data.birthHour, data.gender);
       }
 
       // 의도한 분석(배우자/귀인/웬수) 처리
@@ -400,11 +422,11 @@ export default function InputPage() {
       } catch {
         intendedUsedMock = true;
         if (isGuardian) {
-          intendedAnalysis = buildMockGuardianAnalysis(data.name, data.birthYear);
+          intendedAnalysis = buildMockGuardianAnalysis(data.name, data.birthYear, data.birthMonth, data.birthDay, data.birthHour);
         } else if (isEnemy) {
-          intendedAnalysis = buildMockEnemyAnalysis(data.name, data.birthYear);
+          intendedAnalysis = buildMockEnemyAnalysis(data.name, data.birthYear, data.birthMonth, data.birthDay, data.birthHour);
         } else {
-          intendedAnalysis = buildMockSpouseAnalysis(data.name, data.birthYear, data.gender);
+          intendedAnalysis = buildMockSpouseAnalysis(data.name, data.birthYear, data.birthMonth, data.birthDay, data.birthHour, data.gender);
         }
       }
 
