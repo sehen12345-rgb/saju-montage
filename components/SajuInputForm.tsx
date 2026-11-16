@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import type { SajuInput } from "@/lib/types";
-import { calculateSaju } from "@/lib/saju";
+import type { SajuInput, SajuInfo } from "@/lib/types";
+import { calculateFourPillars } from "manseryeok";
 
 interface Props {
   onSubmit: (data: SajuInput) => void;
@@ -98,10 +98,20 @@ function PillarCard({ pillar, index, highlight }: { pillar: string; index: numbe
 }
 
 function SajuPreview({ year, month, day, hour }: { year: number; month: number; day: number; hour: number }) {
-  const saju = useMemo(
-    () => calculateSaju(year, month, day, hour >= 0 ? hour : 12),
-    [year, month, day, hour]
-  );
+  const saju: SajuInfo = useMemo(() => {
+    const effectiveHour = hour >= 0 ? hour : 12;
+    const fp = calculateFourPillars({
+      year, month, day, hour: effectiveHour, minute: 0,
+    });
+    return {
+      yearPillar: fp.year.heavenlyStem + fp.year.earthlyBranch,
+      monthPillar: fp.month.heavenlyStem + fp.month.earthlyBranch,
+      dayPillar: fp.day.heavenlyStem + fp.day.earthlyBranch,
+      hourPillar: hour >= 0
+        ? fp.hour.heavenlyStem + fp.hour.earthlyBranch
+        : "미상",
+    };
+  }, [year, month, day, hour]);
   const pillars = [saju.yearPillar, saju.monthPillar, saju.dayPillar, saju.hourPillar === "미상" ? "??" : saju.hourPillar];
 
   return (
