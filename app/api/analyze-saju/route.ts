@@ -37,8 +37,11 @@ async function generateNarrativeWithClaude(
     const genderLabel = gender === "male" ? "남성" : "여성";
     const hourStr = birthHour >= 0 ? `${birthHour}시` : "시간 모름";
 
-    const prompt = `당신은 사주명리학 전문가이자 MZ 감성의 콘텐츠 작가입니다.
-아래 만세력 분석 데이터를 근거로 ${spouseLabel}의 서술 텍스트만 작성하세요.
+    const systemMsg = `당신은 35년 경력 사주명리학 전문가이자 MZ 세대 감성의 연애 콘텐츠 작가입니다.
+만세력 데이터를 근거로 ${spouseLabel}의 서술 텍스트를 작성합니다.
+반드시 순수 JSON만 응답하세요 (마크다운 코드블록, 설명 텍스트 금지).`;
+
+    const prompt = `아래 만세력 분석 데이터를 근거로 ${spouseLabel}의 서술 텍스트만 작성하세요.
 점수·시기·MBTI·직업 등 수치/구조 필드는 이미 만세력에서 도출되었으므로 작성하지 마세요.
 
 [필수 문체 지침 — 이것이 가장 중요합니다]
@@ -72,7 +75,7 @@ ${manseryeokContext}
 위 만세력 결정 결과와 모순되지 않는 범위에서만 서술 텍스트를 작성하세요.
 순수 JSON만 응답하세요 (마크다운 코드블록 없이):
 {
-  "animalFace": { "type": "강아지상/고양이상/여우상/토끼상/곰상/사슴상 중 하나 (오행 기반)", "emoji": "해당 이모지", "desc": "왜 이 동물상인지 눈코입 특징 1문장" },
+  "animalFace": { "type": "오행 매핑 참고: 木→사슴상(🦌 길고 단정한 이목구비)/火→고양이상(🐱 날카롭고 도도한 느낌)/土→강아지상(🐶 둥글고 친근한 인상)/金→여우상(🦊 세련되고 날렵한 얼굴)/水→토끼상(🐰 맑고 순수한 눈매). 일간 오행 기반으로 선택", "emoji": "해당 이모지", "desc": "왜 이 동물상인지 눈코입 특징 1문장" },
   "celebrityLookalikes": [{"name": "한국 연예인 실명", "likePart": "닮은 부위", "reason": "닮은 이유 한 줄"}, {"name": "...", "likePart": "...", "reason": "..."}, {"name": "...", "likePart": "...", "reason": "..."}],
   "description": "배우자 외모 설명 2-3문장. '마치 ~처럼' 비유로 시각적으로 묘사. 딱딱한 나열이 아니라 실제로 마주쳤을 때의 첫인상 느낌으로. (일간 오행 특성 반영)",
   "personality": "성격 설명 3-4문장. 일상에서 드러나는 구체적 행동·말투로. '이런 사람 있잖아요~' 공감 유도. (만세력 일간/십신 특성 반영)",
@@ -92,7 +95,9 @@ ${manseryeokContext}
 
     const response = await client.messages.create({
       model: "claude-sonnet-4-6",
-      max_tokens: 4000,
+      max_tokens: 5000,
+      temperature: 0.85,
+      system: systemMsg,
       messages: [{ role: "user", content: prompt }],
     });
 
@@ -100,7 +105,19 @@ ${manseryeokContext}
     const match = text.match(/\{[\s\S]*\}/);
     if (!match) return null;
 
-    return JSON.parse(match[0]) as Partial<SajuAnalysis>;
+    // JSON 잘림 복구 (토큰 부족으로 중간에 잘렸을 때)
+    let jsonStr = match[0];
+    try {
+      return JSON.parse(jsonStr) as Partial<SajuAnalysis>;
+    } catch {
+      // 열린 문자열/객체 닫기 시도
+      const repaired = jsonStr
+        .replace(/,\s*"[^"]*":\s*"[^"]*$/, '"')  // 잘린 key-value
+        .replace(/,\s*"[^"]*":\s*\{[^}]*$/, '')   // 잘린 object
+        .replace(/,\s*\[[^\]]*$/, '')              // 잘린 array
+        .replace(/,\s*$/, '') + "}";
+      try { return JSON.parse(repaired) as Partial<SajuAnalysis>; } catch { return null; }
+    }
   } catch (err) {
     console.error("Claude narrative API error:", err);
     return null;

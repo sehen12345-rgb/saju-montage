@@ -43,7 +43,7 @@ function SajuPillarCard({ sajuInfo }: { sajuInfo: import("@/lib/types").SajuInfo
   ];
 
   return (
-    <div className="bg-[#13131a] border border-white/8 rounded-3xl p-4">
+    <div className="bg-[#111118] border border-white/8 rounded-3xl p-4">
       <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">당신의 사주팔자</p>
       <div className="grid grid-cols-4 gap-2 mb-2">
         {pillars.map((p) => (
@@ -434,7 +434,7 @@ export default function EnemyResultCard({ result, onReset, onPaid }: Props) {
         </div>
 
         {/* 외모 힌트 (무료, 전체 공개) */}
-        <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+        <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
           <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">🔍 웬수 첫인상 힌트</p>
           <p className="text-gray-300 leading-relaxed text-sm">{analysis.description}</p>
         </div>
@@ -443,13 +443,13 @@ export default function EnemyResultCard({ result, onReset, onPaid }: Props) {
         {(analysis.enemyType || analysis.relationship) && (
           <div className="grid grid-cols-2 gap-3">
             {analysis.enemyType && (
-              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-4 text-center">
+              <div className="bg-[#111118] border border-white/8 rounded-2xl p-4 text-center">
                 <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1.5">😤 악연 유형</p>
                 <p className="text-sm font-black text-red-400">{analysis.enemyTypeEmoji} {analysis.enemyType}</p>
               </div>
             )}
             {analysis.relationship && (
-              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-4 text-center">
+              <div className="bg-[#111118] border border-white/8 rounded-2xl p-4 text-center">
                 <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1.5">🔗 관계 유형</p>
                 <p className="text-sm font-bold text-white leading-snug">{analysis.relationship}</p>
               </div>
@@ -464,7 +464,7 @@ export default function EnemyResultCard({ result, onReset, onPaid }: Props) {
 
         {!paid ? (
           <div className="relative rounded-3xl overflow-hidden border border-white/10 shadow-lg">
-            <div className="p-5 blur-sm select-none pointer-events-none bg-[#13131a] space-y-3">
+            <div className="p-5 blur-sm select-none pointer-events-none bg-[#111118] space-y-3">
               <div className="bg-white/5 rounded-xl p-4 border border-white/8">
                 <p className="text-xs text-red-400 mb-1">⚠️ 피해를 주는 영역</p>
                 <p className="text-sm font-bold text-white">재정, 인간관계, 감정</p>
@@ -478,7 +478,7 @@ export default function EnemyResultCard({ result, onReset, onPaid }: Props) {
                 <p className="text-sm text-gray-300">전생에 경쟁 관계였습니다...</p>
               </div>
             </div>
-            <div className="absolute inset-0 bg-gradient-to-b from-[#13131a]/20 to-[#13131a]/85 flex flex-col items-center justify-center gap-3 p-6">
+            <div className="absolute inset-0 bg-gradient-to-b from-[#111118]/20 to-[#111118]/85 flex flex-col items-center justify-center gap-3 p-6">
               <div className="w-16 h-16 rounded-full bg-white/10 border-2 border-white/20 flex items-center justify-center text-3xl">🔒</div>
               <p className="text-white font-black text-lg text-center">웬수의 모든 것이<br />잠겨있습니다</p>
               <p className="text-gray-400 text-sm text-center">웬수 프로필 이미지, 피하는 방법,<br/>전생 악연, 월별 위험도 등 전체 공개</p>
@@ -539,14 +539,14 @@ export default function EnemyResultCard({ result, onReset, onPaid }: Props) {
             </div>
 
             {/* 웬수 AI 프로필 이미지 */}
-            <div className="relative w-full aspect-square rounded-2xl overflow-hidden shadow-xl border border-white/10 bg-[#13131a]">
+            <div className="relative w-full aspect-square rounded-2xl overflow-hidden shadow-xl border border-white/10 bg-[#111118]">
               {!imgLoaded && !imgError && (
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="w-10 h-10 rounded-full border-4 border-red-900/40 border-t-red-400 animate-spin" />
                 </div>
               )}
               {imgError && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#13131a]">
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#111118]">
                   <span className="text-4xl">😓</span>
                   <p className="text-gray-400 text-sm">이미지를 불러오지 못했습니다</p>
                   <button
@@ -578,14 +578,14 @@ export default function EnemyResultCard({ result, onReset, onPaid }: Props) {
             </div>
 
             {/* 웬수 외모 묘사 */}
-            <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+            <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
               <p className="text-xs text-red-400 font-medium mb-2">✨ 웬수 첫인상</p>
               <p className="text-sm text-gray-300 leading-relaxed">{analysis.description}</p>
             </div>
 
             {/* 피해를 주는 영역 */}
             {analysis.dangerAreas?.length > 0 && (
-              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
                 <p className="text-xs text-red-400 font-medium mb-1">⚠️ 피해를 주는 영역</p>
                 <h4 className="text-base font-bold text-white mb-4">웬수가 끼치는 악영향</h4>
                 <div className="space-y-3">
@@ -601,7 +601,7 @@ export default function EnemyResultCard({ result, onReset, onPaid }: Props) {
 
             {/* 웬수 피하는 방법 */}
             {analysis.howToAvoid && (
-              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
                 <p className="text-xs text-orange-400 font-medium mb-1">🛡️ 웬수 피하는 방법</p>
                 <p className="text-sm text-gray-300 leading-relaxed">{analysis.howToAvoid}</p>
               </div>
@@ -609,7 +609,7 @@ export default function EnemyResultCard({ result, onReset, onPaid }: Props) {
 
             {/* 주의 시기 */}
             {analysis.meetTiming && (
-              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
                 <p className="text-xs text-red-400 font-medium mb-3">📅 웬수 출현 시기 예측</p>
                 <div className="grid grid-cols-3 gap-3 text-center">
                   {[
@@ -629,7 +629,7 @@ export default function EnemyResultCard({ result, onReset, onPaid }: Props) {
 
             {/* 나의 약점 */}
             {analysis.myWeakness && (
-              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
                 <p className="text-xs text-orange-400 font-medium mb-2">😰 웬수에게 이용당하는 나의 약점</p>
                 <p className="text-sm text-gray-300 leading-relaxed">{analysis.myWeakness}</p>
               </div>
@@ -645,7 +645,7 @@ export default function EnemyResultCard({ result, onReset, onPaid }: Props) {
 
             {/* 웬수 알아보는 법 */}
             {analysis.signToRecognize && (
-              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
                 <p className="text-xs text-red-400 font-medium mb-2">🔍 웬수를 알아보는 법</p>
                 <p className="text-sm text-gray-300 leading-relaxed">{analysis.signToRecognize}</p>
               </div>
@@ -689,7 +689,7 @@ export default function EnemyResultCard({ result, onReset, onPaid }: Props) {
 
             {/* 실천 가이드 */}
             {analysis.actionGuide?.length > 0 && (
-              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
                 <p className="text-xs text-red-400 font-medium mb-3">🚀 자기보호 실천 가이드</p>
                 <div className="space-y-2">
                   {analysis.actionGuide.map((g, i) => (
@@ -706,7 +706,7 @@ export default function EnemyResultCard({ result, onReset, onPaid }: Props) {
 
             {/* 월별 위험도 차트 */}
             {analysis.monthlyDanger?.length === 12 && (
-              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
                 <p className="text-xs text-red-400 font-medium mb-4">📊 월별 악연 위험도</p>
                 <div className="flex items-end gap-1 h-24">
                   {analysis.monthlyDanger.map((v, i) => (
@@ -724,7 +724,7 @@ export default function EnemyResultCard({ result, onReset, onPaid }: Props) {
 
             {/* 악연 방어력 */}
             {analysis.readiness && (
-              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
                 <p className="text-xs text-emerald-400 font-medium mb-1">🛡️ 악연 방어력</p>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-2xl font-black text-emerald-400">{analysis.readiness.score}%</span>

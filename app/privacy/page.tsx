@@ -6,7 +6,7 @@ export const metadata = {
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-[#0d0d12] text-white pb-20">
+    <div className="min-h-screen bg-[#0a0a10] text-white pb-20">
       <div className="max-w-2xl mx-auto px-4 py-8">
         <div className="mb-6">
           <Link href="/" className="text-gray-500 text-sm hover:text-gray-300 transition-colors">
@@ -22,7 +22,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-base font-bold text-white mb-3">1. 개인정보의 수집 항목 및 방법</h2>
             <p className="mb-2">내님은누구(이하 &apos;서비스&apos;)는 AI 사주 분석 서비스 제공을 위해 아래와 같이 개인정보를 수집합니다.</p>
-            <div className="bg-[#13131a] border border-white/10 rounded-2xl p-4 space-y-3">
+            <div className="bg-[#111118] border border-white/10 rounded-2xl p-4 space-y-3">
               <div>
                 <p className="font-semibold text-white mb-1">소셜 로그인 시 (선택)</p>
                 <p className="text-gray-400">이메일 주소, 닉네임 (카카오·네이버·구글 제공)</p>
@@ -50,7 +50,7 @@ export default function PrivacyPage() {
 
           <section>
             <h2 className="text-base font-bold text-white mb-3">3. 개인정보의 보유 및 이용 기간</h2>
-            <div className="bg-[#13131a] border border-white/10 rounded-2xl p-4 space-y-2">
+            <div className="bg-[#111118] border border-white/10 rounded-2xl p-4 space-y-2">
               <div className="flex justify-between">
                 <span className="text-gray-400">사주 분석 입력 데이터</span>
                 <span className="text-white font-medium">서버에 저장하지 않음</span>
@@ -69,7 +69,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-base font-bold text-white mb-3">4. 개인정보의 제3자 제공</h2>
             <p className="mb-3 text-gray-400">서비스는 이용자의 개인정보를 아래의 목적으로 제3자에게 제공합니다.</p>
-            <div className="bg-[#13131a] border border-white/10 rounded-2xl overflow-hidden">
+            <div className="bg-[#111118] border border-white/10 rounded-2xl overflow-hidden">
               <table className="w-full text-xs">
                 <thead className="border-b border-white/10">
                   <tr className="text-gray-500">
@@ -116,7 +116,7 @@ export default function PrivacyPage() {
 
           <section>
             <h2 className="text-base font-bold text-white mb-3">7. 개인정보 보호책임자</h2>
-            <div className="bg-[#13131a] border border-white/10 rounded-2xl p-4 text-gray-400">
+            <div className="bg-[#111118] border border-white/10 rounded-2xl p-4 text-gray-400">
               <p>이메일: sehen12345@gmail.com</p>
               <p className="text-gray-600 text-xs mt-2">개인정보 관련 문의사항은 이메일로 연락해 주세요. 영업일 기준 3일 이내 답변드립니다.</p>
             </div>

@@ -70,7 +70,7 @@ function LoginContent() {
         </div>
 
         {/* 카드 */}
-        <div className="bg-[#13131a] border border-white/10 rounded-3xl shadow-xl p-6">
+        <div className="bg-[#111118] border border-white/10 rounded-3xl shadow-xl p-6">
           {!showEmail ? (
             <div className="space-y-3">
               {/* 카카오 */}

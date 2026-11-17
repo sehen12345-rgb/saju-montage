@@ -267,7 +267,7 @@ function SajuPillarCard({ sajuInfo }: { sajuInfo: import("@/lib/types").SajuInfo
   ];
 
   return (
-    <div className="bg-[#13131a] border border-white/8 rounded-3xl p-4">
+    <div className="bg-[#111118] border border-white/8 rounded-3xl p-4">
       <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">당신의 사주팔자</p>
       {/* 라벨 row */}
       <div className="grid grid-cols-4 gap-2 mb-2">
@@ -315,7 +315,7 @@ function InfoSection({ icon, label, title, children }: {
   icon: string; label: string; title?: string; children: React.ReactNode;
 }) {
   return (
-    <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+    <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
       <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">{icon} {label}</p>
       {title && <h4 className="text-base font-bold text-white mb-3">{title}</h4>}
       {children}
@@ -341,14 +341,14 @@ function ScoreBar({ label, score, delay = 0 }: { label: string; score: number; d
 function BlurredSection({ label }: { label: string }) {
   return (
     <div className="relative rounded-2xl overflow-hidden border border-white/8">
-      <div className="p-5 blur-sm select-none pointer-events-none bg-[#13131a]">
+      <div className="p-5 blur-sm select-none pointer-events-none bg-[#111118]">
         <p className="text-xs text-gray-500 font-bold uppercase mb-1">🔒 {label}</p>
         <p className="text-base font-bold text-white mb-3">결제 후 확인하세요</p>
         <p className="text-sm text-gray-500 leading-relaxed">
           이 내용은 결제 후 확인하실 수 있습니다. 지금 바로 1,900원으로 배우자의 모든 정보를 확인해보세요.
         </p>
       </div>
-      <div className="absolute inset-0 bg-gradient-to-b from-[#13131a]/20 to-[#13131a]/80 flex items-center justify-center">
+      <div className="absolute inset-0 bg-gradient-to-b from-[#111118]/20 to-[#111118]/80 flex items-center justify-center">
         <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-4 py-2 text-sm font-bold text-white">
           🔒 결제 후 공개
         </div>
@@ -908,7 +908,7 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
 
         {/* ── 닮은꼴 연예인 (무료 바이럴 콘텐츠) ── */}
         {analysis.celebrityLookalikes && analysis.celebrityLookalikes.length > 0 && (
-          <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+          <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
             <p className="text-[10px] text-violet-400 font-bold uppercase tracking-widest mb-3">🌟 닮은꼴 연예인</p>
             <div className="space-y-3">
               {analysis.celebrityLookalikes.map((cel, i) => (
@@ -933,14 +933,14 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
         {(analysis.mbti || analysis.job) && (
           <div className="grid grid-cols-2 gap-3">
             {analysis.mbti && (
-              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-4 text-center">
+              <div className="bg-[#111118] border border-white/8 rounded-2xl p-4 text-center">
                 <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1.5">🧠 MBTI</p>
                 <p className="text-xl font-black text-white">{analysis.mbti}</p>
                 <p className="text-[10px] text-gray-500 mt-1">성격 유형</p>
               </div>
             )}
             {analysis.job && (
-              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-4 text-center">
+              <div className="bg-[#111118] border border-white/8 rounded-2xl p-4 text-center">
                 <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1.5">💼 직업군</p>
                 <p className="text-sm font-bold text-white leading-snug">{analysis.job}</p>
                 <p className="text-[10px] text-gray-500 mt-1">종사 분야</p>
@@ -1029,7 +1029,7 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
             )}
 
             {/* 몽타주 이미지 */}
-            <div className="relative w-full aspect-square rounded-2xl overflow-hidden shadow-xl border border-white/10 bg-[#13131a]">
+            <div className="relative w-full aspect-square rounded-2xl overflow-hidden shadow-xl border border-white/10 bg-[#111118]">
               {!imgLoaded && !imgError && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
                   <div className="w-10 h-10 rounded-full border-4 border-amber-200 border-t-amber-500 animate-spin" />
@@ -1045,7 +1045,7 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
                 </div>
               )}
               {imgError && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#13131a]">
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#111118]">
                   <span className="text-4xl">😓</span>
                   <p className="text-gray-400 text-sm">이미지를 불러오지 못했습니다</p>
                   <div className="flex gap-2">
@@ -1091,7 +1091,7 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
             </div>
 
             {/* 배우자 프로필 카드 */}
-            <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+            <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
               <p className="text-xs text-amber-500 font-medium mb-3">💌 배우자 프로필</p>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 {[
@@ -1127,7 +1127,7 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
 
             {/* 배우자의 사랑 언어 */}
             {analysis.loveLanguage && (
-              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
                 <p className="text-xs text-rose-400 font-medium mb-3">💝 배우자의 사랑 언어</p>
                 <div className="flex gap-2 mb-3">
                   <span className="px-3 py-1.5 bg-rose-500 text-white rounded-full text-xs font-bold">
@@ -1143,7 +1143,7 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
 
             {/* 닮은꼴 연예인 분위기 */}
             {analysis.celebrityVibe && (
-              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
                 <p className="text-xs text-amber-400 font-medium mb-2">🌟 닮은꼴 연예인 분위기</p>
                 <p className="text-sm text-gray-300 leading-relaxed">{analysis.celebrityVibe}</p>
               </div>
@@ -1164,7 +1164,7 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
 
             {/* 배우자 스펙 */}
             {analysis.bodySpec && (
-              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
                 <p className="text-xs text-amber-400 font-medium mb-3">💎 배우자 스펙</p>
                 <div className="grid grid-cols-2 gap-3">
                   {[
@@ -1184,7 +1184,7 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
 
             {/* 궁합 점수 */}
             {analysis.compatibilityScores && (
-              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
                 <p className="text-xs text-amber-400 font-medium mb-1">📊 궁합 점수</p>
                 <h4 className="text-base font-bold text-white mb-4">
                   평균 {Math.round(Object.values(analysis.compatibilityScores).reduce((a, b) => a + b, 0) / 5)}점의 높은 궁합
@@ -1210,7 +1210,7 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
 
             {/* 배우자 심리 분석 */}
             {analysis.partnerPsychology && (
-              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
                 <p className="text-xs text-violet-400 font-medium mb-2">🧠 배우자 심리 분석</p>
                 <h4 className="text-sm font-bold text-violet-300 mb-3">이 사람의 마음을 여는 법</h4>
                 <p className="text-sm text-gray-300 leading-relaxed">{analysis.partnerPsychology}</p>
@@ -1233,7 +1233,7 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
 
             {/* 만남 시기 */}
             {analysis.meetTiming && (
-              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
                 <p className="text-xs text-amber-400 font-medium mb-3">📅 만남 시기 예측</p>
                 <div className="grid grid-cols-3 gap-3 text-center">
                   {[
@@ -1253,7 +1253,7 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
 
             {/* 첫 만남 시나리오 */}
             {analysis.firstMeet && (
-              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
                 <p className="text-xs text-pink-400 font-medium mb-1">🌸 첫 만남</p>
                 {analysis.firstMeetTitle && (
                   <h4 className="text-base font-bold text-pink-300 mb-3">{analysis.firstMeetTitle}</h4>
@@ -1264,7 +1264,7 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
 
             {/* 연애·결혼 타임라인 */}
             {analysis.timeline && (
-              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
                 <p className="text-xs text-amber-400 font-medium mb-4">💒 연애·결혼 타임라인</p>
                 <div className="relative">
                   <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-amber-400/30" />
@@ -1330,7 +1330,7 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
 
             {/* 취향 카드 */}
             {analysis.favoriteThings && (
-              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
                 <p className="text-xs text-amber-400 font-medium mb-3">🎭 배우자의 취향</p>
                 <div className="grid grid-cols-2 gap-3">
                   {[
@@ -1351,7 +1351,7 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
 
             {/* 첫 데이트 코스 */}
             {analysis.firstDate && (
-              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
                 <p className="text-xs text-pink-400 font-medium mb-2">🗺️ 첫 데이트 코스</p>
                 <h4 className="text-sm font-bold text-pink-300 mb-3">이 사람과 잘 맞는 첫 데이트</h4>
                 <p className="text-sm text-gray-300 leading-relaxed">{analysis.firstDate}</p>
@@ -1360,7 +1360,7 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
 
             {/* 갈등 & 화해 패턴 */}
             {analysis.conflictAndMakeup && (
-              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
                 <p className="text-xs text-amber-400 font-medium mb-2">⚡ 갈등 & 화해 패턴</p>
                 <h4 className="text-sm font-bold text-amber-300 mb-3">어떨 때 싸우고 어떻게 화해할까</h4>
                 <p className="text-sm text-gray-300 leading-relaxed">{analysis.conflictAndMakeup}</p>
@@ -1369,7 +1369,7 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
 
             {/* 나의 매력포인트 (배우자 시점) */}
             {analysis.myCharm && (
-              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
                 <p className="text-xs text-violet-400 font-medium mb-2">💜 배우자 눈에 비친 나의 매력</p>
                 <h4 className="text-sm font-bold text-violet-300 mb-3">배우자가 당신에게 끌리는 이유</h4>
                 <div className="bg-white/5 rounded-xl px-4 py-3 border border-white/8">
@@ -1380,7 +1380,7 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
 
             {/* 월별 인연운 차트 */}
             {analysis.monthlyChance && analysis.monthlyChance.length === 12 && (
-              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
                 <p className="text-xs text-amber-400 font-medium mb-1">📅 월별 인연운</p>
                 <h4 className="text-sm font-bold text-amber-300 mb-4">
                   {(() => {
@@ -1412,7 +1412,7 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
 
             {/* 인연 준비도 */}
             {analysis.readiness && (
-              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
                 <p className="text-xs text-amber-400 font-medium mb-1">🌱 인연 준비도</p>
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="text-sm font-bold text-amber-300">지금 당신의 인연 준비 상태</h4>
@@ -1546,7 +1546,7 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
           /* ── 비결제: 실루엣 선공개 + 결제 유도 ── */
           <>
             {/* 흑백 실루엣 이미지 잠금 카드 */}
-            <div className="relative w-full aspect-square rounded-2xl overflow-hidden shadow-xl border border-white/10 bg-[#13131a]">
+            <div className="relative w-full aspect-square rounded-2xl overflow-hidden shadow-xl border border-white/10 bg-[#111118]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={imageUrl}
@@ -1587,7 +1587,7 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
               ].map((item) => (
                 <div
                   key={item.label}
-                  className="relative bg-[#13131a] border border-white/8 rounded-xl px-4 py-3 overflow-hidden cursor-pointer"
+                  className="relative bg-[#111118] border border-white/8 rounded-xl px-4 py-3 overflow-hidden cursor-pointer"
                   onClick={() => setShowModal(true)}
                 >
                   <div className="flex items-center gap-2 mb-1">
@@ -1601,7 +1601,7 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
             </div>
 
             {/* 결제 CTA */}
-            <div className="bg-[#13131a] border-2 border-amber-500/30 rounded-3xl p-6 text-center relative overflow-hidden">
+            <div className="bg-[#111118] border-2 border-amber-500/30 rounded-3xl p-6 text-center relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-amber-900/20 via-transparent to-rose-900/10 pointer-events-none" />
               <div className="relative">
                 <div className="text-4xl mb-2">🔮</div>

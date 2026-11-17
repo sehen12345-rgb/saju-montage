@@ -138,7 +138,7 @@ export default function ResultPage() {
 
   if (!result) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0d0d12]">
+      <div className="min-h-screen flex items-center justify-center bg-[#0a0a10]">
         <div className="text-gray-600 animate-pulse text-base">불러오는 중...</div>
       </div>
     );
@@ -160,10 +160,10 @@ export default function ResultPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0d0d12]">
+    <div className="min-h-screen bg-[#0a0a10]">
       <div className="max-w-md mx-auto px-4 py-5">
         {/* 유저 정보 카드 */}
-        <div className="bg-[#13131a] border border-white/10 rounded-3xl p-5 mb-4">
+        <div className="bg-[#111118] border border-white/10 rounded-3xl p-5 mb-4">
           <div className="flex items-start justify-between mb-1">
             <div className="space-y-0.5">
               <p className="font-black text-white text-base">
@@ -216,7 +216,7 @@ export default function ResultPage() {
                     }`}
                   >
                     {isNew && !isActive && (
-                      <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-red-500 border-2 border-[#0d0d12]" />
+                      <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-red-500 border-2 border-[#0a0a10]" />
                     )}
                     <span className="text-2xl">{tab.emoji}</span>
                     <span className="text-sm font-black">{tab.label}</span>

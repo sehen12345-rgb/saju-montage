@@ -12,7 +12,7 @@ function PaymentFailContent() {
   const isUserCancel = errorCode === "PAY_PROCESS_CANCELED" || errorCode === "USER_CANCEL";
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-[#0d0d12]">
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-[#0a0a10]">
       <div className="max-w-sm w-full text-center space-y-5">
 
         <div className="text-6xl">{isUserCancel ? "🙂" : "😓"}</div>

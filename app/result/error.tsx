@@ -20,7 +20,7 @@ export default function ResultError({
   }, [error]);
 
   return (
-    <div className="min-h-screen bg-[#0d0d12] flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[#0a0a10] flex items-center justify-center px-4">
       <div className="text-center max-w-sm">
         <div className="text-4xl mb-4">⚠️</div>
         <h2 className="text-white font-bold text-lg mb-2">결과 표시 중 오류가 발생했습니다</h2>

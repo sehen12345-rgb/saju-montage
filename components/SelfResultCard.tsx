@@ -63,7 +63,7 @@ function SajuPillarCard({ sajuInfo }: { sajuInfo: SajuInfo }) {
   ];
 
   return (
-    <div className="bg-[#13131a] border border-white/8 rounded-3xl p-4">
+    <div className="bg-[#111118] border border-white/8 rounded-3xl p-4">
       <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">나의 사주팔자</p>
       <div className="grid grid-cols-4 gap-2 mb-2">
         {pillars.map((p) => (
@@ -108,7 +108,7 @@ function OhaengChart({ elementCounts }: { elementCounts: Record<string, number> 
   const total = OHAENG.reduce((s, k) => s + (elementCounts[k] ?? 0), 0) || 1;
 
   return (
-    <div className="bg-[#13131a] border border-white/8 rounded-2xl p-4">
+    <div className="bg-[#111118] border border-white/8 rounded-2xl p-4">
       <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">오행 분포</p>
       <div className="space-y-2">
         {OHAENG.map((k) => {
@@ -418,7 +418,7 @@ export default function SelfResultCard({ analysis, name, gender, intendedProduct
         </div>
 
         {/* ── 무료: 한 줄 요약 ── */}
-        <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+        <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
           <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">✨ 한 줄 사주 요약</p>
           <p className="text-gray-200 leading-relaxed text-sm font-semibold">{analysis.oneLineSummary}</p>
         </div>
@@ -427,7 +427,7 @@ export default function SelfResultCard({ analysis, name, gender, intendedProduct
         {!paid ? (
           <div className="relative rounded-3xl overflow-hidden border border-white/10 shadow-lg">
             {/* 흐린 미리보기 */}
-            <div className="p-5 blur-sm select-none pointer-events-none bg-[#13131a] space-y-3">
+            <div className="p-5 blur-sm select-none pointer-events-none bg-[#111118] space-y-3">
               <div className="bg-white/5 rounded-xl p-4 border border-white/8">
                 <p className="text-xs text-violet-400 mb-1">🧬 타고난 기질</p>
                 <p className="text-sm text-gray-300">강한 의지와 추진력을 타고났으며...</p>
@@ -448,7 +448,7 @@ export default function SelfResultCard({ analysis, name, gender, intendedProduct
               </div>
             </div>
             {/* 잠금 오버레이 */}
-            <div className="absolute inset-0 bg-gradient-to-b from-[#13131a]/20 to-[#13131a]/90 flex flex-col items-center justify-center gap-3 p-6">
+            <div className="absolute inset-0 bg-gradient-to-b from-[#111118]/20 to-[#111118]/90 flex flex-col items-center justify-center gap-3 p-6">
               <div className="w-16 h-16 rounded-full bg-white/10 border-2 border-white/20 flex items-center justify-center text-3xl">🔒</div>
               <p className="text-white font-black text-lg text-center">전체 사주 분석이<br />잠겨있습니다</p>
               <p className="text-gray-400 text-sm text-center">기질·적성·재물운·연애·건강<br/>올해운세·월별 운세 차트 전체 공개</p>
@@ -472,7 +472,7 @@ export default function SelfResultCard({ analysis, name, gender, intendedProduct
 
             {/* ── 심화 섹션 (deepSections 있을 때 우선 표시) ── */}
             {analysis.deepSections && analysis.deepSections.length > 0 ? (
-              <div className="bg-[#13131a] border border-white/8 rounded-2xl px-5">
+              <div className="bg-[#111118] border border-white/8 rounded-2xl px-5">
                 {analysis.deepSections.map((section, i) => (
                   <DeepSectionCard
                     key={i}
@@ -485,7 +485,7 @@ export default function SelfResultCard({ analysis, name, gender, intendedProduct
               <>
                 {/* 타고난 기질 */}
                 {analysis.personality && (
-                  <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+                  <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
                     <p className="text-xs text-violet-400 font-medium mb-2">🧬 타고난 기질</p>
                     <p className="text-sm text-gray-300 leading-relaxed">{analysis.personality}</p>
                   </div>
@@ -493,7 +493,7 @@ export default function SelfResultCard({ analysis, name, gender, intendedProduct
 
                 {/* 강점 3가지 */}
                 {analysis.strengths?.length > 0 && (
-                  <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+                  <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
                     <p className="text-xs text-emerald-400 font-medium mb-3">💪 나의 강점</p>
                     <div className="space-y-2">
                       {analysis.strengths.map((s, i) => (
@@ -525,7 +525,7 @@ export default function SelfResultCard({ analysis, name, gender, intendedProduct
 
                 {/* 직업 적성 */}
                 {analysis.career && (
-                  <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+                  <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
                     <p className="text-xs text-amber-400 font-medium mb-2">💼 직업 적성</p>
                     <p className="text-sm text-gray-300 leading-relaxed">{analysis.career}</p>
                   </div>
@@ -533,7 +533,7 @@ export default function SelfResultCard({ analysis, name, gender, intendedProduct
 
                 {/* 재물운 */}
                 {analysis.wealthFortune && (
-                  <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+                  <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
                     <p className="text-xs text-yellow-400 font-medium mb-2">💰 재물운</p>
                     <p className="text-sm text-gray-300 leading-relaxed">{analysis.wealthFortune}</p>
                   </div>
@@ -541,7 +541,7 @@ export default function SelfResultCard({ analysis, name, gender, intendedProduct
 
                 {/* 연애/결혼 스타일 */}
                 {analysis.loveStyle && (
-                  <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+                  <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
                     <p className="text-xs text-pink-400 font-medium mb-2">💕 연애/결혼 스타일</p>
                     <p className="text-sm text-gray-300 leading-relaxed">{analysis.loveStyle}</p>
                   </div>
@@ -549,7 +549,7 @@ export default function SelfResultCard({ analysis, name, gender, intendedProduct
 
                 {/* 건강 주의 */}
                 {analysis.healthCaution && (
-                  <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+                  <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
                     <p className="text-xs text-teal-400 font-medium mb-2">🏥 건강 주의</p>
                     <p className="text-sm text-gray-300 leading-relaxed">{analysis.healthCaution}</p>
                   </div>
@@ -567,7 +567,7 @@ export default function SelfResultCard({ analysis, name, gender, intendedProduct
 
             {/* 현재 대운 */}
             {analysis.currentDaeun && (
-              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-4">
+              <div className="bg-[#111118] border border-white/8 rounded-2xl p-4">
                 <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-3">🔮 현재 대운</p>
                 <div className="flex items-center gap-4">
                   <div className="w-16 h-16 rounded-2xl bg-violet-500/20 border border-violet-500/40 flex items-center justify-center text-2xl font-black text-violet-300">
@@ -583,7 +583,7 @@ export default function SelfResultCard({ analysis, name, gender, intendedProduct
 
             {/* 월별 운세 바 차트 */}
             {analysis.monthlyFortune?.length === 12 && (
-              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
                 <p className="text-xs text-violet-400 font-medium mb-4">📊 월별 운세</p>
                 <div className="flex items-end gap-1 h-24">
                   {analysis.monthlyFortune.map((v, i) => {
@@ -608,7 +608,7 @@ export default function SelfResultCard({ analysis, name, gender, intendedProduct
 
             {/* 대운 흐름 */}
             {analysis.lifePhases?.length > 0 && (
-              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
                 <p className="text-xs text-amber-400 font-medium mb-4">🗺️ 대운 흐름</p>
                 <div className="space-y-3">
                   {analysis.lifePhases.map((phase, i) => {
@@ -635,7 +635,7 @@ export default function SelfResultCard({ analysis, name, gender, intendedProduct
 
             {/* 행운 키워드 */}
             {analysis.luckyElements?.length > 0 && (
-              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
                 <p className="text-xs text-yellow-400 font-medium mb-3">✨ 행운 키워드</p>
                 <div className="flex flex-wrap gap-2">
                   {analysis.luckyElements.map((el, i) => (
@@ -649,7 +649,7 @@ export default function SelfResultCard({ analysis, name, gender, intendedProduct
 
             {/* 지금 해야 할 행동 */}
             {analysis.actionNow?.length > 0 && (
-              <div className="bg-[#13131a] border border-white/8 rounded-2xl p-5">
+              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
                 <p className="text-xs text-emerald-400 font-medium mb-3">🚀 지금 해야 할 행동</p>
                 <div className="space-y-2">
                   {analysis.actionNow.map((action, i) => (

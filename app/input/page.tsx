@@ -484,16 +484,16 @@ export default function InputPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0d0d12] text-white">
+    <div className="min-h-screen bg-[#0a0a10] text-white">
       <div className="max-w-md mx-auto px-4 py-6">
         {loading ? (
-          <div className="bg-[#13131a] border border-white/10 rounded-3xl shadow-sm p-6">
+          <div className="bg-[#111118] border border-white/10 rounded-3xl shadow-sm p-6">
             <LoadingScreen step={loadingStep} productType={productType} />
           </div>
         ) : (
           <>
             {/* 헤더 카드 */}
-            <div className="bg-[#13131a] border border-white/10 rounded-3xl p-5 mb-4">
+            <div className="bg-[#111118] border border-white/10 rounded-3xl p-5 mb-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className={`w-11 h-11 rounded-2xl bg-gradient-to-br ${meta.color} flex items-center justify-center text-xl shadow-lg`}>
@@ -519,7 +519,7 @@ export default function InputPage() {
               </div>
             )}
 
-            <div className="bg-[#13131a] border border-white/10 rounded-3xl p-5">
+            <div className="bg-[#111118] border border-white/10 rounded-3xl p-5">
               <SajuInputForm onSubmit={handleSubmit} loading={loading} />
             </div>
           </>

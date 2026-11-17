@@ -6,7 +6,7 @@ export const metadata = {
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen bg-[#0d0d12] text-white pb-20">
+    <div className="min-h-screen bg-[#0a0a10] text-white pb-20">
       <div className="max-w-2xl mx-auto px-4 py-8">
         <div className="mb-6">
           <Link href="/" className="text-gray-500 text-sm hover:text-gray-300 transition-colors">
@@ -45,7 +45,7 @@ export default function TermsPage() {
 
           <section>
             <h2 className="text-base font-bold text-white mb-3">제4조 (유료 서비스 및 결제)</h2>
-            <div className="bg-[#13131a] border border-white/10 rounded-2xl p-4 space-y-3 mb-3">
+            <div className="bg-[#111118] border border-white/10 rounded-2xl p-4 space-y-3 mb-3">
               <div>
                 <p className="font-semibold text-white mb-1">상품 및 가격</p>
                 <div className="text-gray-400 space-y-1">

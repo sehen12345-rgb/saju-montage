@@ -6,7 +6,7 @@ export const metadata = {
 
 export default function RefundPage() {
   return (
-    <div className="min-h-screen bg-[#0d0d12] text-white pb-20">
+    <div className="min-h-screen bg-[#0a0a10] text-white pb-20">
       <div className="max-w-2xl mx-auto px-4 py-8">
         <div className="mb-6">
           <Link href="/" className="text-gray-500 text-sm hover:text-gray-300 transition-colors">

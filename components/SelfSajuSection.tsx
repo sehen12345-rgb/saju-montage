@@ -46,7 +46,7 @@ export default function SelfSajuSection({ selfSaju, name, isPaid }: Props) {
   const totalElements = Object.values(s.elementCounts).reduce((a, b) => a + b, 0) || 1;
 
   return (
-    <div className="bg-[#13131a] border border-indigo-500/20 rounded-2xl overflow-hidden">
+    <div className="bg-[#111118] border border-indigo-500/20 rounded-2xl overflow-hidden">
       {/* Header */}
       <div className="px-4 py-3 bg-gradient-to-r from-indigo-500/10 to-violet-500/10 border-b border-white/5">
         <div className="flex items-center gap-2">
@@ -315,7 +315,7 @@ export default function SelfSajuSection({ selfSaju, name, isPaid }: Props) {
                   <p className="text-[10px] text-gray-400">한 번 마음을 주면 깊게...</p>
                 </div>
               </div>
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#13131a]/80 flex items-end justify-center pb-3">
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#111118]/80 flex items-end justify-center pb-3">
                 <p className="text-[10px] text-gray-500">🔒 결제 후 강점·직업·연애·재물·올해운세 전체 공개</p>
               </div>
             </div>

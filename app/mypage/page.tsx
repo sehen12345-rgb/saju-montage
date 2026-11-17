@@ -82,20 +82,20 @@ export default function MyPage() {
 
   if (status === "loading") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0d0d12]">
+      <div className="min-h-screen flex items-center justify-center bg-[#0a0a10]">
         <div className="w-8 h-8 rounded-full border-4 border-amber-200 border-t-amber-500 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen px-4 py-8 bg-[#0d0d12]">
+    <div className="min-h-screen px-4 py-8 bg-[#0a0a10]">
       <div className="max-w-md mx-auto space-y-5">
 
         <h1 className="text-xl font-black text-white">마이페이지</h1>
 
         {/* 계정 */}
-        <div className="bg-[#13131a] border border-white/10 rounded-3xl p-5">
+        <div className="bg-[#111118] border border-white/10 rounded-3xl p-5">
           {session ? (
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-full bg-gradient-to-br from-yellow-400 to-orange-400 flex items-center justify-center text-gray-900 text-2xl font-black shadow-md">
@@ -146,7 +146,7 @@ export default function MyPage() {
 
         {/* 저장된 결과 */}
         {session && (
-          <div className="bg-[#13131a] border border-white/10 rounded-3xl p-5 space-y-4">
+          <div className="bg-[#111118] border border-white/10 rounded-3xl p-5 space-y-4">
             <div className="flex items-center justify-between">
               <p className="text-xs font-semibold text-yellow-400 uppercase tracking-wider">저장된 분석 결과</p>
               <span className="text-xs text-gray-500">{savedResults.length}개</span>
@@ -215,7 +215,7 @@ export default function MyPage() {
         )}
 
         {/* 결제 내역 */}
-        <div className="bg-[#13131a] border border-white/10 rounded-3xl p-5 space-y-3">
+        <div className="bg-[#111118] border border-white/10 rounded-3xl p-5 space-y-3">
           <div className="flex items-center justify-between">
             <p className="text-xs font-semibold text-yellow-400 uppercase tracking-wider">결제 내역</p>
             <span className="text-xs text-gray-500">{paidRecords.length}건</span>

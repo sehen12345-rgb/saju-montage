@@ -32,7 +32,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko">
-      <body className="min-h-screen bg-[#0d0d12]">
+      <body className="min-h-screen bg-[#0a0a10]">
         {/* 구버전 캐시 강제 초기화 */}
         <Script id="cache-bust" strategy="beforeInteractive">{`
           (function(){

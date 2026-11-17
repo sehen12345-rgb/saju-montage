@@ -85,7 +85,7 @@ function PaymentSuccessContent() {
 
   if (status === "confirming") {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-[#0d0d12]">
+      <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-[#0a0a10]">
         <div className="max-w-sm w-full text-center space-y-6">
           <div className="relative w-20 h-20 mx-auto">
             <div className="absolute inset-0 rounded-full border-4 border-yellow-900" />
@@ -103,7 +103,7 @@ function PaymentSuccessContent() {
 
   if (status === "done") {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-[#0d0d12]">
+      <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-[#0a0a10]">
         <div className="max-w-sm w-full text-center space-y-5">
           <div className="relative w-24 h-24 mx-auto">
             <div className="absolute inset-0 rounded-full bg-yellow-400/20 animate-ping" />
@@ -125,7 +125,7 @@ function PaymentSuccessContent() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-[#0d0d12]">
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-[#0a0a10]">
       <div className="max-w-sm w-full text-center space-y-6">
         <div className="text-6xl">😓</div>
         <div>

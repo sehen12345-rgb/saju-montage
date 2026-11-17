@@ -8,11 +8,11 @@ export default function Footer() {
   if (pathname?.startsWith("/payment") || pathname === "/login") return null;
 
   return (
-    <footer className="border-t border-white/5 bg-[#0d0d12] py-8 mt-4">
+    <footer className="border-t border-white/[0.04] bg-[#0a0a10] py-8 mt-4">
       <div className="max-w-md mx-auto px-4 space-y-4">
         <div className="flex items-center gap-2">
-          <span className="text-yellow-400 text-lg">🔮</span>
-          <span className="font-black text-white text-sm">내님은누구</span>
+          <span className="text-amber-400/60 text-lg">☯</span>
+          <span className="font-black text-white/90 text-sm">내님은누구</span>
         </div>
         <p className="text-[11px] text-gray-600 leading-relaxed">
           AI 사주팔자 분석 서비스 · 오락 및 참고 목적으로 제공되며 실제 미래를 예측하지 않습니다.<br />

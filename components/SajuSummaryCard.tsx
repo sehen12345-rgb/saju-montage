@@ -127,7 +127,7 @@ export default function SajuSummaryCard({ sajuInfo, name }: Props) {
 
       {/* 일간 캐릭터 */}
       {traits && (
-        <div className="bg-[#0d0d12] border border-white/8 rounded-2xl p-4 space-y-2.5">
+        <div className="bg-[#0a0a10] border border-white/8 rounded-2xl p-4 space-y-2.5">
           <div className="flex items-start gap-2.5">
             <div className={`shrink-0 w-10 h-10 rounded-xl flex items-center justify-center text-xl font-black border ${ELEMENT_META[(GAN_ELEMENT[dayMaster] ?? "").split("(")[0]]?.bgColor ?? "bg-white/5 border-white/10"}`}>
               {dayMaster}
@@ -159,7 +159,7 @@ export default function SajuSummaryCard({ sajuInfo, name }: Props) {
       )}
 
       {/* 오행 분포 */}
-      <div className="bg-[#0d0d12] border border-white/8 rounded-2xl p-4">
+      <div className="bg-[#0a0a10] border border-white/8 rounded-2xl p-4">
         <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-3">오행(五行) 분포</p>
         <div className="space-y-1.5">
           {sorted.map(([elem, cnt]) => {
