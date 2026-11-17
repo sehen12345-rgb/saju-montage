@@ -30,8 +30,11 @@ async function generateEnemyNarrativeWithClaude(
     const genderLabel = gender === "male" ? "남성" : "여성";
     const hourStr = birthHour >= 0 ? `${birthHour}시` : "시간 모름";
 
-    const prompt = `당신은 사주명리학 전문가이자 MZ 감성의 콘텐츠 작가입니다.
-아래 만세력 분석 데이터를 근거로 웬수(악연)의 서술 텍스트만 작성하세요.
+    const systemMsg = `당신은 35년 경력 사주명리학 전문가이자 MZ 세대 감성의 콘텐츠 작가입니다.
+만세력 데이터를 근거로 웬수(악연)의 서술 텍스트를 작성합니다.
+반드시 순수 JSON만 응답하세요 (마크다운 코드블록, 설명 텍스트 금지).`;
+
+    const prompt = `아래 만세력 분석 데이터를 근거로 웬수(악연)의 서술 텍스트만 작성하세요.
 유형/관계/피해 영역/시기/월별 위험도/주의·실천 가이드는 만세력에서 이미 도출되었습니다.
 
 [필수 문체 지침 — 이것이 가장 중요합니다]
@@ -75,7 +78,9 @@ ${manseryeokContext}
 
     const response = await client.messages.create({
       model: "claude-sonnet-4-6",
-      max_tokens: 2500,
+      max_tokens: 3500,
+      temperature: 0.85,
+      system: systemMsg,
       messages: [{ role: "user", content: prompt }],
     });
 
@@ -83,7 +88,18 @@ ${manseryeokContext}
     const match = text.match(/\{[\s\S]*\}/);
     if (!match) return null;
 
-    return JSON.parse(match[0]) as Partial<EnemyAnalysis>;
+    // JSON 잘림 복구 (토큰 부족으로 중간에 잘렸을 때)
+    let jsonStr = match[0];
+    try {
+      return JSON.parse(jsonStr) as Partial<EnemyAnalysis>;
+    } catch {
+      const repaired = jsonStr
+        .replace(/,\s*"[^"]*":\s*"[^"]*$/, '"')
+        .replace(/,\s*"[^"]*":\s*\{[^}]*$/, '')
+        .replace(/,\s*\[[^\]]*$/, '')
+        .replace(/,\s*$/, '') + "}";
+      try { return JSON.parse(repaired) as Partial<EnemyAnalysis>; } catch { return null; }
+    }
   } catch (err) {
     console.error("Claude enemy narrative error:", err);
     return null;

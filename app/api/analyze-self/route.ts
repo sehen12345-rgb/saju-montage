@@ -36,8 +36,14 @@ async function generateSelfNarrativeWithClaude(
 
     const currentAge = new Date().getFullYear() - birthYear;
 
-    const prompt = `당신은 35년 경력 사주명리 전문가의 노하우로 훈련된 AI입니다.
-아래 만세력 데이터를 바탕으로 ${name}님(만 ${currentAge}세) 본인의 사주 분석을 작성하세요.
+    const currentYear = new Date().getFullYear(); // 2026
+
+    const systemMsg = `당신은 35년 경력 사주명리학 전문가이자 MZ 세대 감성의 콘텐츠 작가입니다.
+만세력 데이터를 근거로 본인 사주의 서술 텍스트를 작성합니다.
+현재 연도는 ${currentYear}년입니다.
+반드시 순수 JSON만 응답하세요 (마크다운 코드블록, 설명 텍스트 금지).`;
+
+    const prompt = `아래 만세력 데이터를 바탕으로 ${name}님(만 ${currentAge}세) 본인의 사주 분석을 작성하세요.
 
 [★ 가장 중요한 문체 지침]
 - 친한 언니/형이 솔직하게 털어놓는 말투. 딱딱한 보고서 절대 금지.
@@ -103,6 +109,8 @@ deepSections는 반드시 아래 순서대로 정확히 8개. category는 반드
     const response = await client.messages.create({
       model: "claude-sonnet-4-6",
       max_tokens: 6000,
+      temperature: 0.85,
+      system: systemMsg,
       messages: [{ role: "user", content: prompt }],
     });
 
@@ -110,14 +118,23 @@ deepSections는 반드시 아래 순서대로 정확히 8개. category는 반드
     const match = text.match(/\{[\s\S]*\}/);
     if (!match) return null;
 
-    // JSON이 잘렸을 경우 복구 시도
+    // JSON 잘림 복구 (토큰 부족으로 중간에 잘렸을 때)
     let jsonStr = match[0];
     try {
       return JSON.parse(jsonStr);
     } catch {
-      // 마지막 완전한 배열/객체까지만 잘라서 재시도
-      const truncated = jsonStr.replace(/,\s*[\[\{][^\]\}]*$/, "").replace(/,\s*"[^"]*":\s*[^,}\]]*$/, "") + "]}";
-      try { return JSON.parse(truncated); } catch { return null; }
+      // 열린 문자열/객체 닫기 시도
+      const repaired = jsonStr
+        .replace(/,\s*"[^"]*":\s*"[^"]*$/, '"')  // 잘린 key-value
+        .replace(/,\s*"[^"]*":\s*\{[^}]*$/, '')   // 잘린 object
+        .replace(/,\s*\[[^\]]*$/, '')              // 잘린 array
+        .replace(/,\s*$/, '');
+      // deepSections가 잘렸을 수 있으므로 ]} 로 닫기
+      const closed = repaired.endsWith("]") ? repaired + "}" : repaired + "]}";
+      try { return JSON.parse(closed); } catch {
+        // 최후 시도: 그냥 } 로 닫기
+        try { return JSON.parse(repaired + "}"); } catch { return null; }
+      }
     }
   } catch (err) {
     console.error("Claude self narrative error:", err);
