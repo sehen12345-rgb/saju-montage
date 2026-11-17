@@ -4,71 +4,83 @@ import { isKeyPlaceholder } from "@/lib/demo";
 import { getSajuSeed } from "@/lib/prompts";
 import type { SajuInfo } from "@/lib/types";
 
-// ── 씨드 기반 촬영 환경 변주 (같은 사주 = 항상 같은 분위기) ──────────
-// 2026 최신 기법: 구체적 카메라 스펙 + 조명 유형 명시 → 리얼리즘 극대화
-const LIGHTING_STYLES = [
-  "soft butterfly lighting, seamless light gray studio background, even fill light",
-  "warm Rembrandt lighting, subtle shadow triangle on cheek, deep charcoal background",
-  "clean high-key studio lighting, pure white background, bright airy mood",
-  "gentle natural window light diffused through sheer curtain, warm cream background",
-  "golden hour rim light from behind, soft front fill, outdoor blurred bokeh",
-  "professional beauty dish lighting, silver reflector fill, neutral gradient background",
+// ── GPT Image 2.6 최적화 프롬프트 (자연어 서술형) ──────────────────
+// GPT Image 모델은 SD/FLUX와 달리 자연어 설명이 더 효과적
+const MOOD_STYLES = [
+  { lighting: "soft natural window light filtering through sheer curtains", bg: "a clean, airy room with warm cream walls" },
+  { lighting: "warm golden hour sunlight gently touching the face", bg: "a blurred outdoor scene with soft bokeh" },
+  { lighting: "professional studio lighting with a soft beauty dish", bg: "a smooth neutral gray gradient" },
+  { lighting: "gentle morning light creating soft shadows", bg: "a minimal white backdrop" },
+  { lighting: "warm diffused light from the side", bg: "a cozy indoor setting with soft focus" },
+  { lighting: "clean bright daylight", bg: "a simple beige studio background" },
 ];
 
-const SHOT_STYLES = [
-  "chest-up portrait, subject facing camera directly, slight natural head tilt",
-  "head and shoulders, three-quarter angle, confident posture, sharp focus on eyes",
-  "bust-length portrait, symmetrical frontal composition, strong eye contact",
-  "close chest-up shot, slight chin-down angle, intense direct gaze into lens",
+const POSE_STYLES = [
+  "looking directly at the camera with a slight natural head tilt, chest-up framing",
+  "facing the camera at a gentle three-quarter angle, head and shoulders visible",
+  "gazing straight into the lens with a calm, confident expression, close-up framing",
+  "slightly tilting the chin down while maintaining warm eye contact, bust-length portrait",
 ];
 
 const EXPRESSION_STYLES = [
-  "natural relaxed expression, soft parted lips, calm confident look directly at camera",
-  "warm genuine smile, crow's feet at corners of eyes, approachable friendly expression",
-  "composed serene expression, subtle closed-mouth smile, thoughtful intelligent gaze",
-  "quiet charismatic look, eyes with natural depth and warmth, slight asymmetric smile",
+  "a natural, relaxed expression with slightly parted lips and calm, confident eyes",
+  "a warm, genuine smile that reaches the eyes, friendly and approachable",
+  "a composed, serene look with a subtle closed-mouth smile and thoughtful gaze",
+  "a quietly charismatic expression with natural depth in the eyes",
 ];
 
-// 피부 연령대 — 사주 씨드로 결정 (20대 초반~30대 중반 범위)
-const AGE_DESCRIPTORS_F = ["early 20s", "mid 20s", "late 20s", "early 30s"];
-const AGE_DESCRIPTORS_M = ["mid 20s", "late 20s", "early 30s", "mid 30s"];
-
-function buildFinalPrompt(spouseGender: string, analysisPrompt: string, seed: number): string {
+/**
+ * GPT Image 2.6 최적화 프롬프트 빌더.
+ * - 자연어 서술형 (comma-separated tags 대신 문장형)
+ * - 카메라 스펙 제거 (GPT Image는 technical specs 무시)
+ * - 핵심 외모 묘사 + 분위기에 집중
+ */
+function buildGPTImagePrompt(spouseGender: string, analysisPrompt: string, seed: number): string {
   const isFemale = spouseGender === "woman";
-  const ageArr   = isFemale ? AGE_DESCRIPTORS_F : AGE_DESCRIPTORS_M;
-  const age      = ageArr[seed % ageArr.length];
-
-  // 2026 권장: 성별·나이·민족을 앞에 명시 → 모델이 얼굴 구조를 먼저 확정
-  const subject = isFemale
-    ? `RAW photo, portrait of a beautiful ${age} Korean woman`
-    : `RAW photo, portrait of a handsome ${age} Korean man`;
-
-  const lighting   = LIGHTING_STYLES[seed % LIGHTING_STYLES.length];
-  const shot       = SHOT_STYLES[(seed >> 1) % SHOT_STYLES.length];
+  const mood = MOOD_STYLES[seed % MOOD_STYLES.length];
+  const pose = POSE_STYLES[(seed >> 1) % POSE_STYLES.length];
   const expression = EXPRESSION_STYLES[(seed >> 2) % EXPRESSION_STYLES.length];
 
-  // 피부 디테일: "visible pores", "natural skin imperfections" → uncanny valley 제거
-  const skinDetail = isFemale
-    ? "flawless yet natural Korean beauty skin, subtle natural makeup, visible skin pores, soft subsurface scattering, realistic skin luminosity, natural slight skin imperfections"
-    : "healthy natural skin, light stubble or clean-shaven, visible pores, realistic skin texture, natural skin tone variation, subsurface scattering";
+  const subject = isFemale
+    ? "A photorealistic portrait of a young Korean woman"
+    : "A photorealistic portrait of a young Korean man";
 
-  // 카메라 스펙 명시 → 2026 리서치 기준 최고 리얼리즘 달성
-  const cameraSpec = "Canon EOS R5, 85mm f/1.4 lens, shallow depth of field, creamy bokeh background, ISO 100, 1/125s";
+  const skinNote = isFemale
+    ? "Natural, healthy Korean skin with minimal makeup — visible pores and subtle skin texture for realism."
+    : "Natural, healthy skin with realistic texture — slight stubble or clean-shaven, visible pores.";
 
-  // 눈 디테일 강화 (AI 인물화의 핵심 약점)
-  const eyeDetail = "ultra-sharp eyes, realistic iris texture with subtle limbal ring, natural catchlight reflection, depth in pupils, natural eyelashes";
+  return `${subject}, ${pose}. ${expression}.
+
+Face details: ${analysisPrompt}
+
+${skinNote} Sharp, detailed eyes with natural iris texture and clear catchlight reflections.
+
+The person is lit by ${mood.lighting}, set against ${mood.bg}. The image should look like a high-end portrait photograph — photorealistic, not illustrated or rendered. Shallow depth of field with the face in perfect focus.`;
+}
+
+/**
+ * Pollinations/FLUX용 프롬프트 (keyword-heavy 태그 형식)
+ */
+function buildFluxPrompt(spouseGender: string, analysisPrompt: string, seed: number): string {
+  const isFemale = spouseGender === "woman";
+  const mood = MOOD_STYLES[seed % MOOD_STYLES.length];
+  const pose = POSE_STYLES[(seed >> 1) % POSE_STYLES.length];
+  const expression = EXPRESSION_STYLES[(seed >> 2) % EXPRESSION_STYLES.length];
+
+  const subject = isFemale
+    ? "RAW photo, portrait of a Korean woman in her 20s"
+    : "RAW photo, portrait of a Korean man in his late 20s";
 
   return [
     subject,
     analysisPrompt,
     expression,
-    shot,
-    lighting,
-    skinDetail,
-    eyeDetail,
-    cameraSpec,
-    "professional headshot quality, high-end beauty editorial, 8K ultra-detailed",
-    "photorealistic, hyperrealistic, cinematographic",
+    pose,
+    mood.lighting,
+    "natural skin texture, visible pores, realistic skin",
+    "sharp detailed eyes, natural iris texture, catchlight",
+    "Canon 85mm f/1.4, shallow depth of field, bokeh",
+    "professional portrait, photorealistic, high detail",
   ].join(", ");
 }
 
@@ -263,17 +275,20 @@ export async function POST(req: NextRequest) {
     const info = sajuInfo as SajuInfo;
     // _randomSeed가 있으면 재생성 요청 → 다른 이미지 생성
     const seed = _randomSeed ?? getSajuSeed(info, spouseGender);
-    const finalPrompt = buildFinalPrompt(spouseGender, prompt, seed);
 
-    console.log("Image prompt:", finalPrompt);
+    // GPT Image용 (자연어 서술형) / Pollinations용 (태그 형식) 프롬프트 분리
+    const gptPrompt = buildGPTImagePrompt(spouseGender, prompt, seed);
+    const fluxPrompt = buildFluxPrompt(spouseGender, prompt, seed);
+
+    console.log("GPT Image prompt:", gptPrompt.slice(0, 200));
     console.log("Seed:", seed);
 
-    // ── 1순위: OpenAI gpt-image-1 (GPT-4o 네이티브, 최고품질) ──
+    // ── 1순위: OpenAI GPT Image (최고품질) ──
     // 모델당 15s timeout → 최대 2회 시도 = 30s, Pollinations 25s → 총 최대 55s < 60s
     if (!isKeyPlaceholder(process.env.OPENAI_API_KEY)) {
-      // 최신순: gpt-image-2.6-flare (7x faster, 2026.11), sunburst (고품질), gpt-image-1 (안정)
       const imageModels = ["gpt-image-2.6-flare", "gpt-image-2.6-sunburst", "gpt-image-1"];
-      const trimmedPrompt = finalPrompt.length > 1000 ? finalPrompt.slice(0, 1000) : finalPrompt;
+      // GPT Image는 긴 자연어 설명에 강함 — 1500자까지 허용
+      const trimmedPrompt = gptPrompt.length > 1500 ? gptPrompt.slice(0, 1500) : gptPrompt;
       const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
       for (const imgModel of imageModels) {
@@ -319,7 +334,7 @@ export async function POST(req: NextRequest) {
 
     // ── 2순위: Pollinations.ai (완전 무료, 키 불필요) ────
     try {
-      const imageUrl = await generateWithPollinations(finalPrompt, seed);
+      const imageUrl = await generateWithPollinations(fluxPrompt, seed);
       return NextResponse.json({ imageUrl });
     } catch (pollinationsErr) {
       console.warn("Pollinations 실패:", pollinationsErr);
