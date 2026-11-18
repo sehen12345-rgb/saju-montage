@@ -83,19 +83,50 @@ export function deriveJob(d: ManseryeokData): string {
   return `${primary} (보조: ${secondary})`;
 }
 
-/** 취미 — 일간 오행 + dominant 오행 */
+/** 취미 — 일지(배우자궁) 기반 + 일간 오행 보조 */
 export function deriveHobbies(d: ManseryeokData): string[] {
-  const ELEMENT_HOBBIES: Record<string, string[]> = {
-    木: ["등산", "독서", "원예"],
-    火: ["여행", "공연 관람", "댄스"],
-    土: ["요리", "도예", "캠핑"],
-    金: ["악기 연주", "수집", "운동"],
-    水: ["수영", "사진", "영화 감상"],
+  // 일지별 취미 풀 (배우자궁이 취미 성향 결정)
+  const DAYJI_HOBBIES: Record<string, string[]> = {
+    자: ["수영", "낚시", "야경 산책", "음악 감상", "새벽 독서"],
+    축: ["요리", "텃밭 가꾸기", "인테리어", "헬스", "재테크"],
+    인: ["등산", "격투기", "여행", "드라이브", "익스트림 스포츠"],
+    묘: ["피아노", "수채화", "카페 탐방", "꽃꽂이", "빈티지 쇼핑"],
+    진: ["골프", "사진", "요리", "정원 가꾸기", "드라이브"],
+    사: ["패션 스타일링", "클래식 음악", "독서", "박물관 관람", "뷰티"],
+    오: ["댄스", "노래", "러닝", "소셜 파티", "여행"],
+    미: ["미술·공예", "글쓰기", "동물 돌봄", "악기 연주", "원예"],
+    신: ["여행", "코딩·테크", "격투기", "투자", "독서"],
+    유: ["와인", "미술관", "피아노", "요가", "뷰티 루틴"],
+    술: ["등산", "캠핑", "반려동물", "바비큐", "격투기"],
+    해: ["음악 감상", "수영", "철학 독서", "창작 글쓰기", "명상"],
   };
-  const set = new Set<string>();
-  ELEMENT_HOBBIES[d.elements.dayElement]?.forEach(h => set.add(h));
-  ELEMENT_HOBBIES[d.elements.strongest]?.forEach(h => set.add(h));
-  return Array.from(set).slice(0, 3);
+  // 오행별 보조 취미 (일간 오행으로 추가 뽑기)
+  const ELEMENT_EXTRA: Record<string, string[]> = {
+    木: ["원예", "요가", "하이킹"],
+    火: ["공연 관람", "춤", "페스티벌"],
+    土: ["도예", "캠핑", "베이킹"],
+    金: ["클라이밍", "수집", "와인 테이스팅"],
+    水: ["스쿠버다이빙", "영화 감상", "명상"],
+  };
+  const dayJi = d.sajuInfo.dayPillar?.[1] ?? "";
+  const pool = DAYJI_HOBBIES[dayJi] ?? ["독서", "음악", "여행"];
+  const extra = ELEMENT_EXTRA[d.elements.dayElement] ?? [];
+
+  // seed로 셔플해서 매번 다른 조합
+  const seed = (d.sajuInfo.yearPillar + d.sajuInfo.monthPillar + d.sajuInfo.dayPillar + d.sajuInfo.hourPillar)
+    .split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+  const shuffled = [...pool].sort((a, b) => {
+    const ha = a.charCodeAt(0) * 31 + seed;
+    const hb = b.charCodeAt(0) * 31 + seed;
+    return (ha % 97) - (hb % 97);
+  });
+  const result = shuffled.slice(0, 2);
+  // 3번째는 오행 보조에서 중복 아닌 것 추가
+  for (const h of extra) {
+    if (!result.includes(h)) { result.push(h); break; }
+  }
+  if (result.length < 3) result.push(shuffled[2] ?? "독서");
+  return result;
 }
 
 // ─────────────────────────────────────────────────────────────
