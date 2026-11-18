@@ -324,12 +324,33 @@ export function deriveOneLineCompatibility(d: ManseryeokData): string {
   const dayBranch = d.sajuInfo.dayPillar.charAt(1);
   const dayBranchElem = jiElement(dayBranch);
   const dayElem = d.elements.dayElement;
+  const top = topSipShin(d.sipShin, 1)[0];
 
-  if (d.innerHapChung.ganHapCount >= 1) return "끊을 수 없는 운명의 끈으로 이어진 인연";
-  if (isSaeng(dayBranchElem, dayElem)) return "곁에 있을수록 서로를 빛내주는 상생의 인연";
-  if (d.innerHapChung.samhapElements.length > 0) return "시간이 지날수록 더 단단해지는 인연";
-  if (d.innerHapChung.spousePalaceClash) return "부딪치며 깊어지는 강렬한 인연";
-  return "잔잔하지만 오래 가는 신뢰의 인연";
+  if (d.innerHapChung.ganHapCount >= 1 && d.innerHapChung.yukhapCount >= 1)
+    return "전생부터 약속한 듯, 끊을 수 없는 운명의 쌍끈 인연";
+  if (d.innerHapChung.ganHapCount >= 1)
+    return "보이지 않는 실로 이어진 운명적 소울메이트";
+  if (isSaeng(dayBranchElem, dayElem) && d.elements.isSinGang)
+    return "서로의 부족함을 채워주며 함께 빛나는 상생의 인연";
+  if (isSaeng(dayBranchElem, dayElem))
+    return "곁에 있을수록 편안해지는 자연스러운 상생 인연";
+  if (d.innerHapChung.samhapElements.length > 0 && top === "정관")
+    return "존경과 신뢰로 단단해지는 정석적인 인연";
+  if (d.innerHapChung.samhapElements.length > 0)
+    return "시간이 약이 되는, 갈수록 깊어지는 인연";
+  if (d.innerHapChung.spousePalaceClash && d.sipShin.상관 >= 2)
+    return "불꽃처럼 타오르다 한순간에 녹아드는 강렬한 인연";
+  if (d.innerHapChung.spousePalaceClash)
+    return "부딪칠수록 깊어지는 밀당 본능의 인연";
+  if (isGeuk(dayElem, dayBranchElem))
+    return "정반대라서 끌리는 자석 같은 인연";
+  if (top === "식신" || top === "상관")
+    return "함께 있으면 웃음이 끊이지 않는 활력 인연";
+  if (top === "정인" || top === "편인")
+    return "말 안 해도 통하는 지적 교감의 인연";
+  if (top === "편재" || top === "정재")
+    return "함께하면 풍요로워지는 복덩이 인연";
+  return "잔잔하지만 한결같은 신뢰의 인연";
 }
 
 export function deriveCharacteristics(d: ManseryeokData): string[] {
@@ -338,19 +359,27 @@ export function deriveCharacteristics(d: ManseryeokData): string[] {
 }
 
 // ─────────────────────────────────────────────────────────────
-// 좋아하는 것 (음식/음악/영화/장소) — 일간 오행 기반
+// 좋아하는 것 (음식/음악/영화/장소) — 일지(배우자궁) 기반
 // ─────────────────────────────────────────────────────────────
 
-const FAVORITE_BY_ELEMENT: Record<string, SajuAnalysis["favoriteThings"]> = {
-  木: { food: "샐러드·비건·신선한 채소 중심",   music: "어쿠스틱·재즈·인디",        movie: "예술 영화·다큐멘터리",   place: "공원·식물원·산책로" },
-  火: { food: "매콤한 한식·이국 요리·바비큐",   music: "K-pop·EDM·라이브 무대",     movie: "로맨스·뮤지컬·드라마",   place: "활기찬 거리·페스티벌·핫플" },
-  土: { food: "한정식·집밥·따뜻한 국물 요리",   music: "발라드·OST·잔잔한 클래식",  movie: "가족 드라마·휴먼",       place: "전통 카페·한옥·고즈넉한 마을" },
-  金: { food: "고급 다이닝·정제된 코스 요리",   music: "클래식·재즈·J-pop",         movie: "스릴러·느와르·미스터리", place: "갤러리·미술관·디자인 호텔" },
-  水: { food: "해산물·일식·아시안 누들",         music: "Lo-fi·앰비언트·시티팝",     movie: "SF·예술 다큐·독립영화",  place: "바닷가·도서관·재즈바" },
+const FAVORITE_BY_JIJI: Record<string, SajuAnalysis["favoriteThings"]> = {
+  자: { food: "해산물·라멘·새벽 포장마차",           music: "Lo-fi·시티팝·재즈",           movie: "SF·다크 판타지·미스터리",       place: "바닷가·재즈바·야경 명소" },
+  축: { food: "한정식·집밥·따뜻한 국물 요리",         music: "발라드·OST·잔잔한 피아노곡",   movie: "가족 드라마·휴먼 다큐",         place: "전통 한옥·카페·고즈넉한 마을" },
+  인: { food: "매운 떡볶이·이국 길거리음식·바비큐",   music: "힙합·락·EDM",                  movie: "액션·어드벤처·마블 시리즈",     place: "산속 펜션·테마파크·해외 여행지" },
+  묘: { food: "파스타·브런치·디저트 카페",             music: "어쿠스틱·인디·뉴에이지",       movie: "로맨스·예술 영화·지브리",       place: "숨은 카페·미술관·꽃집" },
+  진: { food: "고기구이·해장국·한우 오마카세",         music: "트로트·클래식·국악 퓨전",      movie: "사극·법정 드라마·전쟁 영화",    place: "골프장·와이너리·전통 시장" },
+  사: { food: "고급 다이닝·코스 요리·와인 페어링",     music: "K-pop·클럽 뮤직·라이브 무대",  movie: "뮤지컬 영화·패션 다큐·코미디",  place: "핫플레이스·루프탑 바·페스티벌" },
+  오: { food: "매콤한 한식·불고기·양꼬치",             music: "댄스팝·라틴·트렌디 K-pop",     movie: "로맨틱 코미디·뮤지컬·리얼리티", place: "번화가·콘서트장·SNS 맛집" },
+  미: { food: "비건·유기농·건강 도시락",               music: "뉴에이지·명상 음악·보사노바",  movie: "독립 영화·동물 다큐·힐링물",    place: "식물원·동물보호소·소규모 갤러리" },
+  신: { food: "스테이크·스시 오마카세·위스키",          music: "재즈·클래식·J-pop",            movie: "스릴러·느와르·범죄 다큐",       place: "디자인 호텔·미술관·와인바" },
+  유: { food: "정갈한 일식·정통 프렌치·티 코스",       music: "클래식·피아노곡·재즈 보컬",    movie: "심리극·미스터리·유럽 영화",     place: "갤러리·북카페·앤틱 숍" },
+  술: { food: "캠핑 바비큐·수제버거·짬뽕",             music: "록·포크·군가풍 발라드",        movie: "전쟁 영화·의리 느와르·스포츠",  place: "캠핑장·산길·로컬 맛집" },
+  해: { food: "해산물 샤브샤브·아시안 누들·간장게장",   music: "앰비언트·Lo-fi·시네마 OST",    movie: "판타지·예술 다큐·철학 영화",    place: "도서관·해변 카페·명상 센터" },
 };
 
 export function deriveFavoriteThings(d: ManseryeokData): SajuAnalysis["favoriteThings"] {
-  return FAVORITE_BY_ELEMENT[d.elements.dayElement] ?? FAVORITE_BY_ELEMENT.土;
+  const dayJi = d.sajuInfo.dayPillar?.[1] ?? "";
+  return FAVORITE_BY_JIJI[dayJi] ?? FAVORITE_BY_JIJI.축;
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -371,14 +400,40 @@ export function deriveCaution(d: ManseryeokData): string[] {
   if (d.elements.weakest === "金" || d.elements.weakest === "水") {
     out.push(`${d.elements.weakest} 기운이 부족해 결단/정리가 늦어질 수 있으니, 인연도 늘 점검과 정돈이 필요합니다.`);
   }
-  while (out.length < 3) {
+  // 조건별 추가 주의사항 (다양화)
+  const dayJi = d.sajuInfo.dayPillar?.[1] ?? "";
+  if (out.length < 3 && (d.sipShin.편재 >= 2))
+    out.push("편재가 강해 새로운 만남에 쉽게 끌리는 경향이 있으니, 현재 인연에 집중하는 연습이 필요합니다.");
+  if (out.length < 3 && (d.sipShin.편인 >= 2))
+    out.push("편인이 강해 혼자만의 세계에 빠지기 쉬우니, 상대에게 감정을 표현하는 연습이 중요합니다.");
+  if (out.length < 3 && d.elements.isSinGang)
+    out.push("신강 사주라 자기 주장이 뚜렷해, 상대 의견을 먼저 들으려는 자세가 인연의 질을 높입니다.");
+  if (out.length < 3 && !d.elements.isSinGang)
+    out.push("신약 사주라 주변 영향에 흔들리기 쉬우니, 자기 기준을 세우고 인연을 판단하세요.");
+  const JIJI_CAUTION: Record<string, string> = {
+    자: "밤에 감정이 깊어지는 타입이니, 새벽 감성에 휩쓸려 보내는 연락은 한 번 더 생각하세요.",
+    축: "익숙함에 안주하다 새로운 인연의 신호를 놓칠 수 있으니, 가끔은 낯선 자리에도 나가보세요.",
+    인: "첫 만남의 임팩트에 약해 썸만 타다 끝나기 쉬우니, 꾸준히 연락하는 습관이 중요합니다.",
+    묘: "이상형 기준이 높아 현실의 좋은 사람을 놓칠 수 있으니, 완벽보다 편안함을 기준으로 보세요.",
+    진: "고집이 셀 때가 있어 사소한 의견 충돌이 큰 싸움으로 번질 수 있으니, 양보의 타이밍을 아세요.",
+    사: "관계에서 주도권을 쥐려는 경향이 있으니, 때로는 상대에게 리드를 맡겨보세요.",
+    오: "감정 기복이 연애에 직결되니, 화가 날 때 바로 말하지 말고 한 시간 후에 대화하세요.",
+    미: "우유부단할 때가 있어 상대가 답답해할 수 있으니, 작은 것부터 결정을 빨리 하는 연습을 하세요.",
+    신: "완벽주의가 연인에게도 적용되면 숨 막힐 수 있으니, 70%만 맞아도 OK라는 여유를 가지세요.",
+    유: "속마음을 잘 안 보여줘서 상대가 불안할 수 있으니, 의식적으로 감정을 말로 전하세요.",
+    술: "한 번 마음이 떠나면 돌아오기 어려운 타입이니, 불만은 쌓기 전에 바로바로 얘기하세요.",
+    해: "현실보다 이상을 쫓기 쉬우니, 눈앞의 좋은 사람을 판타지와 비교하지 마세요.",
+  };
+  if (out.length < 3 && JIJI_CAUTION[dayJi])
+    out.push(JIJI_CAUTION[dayJi]);
+  while (out.length < 3)
     out.push("처음의 강한 끌림보다 일관된 행동을 보고 인연의 신뢰를 쌓아가세요.");
-  }
   return out.slice(0, 3);
 }
 
 export function deriveAdvice(d: ManseryeokData): string[] {
   const top = topSipShin(d.sipShin, 3);
+  const dayJi = d.sajuInfo.dayPillar?.[1] ?? "";
   const out: string[] = [];
   if (top.includes("정관") || top.includes("정재"))
     out.push("정기적 모임/직장처럼 일관된 환경에서 인연이 자라니, 새로운 자리보다 늘 가던 곳을 더 정성껏 가꾸세요.");
@@ -386,6 +441,29 @@ export function deriveAdvice(d: ManseryeokData): string[] {
     out.push("취미·창작·여행 같은 표현 활동을 공유하는 자리에서 자연스럽게 마음이 이어집니다.");
   if (top.includes("정인") || top.includes("편인"))
     out.push("배움·전시·강연 같은 지적 자극이 있는 공간에서 가치관이 맞는 사람을 만날 가능성이 높습니다.");
+  if (out.length < 3 && (top.includes("비견") || top.includes("겁재")))
+    out.push("같은 관심사를 공유하는 동호회·팀 활동에서 경쟁이 아닌 협력 관계로 인연이 시작됩니다.");
+  if (out.length < 3 && (top.includes("편관")))
+    out.push("사회적으로 도전적인 프로젝트나 봉사활동에서 멋진 인연을 만날 확률이 높습니다.");
+  if (out.length < 3 && (top.includes("편재")))
+    out.push("새로운 경험·여행·네트워킹 모임에 적극 참여하면 예상치 못한 인연이 열립니다.");
+  // 일지별 맞춤 조언
+  const JIJI_ADVICE: Record<string, string> = {
+    자: "밤 시간대 활동(야경·바·문화행사)에서 인연 에너지가 활성화됩니다.",
+    축: "꾸준히 같은 장소를 가면 단골 인연이 열립니다. 급하게 찾지 마세요.",
+    인: "운동·아웃도어 활동에서 가장 매력적인 모습이 나옵니다. 몸을 움직이세요.",
+    묘: "예술·음악·카페 같은 감성적 공간에서 자연스럽게 대화가 시작됩니다.",
+    진: "리더 역할을 맡는 모임이나 프로젝트에서 존경과 함께 호감이 싹틉니다.",
+    사: "SNS·온라인 커뮤니티에서 먼저 대화를 시작하면 의외의 인연이 열립니다.",
+    오: "파티·모임·축제에서 가장 빛나는 타입이니, 사교적인 자리를 피하지 마세요.",
+    미: "봉사·돌봄 활동에서 같은 가치관의 인연을 만날 확률이 높습니다.",
+    신: "자기계발·공부 모임에서 지적으로 끌리는 인연이 나타납니다.",
+    유: "소규모 취미 클래스(와인·요리·미술)에서 조용히 깊은 인연이 시작됩니다.",
+    술: "등산·캠핑 같은 야외 활동에서 의리로 시작해 사랑으로 발전합니다.",
+    해: "명상·요가·영적 모임에서 영혼의 깊은 곳까지 통하는 인연을 만납니다.",
+  };
+  if (out.length < 3 && JIJI_ADVICE[dayJi])
+    out.push(JIJI_ADVICE[dayJi]);
   if (out.length < 3)
     out.push("운동·산책 등 몸을 움직이는 루틴을 늘리면 기운이 풀리며 인연 자석 효과가 생깁니다.");
   if (out.length < 3)
@@ -394,19 +472,27 @@ export function deriveAdvice(d: ManseryeokData): string[] {
 }
 
 // ─────────────────────────────────────────────────────────────
-// Body Spec — 일간 오행 기반 추정 (서술은 AI가 보강)
+// Body Spec — 일지(배우자궁) + 일간 오행 조합 기반
 // ─────────────────────────────────────────────────────────────
 
-const BODY_BY_ELEMENT: Record<string, BodySpec> = {
-  木: { height: "170~178cm",      figure: "키가 크고 곧은 체형",         fashion: "단정한 미니멀·오피스룩",          vibe: "지적이고 곧은 분위기" },
-  火: { height: "165~173cm",      figure: "균형 잡힌 활동적 체형",       fashion: "포인트 컬러를 살린 캐주얼",       vibe: "밝고 화사한 분위기" },
-  土: { height: "163~170cm",      figure: "안정감 있는 중후한 체형",     fashion: "베이직·내추럴 스타일",            vibe: "편안하고 따뜻한 분위기" },
-  金: { height: "168~176cm",      figure: "단단하고 라인이 살아있는 체형", fashion: "심플하고 정돈된 모던 스타일",   vibe: "세련되고 단정한 분위기" },
-  水: { height: "166~174cm",      figure: "유연하고 슬림한 체형",        fashion: "레이어드·도시적 캐주얼",          vibe: "차분하고 사색적인 분위기" },
+const BODY_BY_JIJI: Record<string, BodySpec> = {
+  자: { height: "167~175cm",  figure: "유연하고 슬림한 모델 체형",         fashion: "올블랙·시크한 도시적 캐주얼",          vibe: "도시적이고 미스터리한 분위기" },
+  축: { height: "163~170cm",  figure: "탄탄하고 안정감 있는 체형",         fashion: "베이직·내추럴 톤의 편안한 스타일",     vibe: "믿음직하고 따뜻한 분위기" },
+  인: { height: "172~180cm",  figure: "넓은 어깨에 균형 잡힌 운동 체형",   fashion: "스포티·아웃도어 캐주얼",               vibe: "당당하고 에너지 넘치는 분위기" },
+  묘: { height: "164~172cm",  figure: "가늘고 균형 잡힌 우아한 체형",      fashion: "파스텔·플로럴·로맨틱 무드",            vibe: "부드럽고 감성적인 분위기" },
+  진: { height: "170~178cm",  figure: "떡 벌어진 체격에 존재감 있는 체형", fashion: "정장·클래식 스타일·명품 포인트",        vibe: "듬직하고 카리스마 있는 분위기" },
+  사: { height: "166~174cm",  figure: "날씬하고 비율 좋은 체형",           fashion: "트렌디·컬러풀 포인트·SNS 감성",        vibe: "화려하고 시선을 끄는 분위기" },
+  오: { height: "168~176cm",  figure: "탄탄하고 활동적인 균형 체형",       fashion: "캐주얼 믹스·스트릿 패션",              vibe: "밝고 열정적인 분위기" },
+  미: { height: "162~169cm",  figure: "소형에 귀엽고 아담한 체형",         fashion: "빈티지·핸드메이드·자연소재",           vibe: "소박하고 따뜻한 힐링 분위기" },
+  신: { height: "170~178cm",  figure: "라인이 살아있는 단단한 체형",       fashion: "미니멀·모던·심플한 하이엔드",          vibe: "차갑고 세련된 도시적 분위기" },
+  유: { height: "165~173cm",  figure: "정돈되고 단정한 슬림 체형",         fashion: "정갈한 오피스룩·모노톤 베이직",        vibe: "깔끔하고 단정한 고급스러운 분위기" },
+  술: { height: "171~179cm",  figure: "근육질에 건강한 체형",              fashion: "아웃도어·밀리터리·워크웨어",           vibe: "듬직하고 의리 있는 형·오빠 분위기" },
+  해: { height: "165~173cm",  figure: "유연하고 부드러운 곡선형 체형",     fashion: "레이어드·오버사이즈·보헤미안",         vibe: "몽환적이고 자유로운 예술가 분위기" },
 };
 
 export function deriveBodySpec(d: ManseryeokData): BodySpec {
-  return BODY_BY_ELEMENT[d.elements.dayElement] ?? BODY_BY_ELEMENT.土;
+  const dayJi = d.sajuInfo.dayPillar?.[1] ?? "";
+  return BODY_BY_JIJI[dayJi] ?? BODY_BY_JIJI.축;
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -417,22 +503,51 @@ export function deriveChemistryType(d: ManseryeokData): { name: string; emoji: s
   const dayElem = d.elements.dayElement;
   const monthElem = jiElement(d.sajuInfo.monthPillar.charAt(1));
   const dayBranchElem = jiElement(d.sajuInfo.dayPillar.charAt(1));
+  const top = topSipShin(d.sipShin, 2);
 
+  if (d.innerHapChung.ganHapCount >= 1 && d.innerHapChung.yukhapCount >= 1) {
+    return { name: "전생부터 약속된 운명 케미", emoji: "💫",
+      desc: "천간합과 지지합이 동시에 걸려 있어, 우주가 허락한 짝이라 해도 과언이 아닌 관계. 헤어져도 결국 돌아올 수밖에 없는 끈이 있습니다." };
+  }
   if (d.innerHapChung.ganHapCount >= 1) {
     return { name: "운명적 소울메이트 케미", emoji: "🔮",
       desc: "두 사람 사이에 끊어지지 않는 강한 인연의 끈이 있어, 멀어졌다가도 결국 다시 이어지는 관계입니다." };
   }
-  if (isSaeng(dayElem, monthElem) || isSaeng(dayElem, dayBranchElem)) {
+  if (isSaeng(dayElem, dayBranchElem) && isSaeng(dayElem, monthElem)) {
+    return { name: "완벽한 보완 파트너 케미", emoji: "🧩",
+      desc: "일지와 월지 모두 상생이라, 사생활에서도 사회생활에서도 서로를 완벽하게 보완하는 환상의 조합입니다." };
+  }
+  if (isSaeng(dayElem, dayBranchElem)) {
     return { name: "서로를 키워주는 상생 케미", emoji: "🌱",
       desc: "한쪽의 강점이 다른 쪽의 빈자리를 채워주며, 함께 있을수록 둘 다 성장하는 관계입니다." };
+  }
+  if (d.innerHapChung.samhapElements.length > 0 && top.includes("정재")) {
+    return { name: "부부 사업 대박 케미", emoji: "💰",
+      desc: "삼합의 안정감 위에 재물 기운까지 얹혀져, 함께하면 돈도 사랑도 불어나는 황금 궁합입니다." };
   }
   if (d.innerHapChung.samhapElements.length > 0) {
     return { name: "오래 갈수록 깊어지는 안정 케미", emoji: "🪴",
       desc: "처음의 설렘은 잔잔하지만 시간이 지날수록 단단해지는, 가족처럼 편안한 관계입니다." };
   }
-  if (d.innerHapChung.chungCount >= 2 || d.innerHapChung.spousePalaceClash) {
+  if (d.innerHapChung.spousePalaceClash && d.innerHapChung.chungCount >= 2) {
+    return { name: "폭풍 속 운명 케미", emoji: "⚡",
+      desc: "강렬하게 끌리고 거세게 부딪히지만, 그 태풍 한가운데에 둘만의 고요한 눈이 있는 관계. 화해 후가 가장 달콤합니다." };
+  }
+  if (d.innerHapChung.spousePalaceClash) {
     return { name: "부딪칠수록 빠져드는 불꽃 케미", emoji: "🔥",
       desc: "강하게 끌리고 강하게 부딪히지만, 그 긴장 속에서 서로의 진짜 모습을 발견하는 관계입니다." };
+  }
+  if (isGeuk(dayElem, dayBranchElem)) {
+    return { name: "정반대라 끌리는 자석 케미", emoji: "🧲",
+      desc: "성격도 취향도 다르지만 그래서 더 강하게 끌립니다. '이런 사람은 처음이야'라는 말이 나오는 관계." };
+  }
+  if (top.includes("식신") || top.includes("상관")) {
+    return { name: "함께 있으면 웃음꽃 케미", emoji: "😆",
+      desc: "유머와 감성이 맞아 옆에만 있어도 에너지가 충전되는 관계. 대화가 절대 끊기지 않습니다." };
+  }
+  if (top.includes("정인") || top.includes("편인")) {
+    return { name: "말 안 해도 통하는 텔레파시 케미", emoji: "🧠",
+      desc: "눈빛만으로 의도를 읽는 지적 교감의 관계. 깊은 대화가 이 커플의 최고 애정 표현입니다." };
   }
   return { name: "잔잔하고 따뜻한 안식처 케미", emoji: "🫧",
     desc: "큰 자극보다 일상의 소소함을 함께 나누며, 지친 하루의 끝에 서로의 쉼이 되어주는 관계입니다." };
@@ -458,10 +573,17 @@ export function deriveLoveLanguage(d: ManseryeokData): { primary: string; second
   };
   const primary = MAP[top[0]];
   const secondary = MAP[top[1]] === primary ? MAP[top[1] === "정관" ? "식신" : "정관"] : MAP[top[1]];
+  const DESC_BY_PRIMARY: Record<string, string> = {
+    "함께하는 시간": "상대는 같이 있는 시간 자체가 사랑의 증거예요. 바쁘더라도 짧게라도 얼굴을 보는 게 중요하고, '오늘 뭐 했어?'보다 '나 지금 옆에 있잖아'에 마음이 녹는 사람입니다.",
+    "스킨십": "상대는 말보다 손끝의 온기에 마음이 열리는 사람이에요. 가볍게 어깨를 감싸거나 손을 잡아주는 작은 접촉이 천 마디 말보다 강력합니다.",
+    "선물": "상대는 '이거 보고 네 생각났어'라는 한마디에 심장이 뛰는 사람이에요. 비싼 게 아니라, 나를 기억하고 있다는 증거가 담긴 작은 선물에 감동합니다.",
+    "인정하는 말": "상대는 '너 정말 대단하다', '잘하고 있어'라는 말 한마디에 세상을 얻은 기분이 되는 사람이에요. 진심 어린 칭찬이 이 사람의 사랑 연료입니다.",
+    "봉사": "상대는 말이나 선물보다 행동으로 사랑을 느끼는 사람이에요. 아플 때 죽 끓여주거나, 묵묵히 짐을 들어주는 작은 배려에 마음이 무너집니다.",
+  };
   return {
     primary,
     secondary,
-    desc: `상대는 ${primary}으로 사랑을 가장 깊이 느끼며, ${secondary}이 더해질 때 마음이 활짝 열리는 사람입니다.`,
+    desc: DESC_BY_PRIMARY[primary] ?? `상대는 ${primary}으로 사랑을 가장 깊이 느끼며, ${secondary}이 더해질 때 마음이 활짝 열리는 사람입니다.`,
   };
 }
 
