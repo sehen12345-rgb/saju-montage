@@ -116,6 +116,9 @@ export interface SajuAnalysis {
   };
   partnerPsychology?: string;  // 배우자 심리 분석 (어떤 사람에게 마음 열리는지)
   actionGuide?: string[];      // 지금 당장 실천할 인연 행동 가이드 3가지
+
+  // 본인 사주 딥 분석 + 배우자 브릿지 (8개 섹션)
+  selfDeepSections?: SajuDeepSectionWithBridge[];
 }
 
 export interface SajuInfo {
@@ -194,6 +197,10 @@ export interface SajuDeepSection {
   content: string;    // 비유+설명 3-4문장 (유머+공감+구체적)
   reason: string;     // 사주 근거 2문장 (명리학 용어 사용)
   advice: string;     // 실천 조언 2문장
+}
+
+export interface SajuDeepSectionWithBridge extends SajuDeepSection {
+  spouseBridge: string;  // 배우자 연결 문장 (예: "그래서 당신에겐 ~한 사람이 필요해요")
 }
 
 export interface SelfSajuAnalysis {

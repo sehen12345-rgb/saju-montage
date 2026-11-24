@@ -959,76 +959,72 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
         ════════════════════════════════ */}
 
         {paid ? (
-          /* ── 결제 완료: 이미지 + 전체 분석 공개 ── */
+          /* ── 결제 완료: Phase 1 (본인 딥) → Phase 2 (몽타주) → Phase 3 (배우자 핵심) ── */
           <>
             {/* 잠금 해제 축하 배너 */}
             {justUnlocked && (
               <div className="bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl p-4 text-white text-center animate-bounce shadow-lg">
                 <p className="text-xl font-black mb-0.5">🎉 완전 공개됨!</p>
-                <p className="text-sm text-emerald-100">배우자의 모든 것이 열렸습니다</p>
+                <p className="text-sm text-emerald-100">당신의 사주와 운명의 상대가 열렸습니다</p>
               </div>
             )}
 
-            {/* 종합 대시보드 카드 */}
-            {analysis.compatibilityScores && (
-              <div className="animate-popIn bg-gradient-to-br from-amber-900 to-orange-900 rounded-3xl p-5 text-white shadow-2xl">
-                <p className="text-xs text-amber-300 font-semibold mb-4 text-center uppercase tracking-widest">운명 보고서 요약</p>
-                <div className="flex items-center justify-between gap-4">
-                  {/* 원형 궁합 게이지 */}
-                  <div className="flex flex-col items-center gap-1 shrink-0">
-                    {(() => {
-                      const avg = Math.round(Object.values(analysis.compatibilityScores!).reduce((a,b)=>a+b,0)/5);
-                      const r = 36, c = 2*Math.PI*r;
-                      const dash = (avg/100)*c;
-                      return (
-                        <div className="relative w-24 h-24">
-                          <svg className="w-full h-full -rotate-90" viewBox="0 0 96 96">
-                            <circle cx="48" cy="48" r={r} fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="8"/>
-                            <circle cx="48" cy="48" r={r} fill="none" stroke="#fbbf24" strokeWidth="8"
-                              strokeDasharray={`${dash} ${c}`} strokeLinecap="round"
-                              style={{ transition: "stroke-dasharray 1.2s ease" }}/>
-                          </svg>
-                          <div className="absolute inset-0 flex flex-col items-center justify-center">
-                            <span className="text-2xl font-black text-amber-300">{avg}</span>
-                            <span className="text-[10px] text-amber-400">점</span>
-                          </div>
-                        </div>
-                      );
-                    })()}
-                    <span className="text-xs text-amber-300">종합 궁합</span>
-                  </div>
-                  {/* 핵심 정보 */}
-                  <div className="flex-1 space-y-2">
-                    {[
-                      { icon: "🧠", label: "MBTI", value: analysis.mbti },
-                      { icon: "💼", label: "직업", value: analysis.job },
-                      { icon: "💑", label: "케미", value: analysis.chemistryType?.name },
-                      { icon: "💝", label: "사랑언어", value: analysis.loveLanguage?.primary },
-                    ].filter(i => i.value).map(item => (
-                      <div key={item.label} className="flex items-center gap-2">
-                        <span className="text-base shrink-0">{item.icon}</span>
-                        <span className="text-[10px] text-amber-400 w-12 shrink-0">{item.label}</span>
-                        <span className="text-xs font-semibold text-white truncate">{item.value}</span>
+            {/* ════════════════════════════════
+                Phase 1: 본인 사주 딥 분석 + 배우자 브릿지
+            ════════════════════════════════ */}
+            {analysis.selfDeepSections && analysis.selfDeepSections.length > 0 && (
+              <>
+                <div className="text-center py-2">
+                  <p className="text-[10px] text-violet-400 font-bold uppercase tracking-widest mb-1">DEEP ANALYSIS</p>
+                  <h3 className="text-lg font-black text-white">먼저, 당신의 사주를 깊이 들여다볼게요</h3>
+                  <p className="text-xs text-gray-400 mt-1">배우자를 만나기 전, 나를 먼저 알아야 해요</p>
+                </div>
+
+                <div className="bg-[#111118] border border-white/8 rounded-3xl overflow-hidden">
+                  {analysis.selfDeepSections.map((section, i) => (
+                    <div key={i} className={`px-5 py-6 ${i < analysis.selfDeepSections!.length - 1 ? "border-b border-white/6" : ""}`}>
+                      {/* 카테고리 태그 */}
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-lg">{section.icon}</span>
+                        <span className="text-[10px] text-violet-400 font-bold uppercase tracking-wider">{section.category}</span>
                       </div>
-                    ))}
+                      {/* 제목 */}
+                      <h4 className="text-base font-black text-white mb-3 leading-snug">{section.title}</h4>
+                      {/* 본문 */}
+                      <p className="text-sm text-gray-200 leading-relaxed mb-3">{section.content}</p>
+                      {/* 사주 근거 */}
+                      <p className="text-xs text-gray-400 leading-relaxed mb-3">{section.reason}</p>
+                      {/* 실천 조언 */}
+                      <p className="text-xs text-gray-300 leading-relaxed mb-4">{section.advice}</p>
+                      {/* 배우자 브릿지 */}
+                      <div className="bg-gradient-to-r from-rose-900/30 to-pink-900/20 border border-rose-500/20 rounded-xl px-4 py-3">
+                        <p className="text-sm text-rose-200 leading-relaxed font-medium">
+                          💕 {section.spouseBridge}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* 전환 디바이더 — 몽타주 예고 */}
+                <div className="relative py-8 text-center">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-amber-500/30" />
+                  </div>
+                  <div className="relative">
+                    <div className="inline-flex flex-col items-center gap-2 bg-[#0a0a12] px-6 py-3 rounded-2xl border border-amber-500/30">
+                      <span className="text-3xl animate-pulse">🔮</span>
+                      <p className="text-sm font-black text-amber-300">운명의 상대를 공개합니다</p>
+                      <p className="text-[10px] text-amber-400/60">아래로 스크롤하세요</p>
+                    </div>
                   </div>
                 </div>
-                {analysis.readiness && (
-                  <div className="mt-4 pt-3 border-t border-white/10">
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-xs text-amber-300">🌱 인연 준비도</span>
-                      <span className="text-sm font-black text-amber-300">{analysis.readiness.score}%</span>
-                    </div>
-                    <div className="w-full bg-white/10 rounded-full h-2">
-                      <div className="h-2 rounded-full bg-gradient-to-r from-amber-400 to-orange-400"
-                        style={{ width: `${analysis.readiness.score}%`, transition: "width 1.2s ease" }}/>
-                    </div>
-                  </div>
-                )}
-              </div>
+              </>
             )}
 
-            {/* 몽타주 이미지 */}
+            {/* ════════════════════════════════
+                Phase 2: 몽타주 이미지 (클라이맥스)
+            ════════════════════════════════ */}
             <div className="relative w-full aspect-square rounded-2xl overflow-hidden shadow-xl border border-white/10 bg-[#111118]">
               {!imgLoaded && !imgError && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
@@ -1090,6 +1086,10 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
               )}
             </div>
 
+            {/* ════════════════════════════════
+                Phase 3: 배우자 핵심 프로필
+            ════════════════════════════════ */}
+
             {/* 배우자 프로필 카드 */}
             <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
               <p className="text-xs text-amber-500 font-medium mb-3">💌 배우자 프로필</p>
@@ -1125,129 +1125,33 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
               </div>
             )}
 
-            {/* 배우자의 사랑 언어 */}
-            {analysis.loveLanguage && (
-              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
-                <p className="text-xs text-rose-400 font-medium mb-3">💝 배우자의 사랑 언어</p>
-                <div className="flex gap-2 mb-3">
-                  <span className="px-3 py-1.5 bg-rose-500 text-white rounded-full text-xs font-bold">
-                    1순위: {analysis.loveLanguage.primary}
-                  </span>
-                  <span className="px-3 py-1.5 bg-rose-900/40 text-rose-300 border border-rose-500/30 rounded-full text-xs font-semibold">
-                    2순위: {analysis.loveLanguage.secondary}
-                  </span>
-                </div>
-                <p className="text-sm text-gray-300 leading-relaxed">{analysis.loveLanguage.desc}</p>
-              </div>
-            )}
-
-            {/* 닮은꼴 연예인 분위기 */}
-            {analysis.celebrityVibe && (
-              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
-                <p className="text-xs text-amber-400 font-medium mb-2">🌟 닮은꼴 연예인 분위기</p>
-                <p className="text-sm text-gray-300 leading-relaxed">{analysis.celebrityVibe}</p>
-              </div>
-            )}
-
-            {/* 취미 */}
-            {analysis.hobbies?.length > 0 && (
-              <InfoSection icon="🎯" label="취미">
-                <div className="flex flex-wrap gap-2">
-                  {analysis.hobbies.map((h, i) => (
-                    <span key={i} className="px-3 py-1 bg-emerald-900/30 border border-emerald-700/30 text-emerald-300 rounded-full text-sm">
-                      {h}
-                    </span>
+            {/* 이름 첫 글자 힌트 */}
+            {analysis.nameHint && (
+              <div className="bg-gradient-to-br from-indigo-900 to-purple-900 rounded-2xl p-5 text-center relative overflow-hidden">
+                <div className="absolute inset-0 opacity-10">
+                  {["✦","✧","✦","✧","✦","✧","✦","✧"].map((s, i) => (
+                    <span key={i} className="absolute text-white text-xl" style={{ top: `${10 + (i * 11) % 80}%`, left: `${5 + (i * 13) % 90}%` }}>{s}</span>
                   ))}
                 </div>
-              </InfoSection>
-            )}
-
-            {/* 배우자 스펙 */}
-            {analysis.bodySpec && (
-              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
-                <p className="text-xs text-amber-400 font-medium mb-3">💎 배우자 스펙</p>
-                <div className="grid grid-cols-2 gap-3">
-                  {[
-                    { label: "키", value: analysis.bodySpec.height },
-                    { label: "체형", value: analysis.bodySpec.figure },
-                    { label: "패션", value: analysis.bodySpec.fashion },
-                    { label: "분위기", value: analysis.bodySpec.vibe },
-                  ].map((s) => (
-                    <div key={s.label} className="bg-white/5 rounded-xl p-3 border border-white/8">
-                      <div className="text-xs text-amber-500 mb-1">{s.label}</div>
-                      <div className="text-sm font-semibold text-white">{s.value}</div>
-                    </div>
-                  ))}
-                </div>
+                <p className="text-xs text-indigo-300 font-medium mb-2 relative">✨ 이름 힌트</p>
+                <p className="text-lg font-bold text-white leading-relaxed relative">{analysis.nameHint}</p>
               </div>
             )}
 
-            {/* 궁합 점수 */}
-            {analysis.compatibilityScores && (
-              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
-                <p className="text-xs text-amber-400 font-medium mb-1">📊 궁합 점수</p>
-                <h4 className="text-base font-bold text-white mb-4">
-                  평균 {Math.round(Object.values(analysis.compatibilityScores).reduce((a, b) => a + b, 0) / 5)}점의 높은 궁합
-                </h4>
-                <div className="space-y-3">
-                  {[
-                    { label: "성격 궁합", score: analysis.compatibilityScores.personality },
-                    { label: "가치관 궁합", score: analysis.compatibilityScores.values },
-                    { label: "생활 패턴", score: analysis.compatibilityScores.lifestyle },
-                    { label: "소통 방식", score: analysis.compatibilityScores.communication },
-                    { label: "재정 관념", score: analysis.compatibilityScores.finance },
-                  ].map((s, i) => <ScoreBar key={s.label} {...s} delay={i * 120} />)}
+            {/* 카카오톡 첫 메시지 */}
+            {analysis.kakaoFirstMessage && (
+              <div className="bg-[#FEE500] rounded-2xl p-5 border border-yellow-300">
+                <p className="text-xs text-yellow-700 font-medium mb-3">💬 배우자가 처음 보낼 카카오톡</p>
+                <div className="flex items-end gap-3">
+                  <div className="w-10 h-10 rounded-full bg-yellow-400 flex items-center justify-center text-xl shrink-0">
+                    🔮
+                  </div>
+                  <div className="bg-white rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm max-w-xs">
+                    <p className="text-sm text-gray-800 leading-relaxed">{analysis.kakaoFirstMessage}</p>
+                    <p className="text-[10px] text-gray-400 mt-1 text-right">오후 11:11</p>
+                  </div>
                 </div>
-              </div>
-            )}
-
-            {/* 성격 */}
-            {analysis.personality && (
-              <InfoSection icon="💭" label="성격" title={analysis.personalityTitle}>
-                <p className="text-gray-300 leading-relaxed text-sm">{analysis.personality}</p>
-              </InfoSection>
-            )}
-
-            {/* 배우자 심리 분석 */}
-            {analysis.partnerPsychology && (
-              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
-                <p className="text-xs text-violet-400 font-medium mb-2">🧠 배우자 심리 분석</p>
-                <h4 className="text-sm font-bold text-violet-300 mb-3">이 사람의 마음을 여는 법</h4>
-                <p className="text-sm text-gray-300 leading-relaxed">{analysis.partnerPsychology}</p>
-              </div>
-            )}
-
-            {/* 연애 스타일 */}
-            {analysis.loveStyle && (
-              <InfoSection icon="💕" label="연애 스타일" title={analysis.loveStyleTitle}>
-                <p className="text-gray-300 leading-relaxed text-sm">{analysis.loveStyle}</p>
-              </InfoSection>
-            )}
-
-            {/* 라이프스타일 */}
-            {analysis.lifeStyle && (
-              <InfoSection icon="🌿" label="라이프스타일" title={analysis.lifeStyleTitle}>
-                <p className="text-gray-300 leading-relaxed text-sm">{analysis.lifeStyle}</p>
-              </InfoSection>
-            )}
-
-            {/* 만남 시기 */}
-            {analysis.meetTiming && (
-              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
-                <p className="text-xs text-amber-400 font-medium mb-3">📅 만남 시기 예측</p>
-                <div className="grid grid-cols-3 gap-3 text-center">
-                  {[
-                    { label: "나이대", value: analysis.meetTiming.ageRange, icon: "🎂" },
-                    { label: "계절", value: analysis.meetTiming.season, icon: "🌸" },
-                    { label: "상황", value: analysis.meetTiming.situation, icon: "📍" },
-                  ].map((m) => (
-                    <div key={m.label} className="bg-white/5 rounded-xl p-3 border border-white/8">
-                      <div className="text-lg mb-1">{m.icon}</div>
-                      <div className="text-xs text-pink-400 mb-1">{m.label}</div>
-                      <div className="text-xs font-bold text-white">{m.value}</div>
-                    </div>
-                  ))}
-                </div>
+                <p className="text-[10px] text-yellow-700 mt-3 text-center opacity-70">* 사주 기반 추정 메시지입니다</p>
               </div>
             )}
 
@@ -1288,96 +1192,6 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
               </div>
             )}
 
-            {/* 카카오톡 첫 메시지 */}
-            {analysis.kakaoFirstMessage && (
-              <div className="bg-[#FEE500] rounded-2xl p-5 border border-yellow-300">
-                <p className="text-xs text-yellow-700 font-medium mb-3">💬 배우자가 처음 보낼 카카오톡</p>
-                <div className="flex items-end gap-3">
-                  <div className="w-10 h-10 rounded-full bg-yellow-400 flex items-center justify-center text-xl shrink-0">
-                    🔮
-                  </div>
-                  <div className="bg-white rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm max-w-xs">
-                    <p className="text-sm text-gray-800 leading-relaxed">{analysis.kakaoFirstMessage}</p>
-                    <p className="text-[10px] text-gray-400 mt-1 text-right">오후 11:11</p>
-                  </div>
-                </div>
-                <p className="text-[10px] text-yellow-700 mt-3 text-center opacity-70">* 사주 기반 추정 메시지입니다</p>
-              </div>
-            )}
-
-            {/* 이름 첫 글자 힌트 */}
-            {analysis.nameHint && (
-              <div className="bg-gradient-to-br from-indigo-900 to-purple-900 rounded-2xl p-5 text-center relative overflow-hidden">
-                <div className="absolute inset-0 opacity-10">
-                  {["✦","✧","✦","✧","✦","✧","✦","✧"].map((s, i) => (
-                    <span key={i} className="absolute text-white text-xl" style={{ top: `${10 + (i * 11) % 80}%`, left: `${5 + (i * 13) % 90}%` }}>{s}</span>
-                  ))}
-                </div>
-                <p className="text-xs text-indigo-300 font-medium mb-2 relative">✨ 이름 힌트</p>
-                <p className="text-lg font-bold text-white leading-relaxed relative">{analysis.nameHint}</p>
-              </div>
-            )}
-
-            {/* 전생 인연 */}
-            {analysis.pastLife && (
-              <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-5 relative overflow-hidden">
-                <div className="absolute top-3 right-4 text-4xl opacity-20">🌙</div>
-                <p className="text-xs text-slate-400 font-medium mb-2">🔮 전생 인연</p>
-                <h4 className="text-sm font-bold text-amber-300 mb-2">이 사람과 나의 전생 이야기</h4>
-                <p className="text-sm text-slate-200 leading-relaxed">{analysis.pastLife}</p>
-              </div>
-            )}
-
-            {/* 취향 카드 */}
-            {analysis.favoriteThings && (
-              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
-                <p className="text-xs text-amber-400 font-medium mb-3">🎭 배우자의 취향</p>
-                <div className="grid grid-cols-2 gap-3">
-                  {[
-                    { icon: "🍽️", label: "좋아하는 음식", value: analysis.favoriteThings.food },
-                    { icon: "🎵", label: "즐겨 듣는 음악", value: analysis.favoriteThings.music },
-                    { icon: "🎬", label: "즐겨 보는 장르", value: analysis.favoriteThings.movie },
-                    { icon: "📍", label: "자주 가는 곳", value: analysis.favoriteThings.place },
-                  ].map((t) => (
-                    <div key={t.label} className="bg-white/5 rounded-xl p-3 border border-white/8">
-                      <div className="text-xl mb-1">{t.icon}</div>
-                      <div className="text-[10px] text-amber-500 mb-0.5">{t.label}</div>
-                      <div className="text-xs font-semibold text-white leading-snug">{t.value}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* 첫 데이트 코스 */}
-            {analysis.firstDate && (
-              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
-                <p className="text-xs text-pink-400 font-medium mb-2">🗺️ 첫 데이트 코스</p>
-                <h4 className="text-sm font-bold text-pink-300 mb-3">이 사람과 잘 맞는 첫 데이트</h4>
-                <p className="text-sm text-gray-300 leading-relaxed">{analysis.firstDate}</p>
-              </div>
-            )}
-
-            {/* 갈등 & 화해 패턴 */}
-            {analysis.conflictAndMakeup && (
-              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
-                <p className="text-xs text-amber-400 font-medium mb-2">⚡ 갈등 & 화해 패턴</p>
-                <h4 className="text-sm font-bold text-amber-300 mb-3">어떨 때 싸우고 어떻게 화해할까</h4>
-                <p className="text-sm text-gray-300 leading-relaxed">{analysis.conflictAndMakeup}</p>
-              </div>
-            )}
-
-            {/* 나의 매력포인트 (배우자 시점) */}
-            {analysis.myCharm && (
-              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
-                <p className="text-xs text-violet-400 font-medium mb-2">💜 배우자 눈에 비친 나의 매력</p>
-                <h4 className="text-sm font-bold text-violet-300 mb-3">배우자가 당신에게 끌리는 이유</h4>
-                <div className="bg-white/5 rounded-xl px-4 py-3 border border-white/8">
-                  <p className="text-sm text-gray-300 leading-relaxed italic">"{analysis.myCharm}"</p>
-                </div>
-              </div>
-            )}
-
             {/* 월별 인연운 차트 */}
             {analysis.monthlyChance && analysis.monthlyChance.length === 12 && (
               <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
@@ -1406,85 +1220,6 @@ export default function ResultCard({ result, onReset, onPaid }: Props) {
                       </div>
                     );
                   })}
-                </div>
-              </div>
-            )}
-
-            {/* 인연 준비도 */}
-            {analysis.readiness && (
-              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
-                <p className="text-xs text-amber-400 font-medium mb-1">🌱 인연 준비도</p>
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-sm font-bold text-amber-300">지금 당신의 인연 준비 상태</h4>
-                  <span className="text-2xl font-black text-amber-400">{analysis.readiness.score}%</span>
-                </div>
-                <div className="w-full bg-white/8 rounded-full h-3 mb-3 overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-400 transition-all duration-1000"
-                    style={{ width: `${analysis.readiness.score}%` }}
-                  />
-                </div>
-                <p className="text-xs text-gray-400 leading-relaxed">{analysis.readiness.comment}</p>
-              </div>
-            )}
-
-            {/* 악연 주의 유형 */}
-            {analysis.warnType && (
-              <div className="bg-orange-900/20 border border-orange-500/30 rounded-2xl p-5">
-                <p className="text-xs text-orange-400 font-medium mb-1">🚨 악연 주의 유형</p>
-                <h4 className="text-sm font-bold text-orange-300 mb-3">이런 사람은 조심하세요</h4>
-                <p className="text-sm text-gray-300 leading-relaxed">{analysis.warnType}</p>
-              </div>
-            )}
-
-            {/* 주의사항 */}
-            {analysis.caution?.length > 0 && (
-              <div className="bg-red-900/20 border border-red-500/30 rounded-2xl p-5">
-                <p className="text-xs text-red-400 font-medium mb-1">⚠️ 주의사항</p>
-                <h4 className="text-base font-bold text-red-300 mb-3">이 점은 조심하세요</h4>
-                <div className="space-y-3">
-                  {analysis.caution.map((c, i) => (
-                    <div key={i} className="flex gap-3">
-                      <span className="text-red-400 font-bold shrink-0">{i + 1}.</span>
-                      <p className="text-sm text-gray-300 leading-relaxed">{c}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* 인연 조언 */}
-            {analysis.advice?.length > 0 && (
-              <div className="bg-emerald-900/20 border border-emerald-500/30 rounded-2xl p-5">
-                <p className="text-xs text-emerald-400 font-medium mb-1">💡 인연을 당기는 조언</p>
-                <h4 className="text-base font-bold text-emerald-300 mb-3">지금 당장 실천하세요</h4>
-                <div className="space-y-2">
-                  {analysis.advice.map((a, i) => (
-                    <div key={i} className="flex gap-3 items-start bg-white/5 rounded-xl p-3 border border-white/8">
-                      <span className="w-6 h-6 rounded-full bg-emerald-500 text-white text-xs font-bold flex items-center justify-center shrink-0">
-                        {i + 1}
-                      </span>
-                      <p className="text-sm text-gray-300">{a}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* 인연 실천 가이드 */}
-            {analysis.actionGuide && analysis.actionGuide.length > 0 && (
-              <div className="bg-gradient-to-br from-amber-900 to-orange-900 rounded-2xl p-5 text-white shadow-lg">
-                <p className="text-xs text-amber-300 font-medium mb-1">🚀 인연을 당기는 실천 가이드</p>
-                <h4 className="text-base font-bold text-white mb-4">지금 당장 시작하세요</h4>
-                <div className="space-y-3">
-                  {analysis.actionGuide.map((guide, i) => (
-                    <div key={i} className="flex gap-3 items-start bg-white/10 rounded-xl p-3 border border-white/20">
-                      <div className="w-7 h-7 rounded-full bg-amber-400 text-amber-900 text-xs font-black flex items-center justify-center shrink-0 mt-0.5">
-                        {i + 1}
-                      </div>
-                      <p className="text-sm text-amber-50 leading-relaxed">{guide}</p>
-                    </div>
-                  ))}
                 </div>
               </div>
             )}
