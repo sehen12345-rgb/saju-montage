@@ -275,6 +275,7 @@ interface Props {
 
 export default function EnemyResultCard({ result, onReset, onPaid }: Props) {
   const analysis = result.analysis as EnemyAnalysis;
+  const [currentImageUrl, setCurrentImageUrl] = useState(result.imageUrl);
   const [imgLoaded, setImgLoaded] = useState(false);
   const [imgError, setImgError] = useState(false);
   const [downloading, setDownloading] = useState(false);
@@ -283,8 +284,36 @@ export default function EnemyResultCard({ result, onReset, onPaid }: Props) {
   const [showModal, setShowModal] = useState(false);
   const [justUnlocked, setJustUnlocked] = useState(false);
   const [showStickyBtn, setShowStickyBtn] = useState(false);
+  const [autoUpgrading, setAutoUpgrading] = useState(false);
 
-  const imageUrl = result.imageUrl;
+  const imageUrl = currentImageUrl;
+
+  // Pollinations → 고화질 이미지 자동 업그레이드
+  useEffect(() => {
+    const isPollinations = currentImageUrl?.includes("pollinations.ai") || currentImageUrl?.includes("image.pollinations");
+    if (!currentImageUrl || isPollinations) {
+      setAutoUpgrading(true);
+      fetch("/api/generate-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt: analysis.imagePrompt ?? "",
+          gender: result.gender ?? "male",
+          sajuInfo: analysis.sajuInfo,
+        }),
+      })
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.imageUrl) {
+            setCurrentImageUrl(data.imageUrl);
+            setImgLoaded(false);
+          }
+        })
+        .catch(() => {/* 실패 시 기존 이미지 유지 */})
+        .finally(() => setAutoUpgrading(false));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const productHash = analysis?.sajuInfo
     ? makeProductHash(
