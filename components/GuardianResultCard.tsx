@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { GenerateResult, GuardianAnalysis, SelfSajuAnalysis } from "@/lib/types";
+import type { GenerateResult, GuardianAnalysis, SelfSajuAnalysis, SajuDeepSectionWithBridge } from "@/lib/types";
 import SelfSajuSection from "./SelfSajuSection";
 import { isPaidForSaju, savePaidRecord, makeProductHash, PRICE_INDIVIDUAL, PRICE_BUNDLE } from "@/lib/paymentStorage";
 import { requestTossPayment } from "@/lib/tossPayments";
@@ -531,7 +531,7 @@ export default function GuardianResultCard({ result, onReset, onPaid }: Props) {
             </div>
           </div>
         ) : (
-          /* ── 결제 완료: 전체 공개 ── */
+          /* ── 결제 완료: Phase 1/2/3 구조 ── */
           <>
             {justUnlocked && (
               <div className="bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl p-4 text-white text-center animate-bounce shadow-lg">
@@ -540,9 +540,108 @@ export default function GuardianResultCard({ result, onReset, onPaid }: Props) {
               </div>
             )}
 
-            {/* 귀인 유형 카드 */}
+            {/* ════════════════════════════════
+                Phase 1: 본인 사주 딥 분석 + 귀인 브릿지
+            ════════════════════════════════ */}
+            {(analysis as GuardianAnalysis & { selfDeepSections?: SajuDeepSectionWithBridge[] }).selfDeepSections &&
+             (analysis as GuardianAnalysis & { selfDeepSections?: SajuDeepSectionWithBridge[] }).selfDeepSections!.length > 0 && (
+              <>
+                <div className="text-center py-2">
+                  <p className="text-[10px] text-amber-400 font-bold uppercase tracking-widest mb-1">DEEP ANALYSIS</p>
+                  <h3 className="text-lg font-black text-white">먼저, 당신의 사주를 깊이 들여다볼게요</h3>
+                  <p className="text-xs text-gray-400 mt-1">귀인을 만나기 전, 나를 먼저 알아야 해요</p>
+                </div>
+
+                <div className="bg-[#111118] border border-white/8 rounded-3xl overflow-hidden">
+                  {(analysis as GuardianAnalysis & { selfDeepSections?: SajuDeepSectionWithBridge[] }).selfDeepSections!.map((section, i) => (
+                    <div key={i} className={`px-5 py-6 ${i < (analysis as GuardianAnalysis & { selfDeepSections?: SajuDeepSectionWithBridge[] }).selfDeepSections!.length - 1 ? "border-b border-white/6" : ""}`}>
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-lg">{section.icon}</span>
+                        <span className="text-[10px] text-amber-400 font-bold uppercase tracking-wider">{section.category}</span>
+                      </div>
+                      <h4 className="text-base font-black text-white mb-3 leading-snug">{section.title}</h4>
+                      <p className="text-sm text-gray-200 leading-relaxed mb-3">{section.content}</p>
+                      <p className="text-xs text-gray-400 leading-relaxed mb-3">{section.reason}</p>
+                      <p className="text-xs text-gray-300 leading-relaxed mb-4">{section.advice}</p>
+                      <div className="bg-gradient-to-r from-amber-900/30 to-yellow-900/20 border border-amber-500/20 rounded-xl px-4 py-3">
+                        <p className="text-sm text-amber-200 leading-relaxed font-medium">
+                          🌟 {section.spouseBridge}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* 전환 디바이더 — 귀인 몽타주 예고 */}
+                <div className="relative py-8 text-center">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-amber-500/30" />
+                  </div>
+                  <div className="relative">
+                    <div className="inline-flex flex-col items-center gap-2 bg-[#0a0a12] px-6 py-3 rounded-2xl border border-amber-500/30">
+                      <span className="text-3xl animate-pulse">🌟</span>
+                      <p className="text-sm font-black text-amber-300">귀인의 얼굴을 공개합니다</p>
+                      <p className="text-[10px] text-amber-400/60">아래로 스크롤하세요</p>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* ════════════════════════════════
+                Phase 2: 귀인 몽타주 이미지 (클라이맥스)
+            ════════════════════════════════ */}
+            <div className="relative w-full aspect-square rounded-2xl overflow-hidden shadow-xl border border-white/10 bg-[#111118]">
+              {!imgLoaded && !imgError && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-full border-4 border-amber-200 border-t-amber-500 animate-spin" />
+                </div>
+              )}
+              {autoUpgrading && imgLoaded && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/50 z-10">
+                  <div className="w-8 h-8 rounded-full border-4 border-amber-200 border-t-amber-500 animate-spin" />
+                  <p className="text-amber-300 text-xs animate-pulse">고화질 이미지로 교체 중...</p>
+                </div>
+              )}
+              {imgError && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#111118]">
+                  <span className="text-4xl">😓</span>
+                  <p className="text-gray-400 text-sm">이미지를 불러오지 못했습니다</p>
+                  <button
+                    onClick={() => { setImgError(false); setImgLoaded(false); }}
+                    className="px-4 py-2 bg-white/10 text-gray-300 rounded-xl text-sm font-semibold hover:bg-white/15"
+                  >🔄 재시도</button>
+                </div>
+              )}
+              {!imgError && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={imageUrl}
+                  alt="AI가 생성한 귀인 초상화"
+                  className={`w-full h-full object-cover transition-opacity duration-500 ${imgLoaded ? "opacity-100" : "opacity-0"}`}
+                  onLoad={() => setImgLoaded(true)}
+                  onError={() => setImgError(true)}
+                />
+              )}
+              {imgLoaded && (
+                <>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
+                  <div className="absolute bottom-4 left-0 right-0 flex items-center justify-center px-4">
+                    <span className="text-white text-sm font-semibold bg-black/40 px-3 py-1 rounded-full">
+                      사주로 그린 귀인 초상화
+                    </span>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* ════════════════════════════════
+                Phase 3: 귀인 핵심 프로필
+            ════════════════════════════════ */}
+
+            {/* 귀인 프로필 카드 */}
             <div className="bg-gradient-to-br from-amber-900 to-orange-900 rounded-3xl p-5 text-white shadow-2xl">
-              <p className="text-xs text-amber-300 font-semibold mb-4 text-center uppercase tracking-widest">귀인 분석 요약</p>
+              <p className="text-xs text-amber-300 font-semibold mb-4 text-center uppercase tracking-widest">귀인 프로필</p>
               <div className="flex items-center justify-between gap-4">
                 <div className="flex flex-col items-center gap-2 shrink-0">
                   <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center text-5xl">
@@ -579,122 +678,6 @@ export default function GuardianResultCard({ result, onReset, onPaid }: Props) {
               )}
             </div>
 
-            {/* 귀인 AI 프로필 이미지 */}
-            <div className="relative w-full aspect-square rounded-2xl overflow-hidden shadow-xl border border-white/10 bg-[#111118]">
-              {!imgLoaded && !imgError && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-10 h-10 rounded-full border-4 border-amber-200 border-t-amber-500 animate-spin" />
-                </div>
-              )}
-              {imgError && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#111118]">
-                  <span className="text-4xl">😓</span>
-                  <p className="text-gray-400 text-sm">이미지를 불러오지 못했습니다</p>
-                  <button
-                    onClick={() => { setImgError(false); setImgLoaded(false); }}
-                    className="px-4 py-2 bg-white/10 text-gray-300 rounded-xl text-sm font-semibold hover:bg-white/15"
-                  >🔄 재시도</button>
-                </div>
-              )}
-              {!imgError && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={imageUrl}
-                  alt="AI가 생성한 귀인 초상화"
-                  className={`w-full h-full object-cover transition-opacity duration-500 ${imgLoaded ? "opacity-100" : "opacity-0"}`}
-                  onLoad={() => setImgLoaded(true)}
-                  onError={() => setImgError(true)}
-                />
-              )}
-              {imgLoaded && (
-                <>
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
-                  <div className="absolute bottom-4 left-0 right-0 flex items-center justify-center px-4">
-                    <span className="text-white text-sm font-semibold bg-black/40 px-3 py-1 rounded-full">
-                      사주로 그린 귀인 초상화
-                    </span>
-                  </div>
-                </>
-              )}
-            </div>
-
-            {/* 귀인 외모 묘사 */}
-            <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
-              <p className="text-xs text-amber-400 font-medium mb-2">✨ 귀인 첫인상</p>
-              <p className="text-sm text-gray-300 leading-relaxed">{analysis.description}</p>
-            </div>
-
-            {/* 귀인이 도움줄 영역 */}
-            {analysis.luckAreas?.length > 0 && (
-              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
-                <p className="text-xs text-amber-400 font-medium mb-1">💼 귀인이 도움줄 영역</p>
-                <h4 className="text-base font-bold text-white mb-4">귀인이 열어주는 기회</h4>
-                <div className="space-y-3">
-                  {analysis.luckAreas.map((area, i) => (
-                    <div key={i}>
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm font-semibold text-gray-200">{area.area}</span>
-                      </div>
-                      <ScoreBar label={area.area} score={area.score} delay={i * 120} />
-                      <p className="text-xs text-gray-400 mt-1">{area.desc}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* 귀인 만남 방법 */}
-            {analysis.howToMeet && (
-              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
-                <p className="text-xs text-amber-400 font-medium mb-1">🗺️ 귀인 만나는 방법</p>
-                <p className="text-sm text-gray-300 leading-relaxed">{analysis.howToMeet}</p>
-              </div>
-            )}
-
-            {/* 만남 시기 */}
-            {analysis.meetTiming && (
-              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
-                <p className="text-xs text-amber-400 font-medium mb-3">📅 귀인 만남 시기 예측</p>
-                <div className="grid grid-cols-3 gap-3 text-center">
-                  {[
-                    { label: "나이대", value: analysis.meetTiming.ageRange, icon: "🎂" },
-                    { label: "계절", value: analysis.meetTiming.season, icon: "🌸" },
-                    { label: "상황", value: analysis.meetTiming.situation, icon: "📍" },
-                  ].map((m) => (
-                    <div key={m.label} className="bg-white/5 rounded-xl p-3 border border-white/8">
-                      <div className="text-lg mb-1">{m.icon}</div>
-                      <div className="text-xs text-amber-400 mb-1">{m.label}</div>
-                      <div className="text-xs font-bold text-white leading-snug">{m.value}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* 나의 강점 */}
-            {analysis.myStrength && (
-              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
-                <p className="text-xs text-violet-400 font-medium mb-2">💪 귀인에게 어필하는 나의 강점</p>
-                <p className="text-sm text-gray-300 leading-relaxed">{analysis.myStrength}</p>
-              </div>
-            )}
-
-            {/* 귀인의 혜택 */}
-            {analysis.benefit && (
-              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
-                <p className="text-xs text-emerald-400 font-medium mb-2">🎁 귀인이 가져다줄 혜택</p>
-                <p className="text-sm text-gray-300 leading-relaxed">{analysis.benefit}</p>
-              </div>
-            )}
-
-            {/* 귀인 알아보는 법 */}
-            {analysis.signToRecognize && (
-              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
-                <p className="text-xs text-amber-400 font-medium mb-2">✨ 귀인을 알아보는 법</p>
-                <p className="text-sm text-gray-300 leading-relaxed">{analysis.signToRecognize}</p>
-              </div>
-            )}
-
             {/* 귀인 첫 카카오톡 메시지 */}
             {analysis.kakaoFirstMessage && (
               <div className="bg-[#FEE500] rounded-2xl p-5 border border-yellow-300">
@@ -715,38 +698,6 @@ export default function GuardianResultCard({ result, onReset, onPaid }: Props) {
               </div>
             )}
 
-            {/* 주의사항 */}
-            {analysis.caution?.length > 0 && (
-              <div className="bg-red-900/20 border border-red-500/30 rounded-2xl p-5">
-                <p className="text-xs text-red-400 font-medium mb-3">⚠️ 주의사항</p>
-                <div className="space-y-2">
-                  {analysis.caution.map((c, i) => (
-                    <div key={i} className="flex items-start gap-2">
-                      <span className="text-red-400 text-xs mt-0.5 shrink-0">•</span>
-                      <p className="text-xs text-gray-300 leading-relaxed">{c}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* 실천 가이드 */}
-            {analysis.actionGuide?.length > 0 && (
-              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
-                <p className="text-xs text-amber-400 font-medium mb-3">🚀 귀인을 당기는 실천 가이드</p>
-                <div className="space-y-2">
-                  {analysis.actionGuide.map((g, i) => (
-                    <div key={i} className="flex items-start gap-3 bg-white/5 rounded-xl p-3 border border-white/8">
-                      <span className="w-6 h-6 rounded-full bg-amber-400 text-gray-900 text-xs font-black flex items-center justify-center shrink-0 mt-0.5">
-                        {i + 1}
-                      </span>
-                      <p className="text-xs text-gray-300 leading-relaxed">{g}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
             {/* 월별 귀인운 차트 */}
             {analysis.monthlyLuck?.length === 12 && (
               <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
@@ -762,23 +713,6 @@ export default function GuardianResultCard({ result, onReset, onPaid }: Props) {
                     </div>
                   ))}
                 </div>
-              </div>
-            )}
-
-            {/* 귀인 준비도 */}
-            {analysis.readiness && (
-              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
-                <p className="text-xs text-emerald-400 font-medium mb-1">🌱 귀인 인연 준비도</p>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-2xl font-black text-emerald-400">{analysis.readiness.score}%</span>
-                </div>
-                <div className="w-full bg-white/8 rounded-full h-3 mb-3">
-                  <div
-                    className="h-3 rounded-full bg-gradient-to-r from-emerald-400 to-teal-400 transition-all duration-1000"
-                    style={{ width: `${analysis.readiness.score}%` }}
-                  />
-                </div>
-                <p className="text-xs text-gray-400 leading-relaxed">{analysis.readiness.comment}</p>
               </div>
             )}
 

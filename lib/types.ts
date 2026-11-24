@@ -166,6 +166,7 @@ export interface EnemyAnalysis {
   actionGuide: string[];
   monthlyDanger?: number[];
   readiness?: { score: number; comment: string };
+  selfDeepSections?: SajuDeepSectionWithBridge[];
 }
 
 export interface GuardianAnalysis {
@@ -188,6 +189,7 @@ export interface GuardianAnalysis {
   actionGuide: string[];
   monthlyLuck?: number[];
   readiness?: { score: number; comment: string };
+  selfDeepSections?: SajuDeepSectionWithBridge[];
 }
 
 export interface SajuDeepSection {
