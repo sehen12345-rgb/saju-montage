@@ -1,0 +1,152 @@
+"use client";
+
+import { useEffect, useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { savePaidRecord, saveBundlePaidRecord, makeProductHash, makeSajuHash } from "@/lib/paymentStorage";
+
+function PaymentSuccessContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [status, setStatus] = useState<"confirming" | "done" | "error">("confirming");
+  const [errorMsg, setErrorMsg] = useState("");
+
+  useEffect(() => {
+    const paymentKey = searchParams.get("paymentKey");
+    const orderId = searchParams.get("orderId");
+    const amount = searchParams.get("amount");
+    const isBundle = searchParams.get("bundle") === "1";
+
+    if (!paymentKey || !orderId || !amount) {
+      setErrorMsg("결제 정보가 올바르지 않습니다.");
+      setStatus("error");
+      return;
+    }
+
+    fetch("/api/payment/confirm", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ paymentKey, orderId, amount: Number(amount) }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          // sessionStorage & localStorage에 결제 상태 저장
+          // 모바일(카카오페이 앱 전환) 시 sessionStorage 소실 대비: localStorage 백업도 참조
+          try {
+            const stored =
+              sessionStorage.getItem("sajuResult") ??
+              localStorage.getItem("sajuResult_backup");
+            if (stored) {
+              const parsed = JSON.parse(stored);
+              parsed.paid = true;
+              const parsedJson = JSON.stringify(parsed);
+              sessionStorage.setItem("sajuResult", parsedJson);
+              // sajuResult_backup은 결제 완료 후 제거하되, selfSajuResult_backup은 보존
+              localStorage.removeItem("sajuResult_backup");
+              if (parsed.analysis?.sajuInfo && orderId) {
+                const { yearPillar, monthPillar, dayPillar, hourPillar } = parsed.analysis.sajuInfo;
+                const gender = parsed.gender ?? "male";
+                if (isBundle) {
+                  for (const pt of ["spouse", "guardian", "enemy"]) {
+                    const hash = makeProductHash(yearPillar, monthPillar, dayPillar, hourPillar, gender, pt);
+                    savePaidRecord(hash, orderId);
+                  }
+                  const baseHash = makeSajuHash(yearPillar, monthPillar, dayPillar, hourPillar, gender);
+                  saveBundlePaidRecord(baseHash, orderId);
+                } else {
+                  // productType이 "self"인 경우도 정확히 처리
+                  const productType = parsed.productType ?? "spouse";
+                  const hash = makeProductHash(yearPillar, monthPillar, dayPillar, hourPillar, gender, productType);
+                  savePaidRecord(hash, orderId);
+                  // self 결제 완료 시 selfSajuResult_backup도 paid=true로 업데이트
+                  if (productType === "self") {
+                    try {
+                      localStorage.setItem("selfSajuResult_backup", parsedJson);
+                    } catch { /* ignore */ }
+                  }
+                }
+              }
+            }
+          } catch (e) {
+            console.error("결제 상태 저장 오류:", e);
+          }
+          setStatus("done");
+          setTimeout(() => router.push("/result"), 1500);
+        } else {
+          setErrorMsg(data.error || "결제 확인에 실패했습니다.");
+          setStatus("error");
+        }
+      })
+      .catch(() => {
+        setErrorMsg("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+        setStatus("error");
+      });
+  }, [searchParams, router]);
+
+  if (status === "confirming") {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-[#0a0a10]">
+        <div className="max-w-sm w-full text-center space-y-6">
+          <div className="relative w-20 h-20 mx-auto">
+            <div className="absolute inset-0 rounded-full border-4 border-yellow-900" />
+            <div className="absolute inset-0 rounded-full border-4 border-t-yellow-400 animate-spin" />
+            <div className="absolute inset-0 flex items-center justify-center text-3xl">🔮</div>
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-white">결제 확인 중...</h2>
+            <p className="text-gray-400 text-sm mt-2">잠시만 기다려주세요</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (status === "done") {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-[#0a0a10]">
+        <div className="max-w-sm w-full text-center space-y-5">
+          <div className="relative w-24 h-24 mx-auto">
+            <div className="absolute inset-0 rounded-full bg-yellow-400/20 animate-ping" />
+            <div className="absolute inset-0 flex items-center justify-center text-5xl">✨</div>
+          </div>
+          <div>
+            <h2 className="text-2xl font-black text-white">결제 완료!</h2>
+            <p className="text-yellow-400 text-sm mt-1.5 font-semibold">운명의 상대가 공개될 준비가 됐어요</p>
+            <p className="text-gray-500 text-xs mt-1">사주 분석 보고서를 불러오는 중...</p>
+          </div>
+          <div className="flex justify-center gap-1.5">
+            {[0,1,2].map(i => (
+              <div key={i} className="w-2 h-2 rounded-full bg-yellow-400 animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-[#0a0a10]">
+      <div className="max-w-sm w-full text-center space-y-6">
+        <div className="text-6xl">😓</div>
+        <div>
+          <h2 className="text-2xl font-bold text-white">결제 확인 실패</h2>
+          <p className="text-red-400 text-sm mt-2">{errorMsg}</p>
+        </div>
+        <button
+          onClick={() => router.push("/result")}
+          className="w-full py-4 rounded-2xl bg-yellow-400 text-gray-900 font-bold text-lg shadow-lg hover:bg-yellow-300 transition-all active:scale-95"
+        >
+          결과 페이지로 돌아가기
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export default function PaymentSuccessPage() {
+  return (
+    <Suspense>
+      <PaymentSuccessContent />
+    </Suspense>
+  );
+}

@@ -1,0 +1,763 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import type { GenerateResult, GuardianAnalysis, SelfSajuAnalysis, SajuDeepSectionWithBridge } from "@/lib/types";
+import SelfSajuSection from "./SelfSajuSection";
+import { isPaidForSaju, savePaidRecord, makeProductHash, PRICE_INDIVIDUAL, PRICE_BUNDLE } from "@/lib/paymentStorage";
+import { requestTossPayment } from "@/lib/tossPayments";
+
+// ── 오행 색상 매핑 ──────────────────────────────────────────
+const STEM_ELEMENT: Record<string, string> = {
+  갑: "wood", 을: "wood",
+  병: "fire", 정: "fire",
+  무: "earth", 기: "earth",
+  경: "metal", 신: "metal",
+  임: "water", 계: "water",
+};
+const BRANCH_ELEMENT: Record<string, string> = {
+  자: "water", 해: "water",
+  축: "earth", 진: "earth", 미: "earth", 술: "earth",
+  인: "wood", 묘: "wood",
+  사: "fire", 오: "fire",
+  신: "metal", 유: "metal",
+};
+const ELEMENT_COLOR: Record<string, string> = {
+  wood:  "bg-green-400 text-white",
+  fire:  "bg-red-400 text-white",
+  earth: "bg-yellow-400 text-gray-900",
+  metal: "bg-gray-300 text-gray-900",
+  water: "bg-blue-500 text-white",
+};
+const HAN_STEM: Record<string, string> = {
+  갑:"甲",을:"乙",병:"丙",정:"丁",무:"戊",기:"己",경:"庚",신:"辛",임:"壬",계:"癸",
+};
+const HAN_BRANCH: Record<string, string> = {
+  자:"子",축:"丑",인:"寅",묘:"卯",진:"辰",사:"巳",오:"午",미:"未",신:"申",유:"酉",술:"戌",해:"亥",
+};
+
+function SajuPillarCard({ sajuInfo }: { sajuInfo: import("@/lib/types").SajuInfo }) {
+  const pillars = [
+    { label: "시주", value: sajuInfo.hourPillar },
+    { label: "일주", value: sajuInfo.dayPillar },
+    { label: "월주", value: sajuInfo.monthPillar },
+    { label: "년주", value: sajuInfo.yearPillar },
+  ];
+
+  return (
+    <div className="bg-[#111118] border border-white/8 rounded-3xl p-4">
+      <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">당신의 사주팔자</p>
+      <div className="grid grid-cols-4 gap-2 mb-2">
+        {pillars.map((p) => (
+          <div key={p.label} className="text-center text-xs text-gray-400 font-medium">{p.label}</div>
+        ))}
+      </div>
+      <div className="grid grid-cols-4 gap-2 mb-1.5">
+        {pillars.map((p) => {
+          const stem = p.value[0] ?? "";
+          const el = STEM_ELEMENT[stem] ?? "earth";
+          const color = ELEMENT_COLOR[el];
+          const han = HAN_STEM[stem] ?? stem;
+          return (
+            <div key={p.label + "s"} className={`aspect-square rounded-2xl flex flex-col items-center justify-center ${color}`}>
+              <span className="text-xl font-black leading-none">{han}</span>
+              <span className="text-[9px] mt-0.5 opacity-80">+{stem}</span>
+            </div>
+          );
+        })}
+      </div>
+      <div className="grid grid-cols-4 gap-2 mb-2">
+        {pillars.map((p) => {
+          const branch = p.value[1] ?? "";
+          const el = BRANCH_ELEMENT[branch] ?? "earth";
+          const color = ELEMENT_COLOR[el];
+          const han = HAN_BRANCH[branch] ?? branch;
+          return (
+            <div key={p.label + "b"} className={`aspect-square rounded-2xl flex flex-col items-center justify-center ${color}`}>
+              <span className="text-xl font-black leading-none">{han}</span>
+              <span className="text-[9px] mt-0.5 opacity-80">-{branch}</span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── 결제 모달 ──────────────────────────────────────────────
+
+const PROMO_TIMER_KEY = "naenim_promo_first_ts";
+const PROMO_DURATION = 600;
+function getPromoTimeLeft(): number {
+  if (typeof window === "undefined") return PROMO_DURATION;
+  const stored = localStorage.getItem(PROMO_TIMER_KEY);
+  if (!stored) { localStorage.setItem(PROMO_TIMER_KEY, String(Date.now())); return PROMO_DURATION; }
+  return Math.max(0, PROMO_DURATION - Math.floor((Date.now() - Number(stored)) / 1000));
+}
+
+function PayModal({ onClose, onPay }: { onClose: () => void; onPay: (type: "individual" | "bundle") => void }) {
+  const [paying, setPaying] = useState<string | null>(null);
+  const [timeLeft, setTimeLeft] = useState(() => getPromoTimeLeft());
+  const [showExitIntent, setShowExitIntent] = useState(false);
+
+  function handleCloseAttempt() {
+    if (!paying) setShowExitIntent(true);
+    else onClose();
+  }
+
+  useEffect(() => {
+    if (timeLeft <= 0) return;
+    const t = setInterval(() => {
+      setTimeLeft((s) => { if (s <= 1) { clearInterval(t); return 0; } return s - 1; });
+    }, 1000);
+    return () => clearInterval(t);
+  // timeLeft가 0이 되면 effect를 재실행해 타이머를 정리
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeLeft === 0]);
+
+  const mm = String(Math.floor(timeLeft / 60)).padStart(2, "0");
+  const ss = String(timeLeft % 60).padStart(2, "0");
+
+  async function handlePay(type: "individual" | "bundle") {
+    if (paying) return;
+    setPaying(type);
+    try {
+      if (type === "bundle") {
+        await requestTossPayment({ amount: PRICE_BUNDLE, orderName: "3개 묶음 특가 (배우자+귀인+웬수)", isBundle: true });
+      } else {
+        await requestTossPayment({ amount: PRICE_INDIVIDUAL, orderName: "귀인 몽타주 + 완전분석" });
+      }
+    } catch {
+      setPaying(null);
+    }
+  }
+
+  const ITEMS = ["🌟 귀인 AI 프로필 이미지", "💬 귀인 첫 카카오톡", "💼 도움받을 영역 분석", "🗺️ 귀인 만나는 방법", "🌙 전생 인연 이야기", "📅 귀인 만남 시기", "💪 나의 강점 분석", "📊 월별 귀인운 차트", "✨ 귀인 알아보는 법", "🚀 귀인 실천 가이드", "🎯 주의사항 3가지", "🌱 귀인 준비도 체크"];
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3 bg-black/70 backdrop-blur-md">
+      <div className="bg-[#0f0f18] border border-white/10 rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden max-h-[94vh] overflow-y-auto">
+
+        {/* 헤더 */}
+        <div className="relative p-5 text-center border-b border-white/8">
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-900/30 via-transparent to-yellow-900/20 pointer-events-none" />
+          <button onClick={handleCloseAttempt} className="absolute top-4 right-4 text-white/40 hover:text-white text-xl z-10">✕</button>
+          <div className="relative">
+            <div className="text-4xl mb-2">🌟</div>
+            <h2 className="text-xl font-black text-white">귀인 분석 공개</h2>
+            <p className="text-gray-400 text-xs mt-1 mb-3">귀인 프로필 + 완전 분석 보고서</p>
+            {timeLeft > 0 && (
+              <div className="inline-flex items-center gap-2 bg-red-500/20 border border-red-500/30 rounded-full px-3 py-1.5 text-xs font-bold text-red-400">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
+                특가 종료까지 {mm}:{ss}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="p-5 space-y-4">
+          {/* 포함 항목 */}
+          <div className="grid grid-cols-2 gap-1.5">
+            {ITEMS.map((item) => (
+              <div key={item} className="flex items-center gap-2 text-xs text-gray-300 bg-white/4 border border-white/6 rounded-xl px-2.5 py-2">
+                <span>{item}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* ── 번들 특가 (추천) ── */}
+          <div className="relative rounded-2xl border-2 border-purple-500/50 bg-purple-500/8 p-4 overflow-hidden">
+            <div className="absolute top-0 right-0 bg-purple-500 text-white text-[10px] font-black px-3 py-1 rounded-bl-xl">BEST</div>
+            <p className="text-xs font-bold text-purple-300 mb-1">💜 3개 묶음 특가</p>
+            <p className="text-sm text-white font-bold mb-0.5">배우자 + 귀인 + 웬수 전부 공개</p>
+            <div className="flex items-baseline gap-2 mb-3">
+              <span className="text-xs text-gray-500 line-through">5,700원</span>
+              <span className="text-2xl font-black text-purple-300">4,900원</span>
+              <span className="text-xs text-purple-400 font-bold">800원 절약</span>
+            </div>
+            <button
+              onClick={() => handlePay("bundle")}
+              disabled={!!paying}
+              className="w-full py-3.5 rounded-xl bg-gradient-to-r from-purple-600 to-violet-600 text-white font-black text-sm active:scale-95 disabled:opacity-60 transition-all flex items-center justify-center gap-2"
+            >
+              {paying === "bundle" ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : "💜 4,900원으로 3개 전부 보기"}
+            </button>
+          </div>
+
+          {/* ── 개별 결제 ── */}
+          <div className="space-y-2">
+            <p className="text-[11px] text-gray-500 text-center">— 또는 이 상품만 —</p>
+            <div className="bg-white/4 border border-white/8 rounded-2xl p-3 text-center">
+              <div className="flex items-center justify-center gap-2 mb-0.5">
+                <span className="text-xs text-gray-500 line-through">3,800원</span>
+                <span className="text-xs bg-amber-500/20 text-amber-400 font-bold px-2 py-0.5 rounded-full">50% 할인</span>
+              </div>
+              <p className="text-2xl font-black text-white">1,900<span className="text-base font-bold">원</span></p>
+              <p className="text-xs text-gray-500 mt-0.5">1회 결제 · 회원가입 불필요</p>
+            </div>
+
+            <button
+              onClick={() => handlePay("individual")}
+              disabled={!!paying}
+              className="w-full py-4 rounded-2xl font-black text-base text-gray-900 active:scale-95 disabled:opacity-60 transition-all flex items-center justify-center gap-2 shadow-lg"
+              style={{ backgroundColor: "#FEE500" }}
+            >
+              {paying === "individual" ? <span className="w-5 h-5 border-2 border-gray-400/40 border-t-gray-700 rounded-full animate-spin" /> : (
+                <>
+                  <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current shrink-0"><path d="M12 3C6.48 3 2 6.48 2 10.8c0 2.72 1.6 5.12 4.04 6.56l-1.02 3.76 4.38-2.88c.84.12 1.72.18 2.6.18 5.52 0 10-3.48 10-7.8S17.52 3 12 3z"/></svg>
+                  카카오페이 1,900원
+                </>
+              )}
+            </button>
+
+            <button
+              onClick={() => handlePay("individual")}
+              disabled={!!paying}
+              className="w-full py-3.5 rounded-2xl border border-white/15 text-gray-300 font-semibold text-sm active:scale-95 disabled:opacity-60 transition-all flex items-center justify-center gap-2"
+            >
+              {paying === "card" ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : "💳 신용·체크카드 1,900원"}
+            </button>
+
+            <button onClick={onClose} className="w-full py-2.5 text-gray-600 text-sm hover:text-gray-400 transition-colors">
+              나중에 볼게요
+            </button>
+          </div>
+
+          <p className="text-[10px] text-gray-600 text-center">
+            토스페이먼츠 PG · 결제 정보 저장 없음
+          </p>
+        </div>
+      </div>
+
+      {/* 이탈 방지 팝업 */}
+      {showExitIntent && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-[#0f0f18] border border-amber-500/30 rounded-3xl w-full max-w-xs p-6 text-center shadow-2xl">
+            <div className="text-5xl mb-3">🌟</div>
+            <h3 className="text-white font-black text-lg mb-2">정말 나가도 괜찮아요?</h3>
+            <p className="text-gray-400 text-sm mb-1">귀인이 바로 눈앞에 있는데...</p>
+            <p className="text-amber-400 text-xs font-bold mb-5">지금 분석하지 않으면 다시 만나기 어렵습니다</p>
+            <button
+              onClick={() => { setShowExitIntent(false); }}
+              className="w-full py-3.5 rounded-2xl bg-yellow-400 text-gray-900 font-black text-base mb-2 active:scale-95 transition-all"
+            >
+              🌟 귀인 만나기 (1,900원)
+            </button>
+            <button
+              onClick={onClose}
+              className="w-full py-2.5 text-gray-600 text-sm hover:text-gray-400 transition-colors"
+            >
+              그냥 나갈게요
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── 서브 컴포넌트 ──────────────────────────────────────────
+
+function ScoreBar({ label, score, delay = 0 }: { label: string; score: number; delay?: number }) {
+  return (
+    <div className="flex items-center gap-3">
+      <span className="text-xs text-gray-500 w-20 shrink-0">{label}</span>
+      <div className="flex-1 bg-white/8 rounded-full h-2.5 overflow-hidden">
+        <div
+          className="h-full rounded-full bg-gradient-to-r from-yellow-400 to-amber-400"
+          style={{ width: `${score}%`, transition: `width 0.8s ease ${delay}ms` }}
+        />
+      </div>
+      <span className="text-xs font-black w-8 text-right text-amber-400">{score}</span>
+    </div>
+  );
+}
+
+// ── 메인 컴포넌트 ──────────────────────────────────────────
+
+interface Props {
+  result: GenerateResult;
+  onReset: () => void;
+  onPaid?: () => void;
+}
+
+export default function GuardianResultCard({ result, onReset, onPaid }: Props) {
+  const analysis = result.analysis as GuardianAnalysis;
+  const [currentImageUrl, setCurrentImageUrl] = useState(result.imageUrl);
+  const [imgLoaded, setImgLoaded] = useState(false);
+  const [imgError, setImgError] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [paid, setPaid] = useState(result.paid ?? false);
+  const [showModal, setShowModal] = useState(false);
+  const [justUnlocked, setJustUnlocked] = useState(false);
+  const [showStickyBtn, setShowStickyBtn] = useState(false);
+  const [autoUpgrading, setAutoUpgrading] = useState(false);
+
+  const imageUrl = currentImageUrl;
+
+  // Pollinations → 고화질 이미지 자동 업그레이드
+  useEffect(() => {
+    const isPollinations = currentImageUrl?.includes("pollinations.ai") || currentImageUrl?.includes("image.pollinations");
+    if (!currentImageUrl || isPollinations) {
+      setAutoUpgrading(true);
+      fetch("/api/generate-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt: analysis.imagePrompt ?? "",
+          gender: result.gender ?? "male",
+          sajuInfo: analysis.sajuInfo,
+        }),
+      })
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.imageUrl) {
+            setCurrentImageUrl(data.imageUrl);
+            setImgLoaded(false);
+          }
+        })
+        .catch(() => {/* 실패 시 기존 이미지 유지 */})
+        .finally(() => setAutoUpgrading(false));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const productHash = analysis?.sajuInfo
+    ? makeProductHash(
+        analysis.sajuInfo.yearPillar, analysis.sajuInfo.monthPillar,
+        analysis.sajuInfo.dayPillar,  analysis.sajuInfo.hourPillar,
+        result.gender ?? "male",
+        "guardian"
+      )
+    : "";
+
+  // ?preview=1 파라미터 지원 (SSR hydration mismatch 방지: useEffect에서 처리)
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("preview") === "1") {
+      setPaid(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (paid) return;
+    const handler = () => setShowStickyBtn(window.scrollY > 300);
+    window.addEventListener("scroll", handler, { passive: true });
+    return () => window.removeEventListener("scroll", handler);
+  }, [paid]);
+
+  useEffect(() => {
+    if (!paid && productHash && isPaidForSaju(productHash)) {
+      setPaid(true);
+      try {
+        const stored = sessionStorage.getItem("sajuResult");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          parsed.paid = true;
+          sessionStorage.setItem("sajuResult", JSON.stringify(parsed));
+        }
+      } catch { /* ignore */ }
+    }
+  }, [productHash, paid]);
+
+  function handlePaySuccess(_type?: "individual" | "bundle") {
+    setShowModal(false);
+    setPaid(true);
+    setJustUnlocked(true);
+    setTimeout(() => setJustUnlocked(false), 4000);
+    try {
+      const stored = sessionStorage.getItem("sajuResult");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        parsed.paid = true;
+        sessionStorage.setItem("sajuResult", JSON.stringify(parsed));
+      }
+    } catch { /* ignore */ }
+    if (productHash) savePaidRecord(productHash, `demo_${Date.now()}`);
+    onPaid?.();
+  }
+
+  async function handleDownload() {
+    if (downloading) return;
+    setDownloading(true);
+    try {
+      const proxyRes = await fetch(`/api/proxy-image?url=${encodeURIComponent(imageUrl)}`);
+      if (!proxyRes.ok) throw new Error("다운로드 실패");
+      const blob = await proxyRes.blob();
+      const ext = blob.type.includes("png") ? "png" : "jpg";
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `귀인_초상화.${ext}`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      // 프록시 실패 시 직접 열기 fallback
+      window.open(imageUrl, "_blank");
+    } finally {
+      setDownloading(false);
+    }
+  }
+
+  async function handleShareKakao() {
+    const jsKey = process.env.NEXT_PUBLIC_KAKAO_JS_KEY;
+    const shareText = `${result.name}님의 사주로 본 귀인\n"${analysis.characteristics.join(" · ")}"\n귀인 분석 확인하기 →`;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const Kakao = (window as any).Kakao;
+    if (jsKey && Kakao) {
+      if (!Kakao.isInitialized()) Kakao.init(jsKey);
+      Kakao.Share.sendDefault({
+        objectType: "text",
+        text: shareText,
+        link: { mobileWebUrl: "https://naenim.com", webUrl: "https://naenim.com" },
+        buttonTitle: "나도 해보기",
+      });
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(`${shareText}\nhttps://naenim.com`);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      alert("클립보드 복사에 실패했습니다.");
+    }
+  }
+
+  async function handleCopyLink() {
+    try {
+      await navigator.clipboard.writeText("https://naenim.com");
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      alert("클립보드 복사에 실패했습니다.");
+    }
+  }
+
+  return (
+    <>
+      {showModal && <PayModal onClose={() => setShowModal(false)} onPay={handlePaySuccess} />}
+
+      {/* 스티키 결제 버튼 */}
+      {!paid && showStickyBtn && (
+        <div className="fixed bottom-0 left-0 right-0 z-40 p-3">
+          <button
+            onClick={() => setShowModal(true)}
+            className="w-full max-w-md mx-auto flex items-center justify-between gap-3 py-4 px-6 rounded-2xl bg-yellow-400 text-gray-900 font-bold shadow-2xl active:scale-95 transition-all"
+            style={{ display: "flex" }}
+          >
+            <span className="text-lg">🌟 귀인 전체 분석 보기</span>
+            <span className="bg-gray-900/20 rounded-xl px-3 py-1 text-sm font-black">1,900원</span>
+          </button>
+        </div>
+      )}
+
+      <div className="space-y-4">
+        {/* 사주 기둥 */}
+        <SajuPillarCard sajuInfo={analysis.sajuInfo} />
+
+        {/* 귀인 유형 배지 (무료) */}
+        <div className="bg-gray-900 rounded-2xl p-4 text-center">
+          <p className="text-xs text-gray-400 mb-2">✨ 나의 귀인 유형</p>
+          <div className="flex items-center justify-center gap-2">
+            <span className="text-3xl">{analysis.guardianTypeEmoji}</span>
+            <span className="text-white font-black text-xl">{analysis.guardianType}</span>
+          </div>
+        </div>
+
+        {/* 핵심 특징 태그 (무료) */}
+        <div className="flex flex-wrap gap-2 justify-center">
+          {analysis.characteristics.map((c, i) => (
+            <span key={i} className="px-4 py-2 bg-yellow-400 text-gray-900 rounded-full text-sm font-bold">
+              {c}
+            </span>
+          ))}
+        </div>
+
+        {/* 외모 힌트 (무료, 전체 공개) */}
+        <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
+          <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">🔍 귀인 첫인상 힌트</p>
+          <p className="text-gray-300 leading-relaxed text-sm">{analysis.description}</p>
+        </div>
+
+        {/* 귀인 타입 · 관계 유형 힌트 (무료) */}
+        {(analysis.guardianType || analysis.relationship) && (
+          <div className="grid grid-cols-2 gap-3">
+            {analysis.guardianType && (
+              <div className="bg-[#111118] border border-white/8 rounded-2xl p-4 text-center">
+                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1.5">🌟 귀인 유형</p>
+                <p className="text-sm font-black text-amber-400">{analysis.guardianTypeEmoji} {analysis.guardianType}</p>
+              </div>
+            )}
+            {analysis.relationship && (
+              <div className="bg-[#111118] border border-white/8 rounded-2xl p-4 text-center">
+                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1.5">🤝 만남 유형</p>
+                <p className="text-sm font-bold text-white leading-snug">{analysis.relationship}</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── 내 사주 분석 섹션 ── */}
+        {result.selfSaju && (
+          <SelfSajuSection selfSaju={result.selfSaju} name={result.name} isPaid={paid} />
+        )}
+
+        {/* 잠금 오버레이 / 유료 섹션 */}
+        {!paid ? (
+          <div className="relative rounded-3xl overflow-hidden border border-white/10 shadow-lg">
+            <div className="p-5 blur-sm select-none pointer-events-none bg-[#111118] space-y-3">
+              <div className="bg-white/5 rounded-xl p-4 border border-white/8">
+                <p className="text-xs text-amber-400 mb-1">💼 귀인이 도움줄 영역</p>
+                <p className="text-sm font-bold text-white">재정, 커리어, 인맥</p>
+              </div>
+              <div className="bg-white/5 rounded-xl p-4 border border-white/8">
+                <p className="text-xs text-blue-400 mb-1">🗺️ 귀인 만나는 방법</p>
+                <p className="text-sm text-gray-300">직장이나 업무 환경에서...</p>
+              </div>
+              <div className="bg-white/5 rounded-xl p-4 border border-white/8">
+                <p className="text-xs text-purple-400 mb-1">🌙 전생 인연</p>
+                <p className="text-sm text-gray-300">전생에 스승과 제자 사이...</p>
+              </div>
+            </div>
+            <div className="absolute inset-0 bg-gradient-to-b from-[#111118]/20 to-[#111118]/85 flex flex-col items-center justify-center gap-3 p-6">
+              <div className="w-16 h-16 rounded-full bg-white/10 border-2 border-white/20 flex items-center justify-center text-3xl">🔒</div>
+              <p className="text-white font-black text-lg text-center">귀인의 모든 것이<br />잠겨있습니다</p>
+              <p className="text-gray-400 text-sm text-center">귀인 프로필 이미지, 만남 방법,<br/>전생 인연, 월별 귀인운 등 전체 공개</p>
+              <button
+                onClick={() => setShowModal(true)}
+                className="mt-2 px-8 py-4 bg-yellow-400 text-gray-900 font-black text-base rounded-2xl shadow-lg active:scale-95 transition-all"
+              >
+                🌟 1,900원으로 귀인 만나기
+              </button>
+            </div>
+          </div>
+        ) : (
+          /* ── 결제 완료: Phase 1/2/3 구조 ── */
+          <>
+            {justUnlocked && (
+              <div className="bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl p-4 text-white text-center animate-bounce shadow-lg">
+                <p className="text-xl font-black mb-0.5">🎉 귀인이 나타났습니다!</p>
+                <p className="text-sm text-emerald-100">귀인의 모든 것이 열렸습니다</p>
+              </div>
+            )}
+
+            {/* ════════════════════════════════
+                Phase 1: 본인 사주 딥 분석 + 귀인 브릿지
+            ════════════════════════════════ */}
+            {(analysis as GuardianAnalysis & { selfDeepSections?: SajuDeepSectionWithBridge[] }).selfDeepSections &&
+             (analysis as GuardianAnalysis & { selfDeepSections?: SajuDeepSectionWithBridge[] }).selfDeepSections!.length > 0 && (
+              <>
+                <div className="text-center py-2">
+                  <p className="text-[10px] text-amber-400 font-bold uppercase tracking-widest mb-1">DEEP ANALYSIS</p>
+                  <h3 className="text-lg font-black text-white">먼저, 당신의 사주를 깊이 들여다볼게요</h3>
+                  <p className="text-xs text-gray-400 mt-1">귀인을 만나기 전, 나를 먼저 알아야 해요</p>
+                </div>
+
+                <div className="bg-[#111118] border border-white/8 rounded-3xl overflow-hidden">
+                  {(analysis as GuardianAnalysis & { selfDeepSections?: SajuDeepSectionWithBridge[] }).selfDeepSections!.map((section, i) => (
+                    <div key={i} className={`px-5 py-6 ${i < (analysis as GuardianAnalysis & { selfDeepSections?: SajuDeepSectionWithBridge[] }).selfDeepSections!.length - 1 ? "border-b border-white/6" : ""}`}>
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-lg">{section.icon}</span>
+                        <span className="text-[10px] text-amber-400 font-bold uppercase tracking-wider">{section.category}</span>
+                      </div>
+                      <h4 className="text-base font-black text-white mb-3 leading-snug">{section.title}</h4>
+                      <p className="text-sm text-gray-200 leading-relaxed mb-3">{section.content}</p>
+                      <p className="text-xs text-gray-400 leading-relaxed mb-3">{section.reason}</p>
+                      <p className="text-xs text-gray-300 leading-relaxed mb-4">{section.advice}</p>
+                      <div className="bg-gradient-to-r from-amber-900/30 to-yellow-900/20 border border-amber-500/20 rounded-xl px-4 py-3">
+                        <p className="text-sm text-amber-200 leading-relaxed font-medium">
+                          🌟 {section.spouseBridge}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* 전환 디바이더 — 귀인 몽타주 예고 */}
+                <div className="relative py-8 text-center">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-amber-500/30" />
+                  </div>
+                  <div className="relative">
+                    <div className="inline-flex flex-col items-center gap-2 bg-[#0a0a12] px-6 py-3 rounded-2xl border border-amber-500/30">
+                      <span className="text-3xl animate-pulse">🌟</span>
+                      <p className="text-sm font-black text-amber-300">귀인의 얼굴을 공개합니다</p>
+                      <p className="text-[10px] text-amber-400/60">아래로 스크롤하세요</p>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* ════════════════════════════════
+                Phase 2: 귀인 몽타주 이미지 (클라이맥스)
+            ════════════════════════════════ */}
+            <div className="relative w-full aspect-square rounded-2xl overflow-hidden shadow-xl border border-white/10 bg-[#111118]">
+              {!imgLoaded && !imgError && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-full border-4 border-amber-200 border-t-amber-500 animate-spin" />
+                </div>
+              )}
+              {autoUpgrading && imgLoaded && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/50 z-10">
+                  <div className="w-8 h-8 rounded-full border-4 border-amber-200 border-t-amber-500 animate-spin" />
+                  <p className="text-amber-300 text-xs animate-pulse">고화질 이미지로 교체 중...</p>
+                </div>
+              )}
+              {imgError && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#111118]">
+                  <span className="text-4xl">😓</span>
+                  <p className="text-gray-400 text-sm">이미지를 불러오지 못했습니다</p>
+                  <button
+                    onClick={() => { setImgError(false); setImgLoaded(false); }}
+                    className="px-4 py-2 bg-white/10 text-gray-300 rounded-xl text-sm font-semibold hover:bg-white/15"
+                  >🔄 재시도</button>
+                </div>
+              )}
+              {!imgError && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={imageUrl}
+                  alt="AI가 생성한 귀인 초상화"
+                  className={`w-full h-full object-cover transition-opacity duration-500 ${imgLoaded ? "opacity-100" : "opacity-0"}`}
+                  onLoad={() => setImgLoaded(true)}
+                  onError={() => setImgError(true)}
+                />
+              )}
+              {imgLoaded && (
+                <>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
+                  <div className="absolute bottom-4 left-0 right-0 flex items-center justify-center px-4">
+                    <span className="text-white text-sm font-semibold bg-black/40 px-3 py-1 rounded-full">
+                      사주로 그린 귀인 초상화
+                    </span>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* ════════════════════════════════
+                Phase 3: 귀인 핵심 프로필
+            ════════════════════════════════ */}
+
+            {/* 귀인 프로필 카드 */}
+            <div className="bg-gradient-to-br from-amber-900 to-orange-900 rounded-3xl p-5 text-white shadow-2xl">
+              <p className="text-xs text-amber-300 font-semibold mb-4 text-center uppercase tracking-widest">귀인 프로필</p>
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex flex-col items-center gap-2 shrink-0">
+                  <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center text-5xl">
+                    {analysis.guardianTypeEmoji}
+                  </div>
+                  <span className="text-xs text-amber-300">{analysis.guardianType}</span>
+                </div>
+                <div className="flex-1 space-y-2">
+                  {[
+                    { icon: "🤝", label: "관계유형", value: analysis.relationship },
+                    { icon: "🎂", label: "만남시기", value: analysis.meetTiming.ageRange },
+                    { icon: "🌸", label: "계절", value: analysis.meetTiming.season },
+                    { icon: "📍", label: "상황", value: analysis.meetTiming.situation },
+                  ].map(item => (
+                    <div key={item.label} className="flex items-center gap-2">
+                      <span className="text-base shrink-0">{item.icon}</span>
+                      <span className="text-[10px] text-amber-400 w-14 shrink-0">{item.label}</span>
+                      <span className="text-xs font-semibold text-white truncate">{item.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              {analysis.readiness && (
+                <div className="mt-4 pt-3 border-t border-white/10">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-xs text-amber-300">🌱 귀인 준비도</span>
+                    <span className="text-sm font-black text-amber-300">{analysis.readiness.score}%</span>
+                  </div>
+                  <div className="w-full bg-white/10 rounded-full h-2">
+                    <div className="h-2 rounded-full bg-gradient-to-r from-amber-400 to-orange-400"
+                      style={{ width: `${analysis.readiness.score}%`, transition: "width 1.2s ease" }}/>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* 귀인 첫 카카오톡 메시지 */}
+            {analysis.kakaoFirstMessage && (
+              <div className="bg-[#FEE500] rounded-2xl p-5 border border-yellow-300">
+                <p className="text-xs text-yellow-700 font-medium mb-3">💬 귀인이 처음 보낼 메시지</p>
+                <div className="flex justify-start">
+                  <div className="max-w-[80%] bg-white rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm">
+                    <p className="text-sm text-gray-800 leading-relaxed">{analysis.kakaoFirstMessage}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 전생 인연 */}
+            {analysis.pastLifeConnection && (
+              <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-5 text-white">
+                <p className="text-xs text-slate-300 font-medium mb-2">🌙 전생 인연 이야기</p>
+                <p className="text-sm text-slate-200 leading-relaxed">{analysis.pastLifeConnection}</p>
+              </div>
+            )}
+
+            {/* 월별 귀인운 차트 */}
+            {analysis.monthlyLuck?.length === 12 && (
+              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5">
+                <p className="text-xs text-amber-400 font-medium mb-4">📊 월별 귀인운</p>
+                <div className="flex items-end gap-1 h-24">
+                  {analysis.monthlyLuck.map((v, i) => (
+                    <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                      <div
+                        className="w-full rounded-t-md bg-amber-400 transition-all duration-700"
+                        style={{ height: `${(v / 100) * 80}px`, minHeight: "4px" }}
+                      />
+                      <span className="text-[9px] text-gray-400">{i + 1}월</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 이미지 다운로드 */}
+            <button
+              onClick={handleDownload}
+              disabled={downloading}
+              className="w-full py-3.5 rounded-2xl border border-white/15 text-gray-300 font-semibold text-sm hover:border-white/25 active:scale-95 disabled:opacity-60 transition-all flex items-center justify-center gap-2"
+            >
+              {downloading ? (
+                <span className="w-4 h-4 border-2 border-gray-400/40 border-t-gray-600 rounded-full animate-spin" />
+              ) : "💾"}
+              {downloading ? "저장 중..." : "귀인 이미지 저장하기"}
+            </button>
+
+            {/* 공유 버튼 */}
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={handleShareKakao}
+                className="py-3.5 rounded-2xl font-semibold text-sm text-gray-900 active:scale-95 transition-all flex items-center justify-center gap-2"
+                style={{ backgroundColor: "#FEE500" }}
+              >
+                <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current shrink-0">
+                  <path d="M12 3C6.48 3 2 6.48 2 10.8c0 2.72 1.6 5.12 4.04 6.56l-1.02 3.76 4.38-2.88c.84.12 1.72.18 2.6.18 5.52 0 10-3.48 10-7.8S17.52 3 12 3z"/>
+                </svg>
+                카카오 공유
+              </button>
+              <button
+                onClick={handleCopyLink}
+                className="py-3.5 rounded-2xl border border-white/15 text-gray-300 font-semibold text-sm hover:border-white/25 active:scale-95 transition-all"
+              >
+                {copied ? "✅ 복사됨!" : "🔗 링크 복사"}
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* 다시 해보기 */}
+        <button
+          onClick={onReset}
+          className="w-full py-3.5 rounded-2xl bg-white/5 border border-white/10 text-gray-400 font-semibold text-sm hover:bg-white/8 active:scale-95 transition-all"
+        >
+          🔄 다시 분석하기
+        </button>
+      </div>
+    </>
+  );
+}

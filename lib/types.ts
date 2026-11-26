@@ -1,0 +1,244 @@
+export type ProductType = "spouse" | "guardian" | "enemy" | "bundle" | "self";
+
+export interface SajuInput {
+  name: string;
+  birthYear: number;
+  birthMonth: number;
+  birthDay: number;
+  birthHour: number;
+  gender: "male" | "female";
+  productType?: ProductType;
+}
+
+export interface BodySpec {
+  height: string;     // 예: "165~170cm"
+  figure: string;     // 예: "슬림하고 균형 잡힌 체형"
+  fashion: string;    // 예: "미니멀 캐주얼 + 단정한 오피스룩"
+  vibe: string;       // 예: "지적이고 차분한 분위기"
+}
+
+export interface CompatibilityScores {
+  personality: number;    // 성격 궁합 (0~100)
+  values: number;         // 가치관 궁합
+  lifestyle: number;      // 생활 패턴 궁합
+  communication: number;  // 소통 방식 궁합
+  finance: number;        // 재정 관념 궁합
+}
+
+export interface MeetTiming {
+  ageRange: string;    // 예: "28~31세"
+  season: string;      // 예: "봄 또는 가을"
+  situation: string;   // 예: "직장 또는 지인 소개"
+}
+
+export interface Timeline {
+  meetAge: string;      // 예: "29세 전후"
+  datingPeriod: string; // 예: "1~2년"
+  marriageAge: string;  // 예: "31~33세"
+  children: string;     // 예: "1~2명"
+}
+
+export interface SajuAnalysis {
+  // 기본 (무료)
+  description: string;
+  imagePrompt: string;
+  characteristics: string[];
+  sajuInfo: SajuInfo;
+  mbti: string;
+  job: string;
+  hobbies: string[];
+  compatibility: string;
+
+  // 섹션 소제목
+  descTitle?: string;
+  personalityTitle?: string;
+  loveStyleTitle?: string;
+  lifeStyleTitle?: string;
+  firstMeetTitle?: string;
+
+  // 유료 콘텐츠
+  bodySpec: BodySpec;
+  personality: string;
+  loveStyle: string;
+  firstMeet: string;
+  lifeStyle: string;
+  compatibilityScores: CompatibilityScores;
+  meetTiming: MeetTiming;
+  caution: string[];       // 주의사항 3가지
+  advice: string[];        // 인연 조언 3가지
+  timeline: Timeline;
+
+  // 추가 유료 콘텐츠
+  nameHint?: string;           // 이름 첫 글자 힌트
+  pastLife?: string;           // 전생 인연
+  kakaoFirstMessage?: string;  // 카카오톡 첫 메시지
+  firstDate?: string;          // 첫 데이트 코스
+  conflictAndMakeup?: string;  // 갈등 & 화해 패턴
+  favoriteThings?: {
+    food: string;
+    music: string;
+    movie: string;
+    place: string;
+  };
+  warnType?: string;           // 악연 주의 유형
+
+  // 바이럴 무료 콘텐츠
+  animalFace?: {
+    type: string;    // e.g. "강아지상"
+    emoji: string;   // e.g. "🐶"
+    desc: string;    // e.g. "눈이 크고 동그래서..."
+  };
+  celebrityLookalikes?: Array<{
+    name: string;       // e.g. "아이유"
+    likePart: string;   // e.g. "눈매와 미소"
+    reason: string;     // e.g. "선이 부드럽고..."
+  }>;
+
+  // 심화 유료 콘텐츠
+  celebrityVibe?: string;      // 닮은꼴 연예인 분위기
+  myCharm?: string;            // 배우자 눈에 비친 나의 매력
+  chemistryType?: {
+    name: string;              // 케미 타입명 (예: 불꽃 케미)
+    emoji: string;             // 대표 이모지
+    desc: string;              // 설명 2문장
+  };
+  monthlyChance?: number[];    // 1~12월 인연운 수치 (0~100)
+  readiness?: {
+    score: number;             // 인연 준비도 0~100
+    comment: string;           // 준비도 코멘트
+  };
+
+  // 신규 프리미엄 콘텐츠
+  loveLanguage?: {
+    primary: string;           // 주요 사랑 언어 (인정하는 말/봉사/선물/함께하는 시간/스킨십)
+    secondary: string;         // 보조 사랑 언어
+    desc: string;              // 배우자의 사랑 표현 방식 2문장
+  };
+  partnerPsychology?: string;  // 배우자 심리 분석 (어떤 사람에게 마음 열리는지)
+  actionGuide?: string[];      // 지금 당장 실천할 인연 행동 가이드 3가지
+
+  // 본인 사주 딥 분석 + 배우자 브릿지 (8개 섹션)
+  selfDeepSections?: SajuDeepSectionWithBridge[];
+}
+
+export interface SajuInfo {
+  yearPillar: string;
+  monthPillar: string;
+  dayPillar: string;
+  hourPillar: string;
+}
+
+export interface BundleResults {
+  spouse?: { analysis: SajuAnalysis; imageUrl: string };
+  guardian?: { analysis: GuardianAnalysis; imageUrl: string };
+  enemy?: { analysis: EnemyAnalysis; imageUrl: string };
+}
+
+export interface GenerateResult {
+  name: string;
+  analysis: SajuAnalysis | GuardianAnalysis | EnemyAnalysis | SelfSajuAnalysis;
+  imageUrl: string;
+  gender?: "male" | "female";
+  demo?: boolean;
+  paid?: boolean;
+  productType?: ProductType;
+  bundleResults?: BundleResults;
+  selfSaju?: SelfSajuAnalysis;
+}
+
+export interface EnemyAnalysis {
+  sajuInfo: SajuInfo;
+  imagePrompt: string;
+  description: string;
+  characteristics: string[];
+  enemyType: string;
+  enemyTypeEmoji: string;
+  relationship: string;
+  dangerAreas: { area: string; desc: string; score: number }[];
+  howToAvoid: string;
+  meetTiming: { ageRange: string; season: string; situation: string };
+  myWeakness: string;
+  damage: string;
+  signToRecognize: string;
+  kakaoFirstMessage?: string;
+  pastLifeConnection?: string;
+  caution: string[];
+  actionGuide: string[];
+  monthlyDanger?: number[];
+  readiness?: { score: number; comment: string };
+  selfDeepSections?: SajuDeepSectionWithBridge[];
+}
+
+export interface GuardianAnalysis {
+  sajuInfo: SajuInfo;
+  imagePrompt: string;
+  description: string;
+  characteristics: string[];
+  guardianType: string;
+  guardianTypeEmoji: string;
+  relationship: string;
+  luckAreas: { area: string; desc: string; score: number }[];
+  howToMeet: string;
+  meetTiming: { ageRange: string; season: string; situation: string };
+  myStrength: string;
+  benefit: string;
+  signToRecognize: string;
+  kakaoFirstMessage?: string;
+  pastLifeConnection?: string;
+  caution: string[];
+  actionGuide: string[];
+  monthlyLuck?: number[];
+  readiness?: { score: number; comment: string };
+  selfDeepSections?: SajuDeepSectionWithBridge[];
+}
+
+export interface SajuDeepSection {
+  icon: string;       // 이모지
+  category: string;   // 섹션 카테고리 태그 (예: "한마디로", "재물복", "연애운")
+  title: string;      // 재미있고 공감되는 제목
+  content: string;    // 비유+설명 3-4문장 (유머+공감+구체적)
+  reason: string;     // 사주 근거 2문장 (명리학 용어 사용)
+  advice: string;     // 실천 조언 2문장
+}
+
+export interface SajuDeepSectionWithBridge extends SajuDeepSection {
+  spouseBridge: string;  // 배우자 연결 문장 (예: "그래서 당신에겐 ~한 사람이 필요해요")
+}
+
+export interface SelfSajuAnalysis {
+  sajuInfo: SajuInfo;
+
+  // ── 무료 공개 ──────────────────────────────────────────
+  elementCounts: Record<string, number>;   // 木/火/土/金/水 개수
+  dayMasterElement: string;               // 일간 오행 (木/火/土/金/水)
+  dayMasterStem: string;                  // 일간 천간 (갑/을/병/정/무/기/경/신/임/계)
+  isSinGang: boolean;                     // 신강(身强) 여부
+  mbti: string;                           // 사주 기반 MBTI
+  characteristics: string[];             // 성격 키워드 3가지
+  oneLineSummary: string;                 // 한 줄 사주 요약
+
+  // ── 유료 콘텐츠 (990원) ────────────────────────────────
+  personality: string;                    // 타고난 기질 (AI)
+  strengths: string[];                    // 강점 3가지
+  weaknesses: string[];                   // 주의사항 3가지
+  career: string;                         // 직업 적성 (AI)
+  wealthFortune: string;                  // 재물운 (AI)
+  loveStyle: string;                      // 연애/결혼 스타일 (AI)
+  healthCaution: string;                  // 건강 주의 (AI)
+  thisYearFortune: string;               // 올해 운세 (AI)
+  currentDaeun: string;                   // 현재 대운 간지
+  currentDaeunAge: string;               // 현재 대운 나이대 (예: "35~44세")
+  monthlyFortune: number[];              // 월별 운세 0~100 (12개)
+  lifePhases: { age: string; theme: string; rating: number }[];  // 대운 흐름 4개
+  luckyElements: string[];               // 행운 키워드 3가지
+  actionNow: string[];                   // 지금 해야 할 행동 3가지
+
+  // ── 심화 섹션 (12개) ──────────────────────────────────
+  deepSections?: SajuDeepSection[];       // 12개 심화 분석 섹션
+
+  // ── 전문 분석 필드 (선택) ──────────────────────────────
+  geokguk?: string;           // 격국명
+  yongshin?: string;          // 용신 오행 + 설명
+  sinSal?: string[];          // 신살 목록
+  dayUnSeong?: string;        // 일지 12운성
+}

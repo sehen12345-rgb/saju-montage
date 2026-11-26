@@ -1,0 +1,275 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import ResultCard from "@/components/ResultCard";
+import GuardianResultCard from "@/components/GuardianResultCard";
+import EnemyResultCard from "@/components/EnemyResultCard";
+import SelfResultCard from "@/components/SelfResultCard";
+import type { GenerateResult, SajuAnalysis, GuardianAnalysis, EnemyAnalysis, SelfSajuAnalysis, ProductType } from "@/lib/types";
+import SajuSummaryCard from "@/components/SajuSummaryCard";
+import { makeSajuHash, isBundlePaid, saveBundlePaidRecord } from "@/lib/paymentStorage";
+
+const PRODUCT_LABEL: Record<string, { emoji: string; name: string; color: string }> = {
+  spouse:   { emoji: "💑", name: "내님은누구",   color: "text-rose-400" },
+  guardian: { emoji: "🌟", name: "내귀인은누구", color: "text-yellow-400" },
+  enemy:    { emoji: "😤", name: "내웬수는누구", color: "text-slate-400" },
+  self:     { emoji: "🎯", name: "내 사주 분석", color: "text-indigo-400" },
+};
+
+const BUNDLE_TABS = [
+  { key: "spouse",   emoji: "💑", label: "배우자",  desc: "운명의 상대",   color: "from-rose-500 to-pink-600",   bg: "bg-rose-500/15",   border: "border-rose-500/40",   text: "text-rose-300"   },
+  { key: "guardian", emoji: "🌟", label: "귀인",    desc: "내 편인 사람",  color: "from-amber-400 to-yellow-500", bg: "bg-amber-500/15",  border: "border-amber-500/40",  text: "text-amber-300"  },
+  { key: "enemy",    emoji: "😤", label: "웬수",    desc: "조심할 사람",  color: "from-slate-500 to-slate-600",  bg: "bg-slate-500/15",  border: "border-slate-500/40",  text: "text-slate-300"  },
+] as const;
+
+export default function ResultPage() {
+  const router = useRouter();
+  const [result, setResult] = useState<GenerateResult | null>(null);
+  const [bundleTab, setBundleTab] = useState<"spouse" | "guardian" | "enemy">("spouse");
+  const [visitedTabs, setVisitedTabs] = useState<Set<string>>(new Set(["spouse"]));
+  const [bundlePaid, setBundlePaid] = useState(false);
+  const [intendedProduct, setIntendedProduct] = useState<ProductType | null>(null);
+  const [hasSelfBackup, setHasSelfBackup] = useState(false);
+
+  useEffect(() => {
+    let stored: string | null = null;
+    try { stored = sessionStorage.getItem("sajuResult"); } catch { /* ignore */ }
+    if (!stored) {
+      try { stored = localStorage.getItem("sajuResult_backup"); } catch { /* ignore */ }
+    }
+    if (!stored) { router.replace("/input"); return; }
+    try {
+      const parsed = JSON.parse(stored);
+      if (!parsed?.analysis) throw new Error("invalid");
+      parsed.paid = false; // ResultCard의 isPaidForSaju 검증 후에만 복원
+      try { sessionStorage.setItem("sajuResult", JSON.stringify(parsed)); } catch { /* ignore */ }
+      setResult(parsed);
+    } catch {
+      try { sessionStorage.removeItem("sajuResult"); } catch { /* ignore */ }
+      try { localStorage.removeItem("sajuResult_backup"); } catch { /* ignore */ }
+      router.replace("/input");
+    }
+  }, [router]);
+
+  // 본인 사주 페이지에서 intendedProduct 읽기 (sessionStorage 소실 시 localStorage 백업 참조)
+  useEffect(() => {
+    if (!result || result.productType !== "self") return;
+    try {
+      const ip = (sessionStorage.getItem("intendedProduct") ?? localStorage.getItem("intendedProduct_backup")) as ProductType | null;
+      if (ip) setIntendedProduct(ip);
+      // sessionStorage가 날아갔다면 복원
+      if (!sessionStorage.getItem("intendedSajuResult")) {
+        const backup = localStorage.getItem("intendedSajuResult_backup");
+        if (backup) sessionStorage.setItem("intendedSajuResult", backup);
+      }
+      if (!sessionStorage.getItem("intendedProduct") && ip) {
+        sessionStorage.setItem("intendedProduct", ip);
+      }
+    } catch { /* ignore */ }
+  }, [result?.productType]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // 번들 결제 상태 복원 (브라우저 재방문 시)
+  useEffect(() => {
+    if (!result || result.productType !== "bundle") return;
+    const sajuInfo = (result.analysis as SajuAnalysis)?.sajuInfo;
+    if (!sajuInfo) return;
+    const hash = makeSajuHash(sajuInfo.yearPillar, sajuInfo.monthPillar, sajuInfo.dayPillar, sajuInfo.hourPillar, result.gender ?? "male");
+    if (isBundlePaid(hash)) setBundlePaid(true);
+  }, [result]);
+
+  // 내 사주 백업 여부 확인 (클라이언트 전용 — SSR에서 localStorage 직접 접근 방지)
+  useEffect(() => {
+    try {
+      setHasSelfBackup(!!localStorage.getItem("selfSajuResult_backup"));
+    } catch { /* ignore */ }
+  }, [result]);
+
+  function handleBundlePaid() {
+    setBundlePaid(true);
+    const sajuInfo = (result?.analysis as SajuAnalysis)?.sajuInfo;
+    if (sajuInfo) {
+      const hash = makeSajuHash(sajuInfo.yearPillar, sajuInfo.monthPillar, sajuInfo.dayPillar, sajuInfo.hourPillar, result?.gender ?? "male");
+      saveBundlePaidRecord(hash, `demo_${Date.now()}`);
+    }
+  }
+
+  function handleProceedToIntended() {
+    try {
+      const stored = sessionStorage.getItem("intendedSajuResult") ?? localStorage.getItem("intendedSajuResult_backup");
+      if (!stored) return;
+      const intendedResult: GenerateResult = JSON.parse(stored);
+      intendedResult.paid = false;
+      const intendedJson = JSON.stringify(intendedResult);
+      sessionStorage.setItem("sajuResult", intendedJson);
+      try { localStorage.setItem("sajuResult_backup", intendedJson); } catch { /* ignore */ }
+      sessionStorage.removeItem("intendedSajuResult");
+      sessionStorage.removeItem("intendedProduct");
+      try { localStorage.removeItem("intendedSajuResult_backup"); } catch { /* ignore */ }
+      try { localStorage.removeItem("intendedProduct_backup"); } catch { /* ignore */ }
+      setIntendedProduct(null);
+      setResult(intendedResult);
+    } catch (e) {
+      console.error("proceed to intended error:", e);
+    }
+  }
+
+  function handleBackToSelf() {
+    try {
+      const stored = localStorage.getItem("selfSajuResult_backup");
+      if (!stored) return;
+      const selfResult: GenerateResult = JSON.parse(stored);
+      sessionStorage.setItem("sajuResult", stored);
+      setResult(selfResult);
+    } catch (e) {
+      console.error("back to self error:", e);
+    }
+  }
+
+  function handleReset() {
+    sessionStorage.removeItem("sajuResult");
+    sessionStorage.removeItem("intendedSajuResult");
+    sessionStorage.removeItem("intendedProduct");
+    try { localStorage.removeItem("intendedSajuResult_backup"); } catch { /* ignore */ }
+    try { localStorage.removeItem("intendedProduct_backup"); } catch { /* ignore */ }
+    try { localStorage.removeItem("selfSajuResult_backup"); } catch { /* ignore */ }
+    router.push("/");
+  }
+
+  if (!result) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#0a0a10]">
+        <div className="text-gray-600 animate-pulse text-base">불러오는 중...</div>
+      </div>
+    );
+  }
+
+  const isBundle = result.productType === "bundle";
+  const isGuardian = result.productType === "guardian";
+  const isEnemy = result.productType === "enemy";
+  const isSelf = result.productType === "self";
+  const analysis = result.analysis as { sajuInfo: { yearPillar: string; monthPillar: string; dayPillar: string; hourPillar: string } };
+  const productMeta = PRODUCT_LABEL[isBundle ? "spouse" : (result.productType ?? "spouse")];
+
+  // 번들 탭에서 현재 탭의 result 생성
+  function getBundleResult(): GenerateResult | null {
+    if (!result?.bundleResults) return null;
+    const br = result.bundleResults[bundleTab];
+    if (!br) return null;
+    return { ...result, analysis: br.analysis, imageUrl: br.imageUrl, productType: bundleTab, paid: bundlePaid };
+  }
+
+  return (
+    <div className="min-h-screen bg-[#0a0a10]">
+      <div className="max-w-md mx-auto px-4 py-5">
+        {/* 유저 정보 카드 */}
+        <div className="bg-[#111118] border border-white/10 rounded-3xl p-5 mb-4">
+          <div className="flex items-start justify-between mb-1">
+            <div className="space-y-0.5">
+              <p className="font-black text-white text-base">
+                {result.name} <span className="text-sm font-normal text-gray-500">(본인)</span>
+              </p>
+              <p className="text-xs text-gray-600">{result.gender === "male" ? "👨 남성" : "👩 여성"}</p>
+              {isBundle ? (
+                <p className="text-xs font-bold text-purple-400">🔮 3종 묶음 분석</p>
+              ) : (
+                <p className={`text-xs font-bold ${productMeta.color}`}>
+                  {productMeta.emoji} {productMeta.name}
+                </p>
+              )}
+            </div>
+            <button
+              onClick={handleReset}
+              className="px-4 py-2 rounded-full bg-white/10 border border-white/10 text-white text-sm font-bold active:scale-95 transition-all hover:bg-white/20 shrink-0"
+            >
+              홈으로
+            </button>
+          </div>
+          <SajuSummaryCard sajuInfo={analysis.sajuInfo} name={result.name} />
+        </div>
+
+        {result.demo && (
+          <div className="mb-4 px-4 py-3 bg-blue-500/10 border border-blue-500/20 rounded-2xl text-blue-400 text-sm flex items-start gap-2">
+            <span>🎭</span>
+            <span>데모 결과입니다.</span>
+          </div>
+        )}
+
+        {isBundle ? (
+          <>
+            {/* 번들 탭 */}
+            <div className="flex gap-2 mb-4">
+              {BUNDLE_TABS.map((tab) => {
+                const isActive = bundleTab === tab.key;
+                const isNew = !visitedTabs.has(tab.key);
+                return (
+                  <button
+                    key={tab.key}
+                    onClick={() => {
+                      setBundleTab(tab.key);
+                      setVisitedTabs(prev => new Set([...prev, tab.key]));
+                    }}
+                    className={`relative flex-1 flex flex-col items-center gap-1 py-3 px-2 rounded-2xl border font-bold transition-all active:scale-95 ${
+                      isActive
+                        ? `bg-gradient-to-b ${tab.color} border-transparent text-white shadow-lg`
+                        : `${tab.bg} ${tab.border} ${tab.text} hover:brightness-125`
+                    }`}
+                  >
+                    {isNew && !isActive && (
+                      <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-red-500 border-2 border-[#0a0a10]" />
+                    )}
+                    <span className="text-2xl">{tab.emoji}</span>
+                    <span className="text-sm font-black">{tab.label}</span>
+                    <span className={`text-[10px] font-medium ${isActive ? "text-white/80" : "opacity-60"}`}>{tab.desc}</span>
+                  </button>
+                );
+              })}
+            </div>
+            {(() => {
+              const br = getBundleResult();
+              if (!br) return <p className="text-center text-gray-600 py-8">분석 데이터를 불러올 수 없습니다.</p>;
+              if (bundleTab === "guardian") return <GuardianResultCard key="guardian" result={br} onReset={handleReset} onPaid={handleBundlePaid} />;
+              if (bundleTab === "enemy")    return <EnemyResultCard    key="enemy"    result={br} onReset={handleReset} onPaid={handleBundlePaid} />;
+              return <ResultCard key="spouse" result={br} onReset={handleReset} onPaid={handleBundlePaid} />;
+            })()}
+          </>
+        ) : isGuardian ? (
+          <>
+            {hasSelfBackup && (
+              <button onClick={handleBackToSelf} className="w-full mb-3 py-2.5 px-4 rounded-2xl bg-white/5 border border-white/10 text-gray-400 text-sm font-medium active:scale-95 transition-all text-left flex items-center gap-2">
+                <span>←</span><span>내 사주 분석 다시 보기</span>
+              </button>
+            )}
+            <GuardianResultCard result={result} onReset={handleReset} />
+          </>
+        ) : isEnemy ? (
+          <>
+            {hasSelfBackup && (
+              <button onClick={handleBackToSelf} className="w-full mb-3 py-2.5 px-4 rounded-2xl bg-white/5 border border-white/10 text-gray-400 text-sm font-medium active:scale-95 transition-all text-left flex items-center gap-2">
+                <span>←</span><span>내 사주 분석 다시 보기</span>
+              </button>
+            )}
+            <EnemyResultCard result={result} onReset={handleReset} />
+          </>
+        ) : isSelf ? (
+          <SelfResultCard
+            analysis={result.analysis as SelfSajuAnalysis}
+            name={result.name}
+            gender={result.gender ?? "male"}
+            intendedProduct={intendedProduct ?? undefined}
+            onProceedToIntended={intendedProduct ? handleProceedToIntended : undefined}
+          />
+        ) : (
+          <>
+            {hasSelfBackup && (
+              <button onClick={handleBackToSelf} className="w-full mb-3 py-2.5 px-4 rounded-2xl bg-white/5 border border-white/10 text-gray-400 text-sm font-medium active:scale-95 transition-all text-left flex items-center gap-2">
+                <span>←</span><span>내 사주 분석 다시 보기</span>
+              </button>
+            )}
+            <ResultCard result={result} onReset={handleReset} />
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
